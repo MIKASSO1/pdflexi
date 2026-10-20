@@ -82,8 +82,9 @@ A static host serves the frontend only. It does **not** provide PDF processing, 
 src/
   App.tsx                      Workspace state and interactions
   components/
-    Chat.tsx                   620px chat / independently scrolling messages
+    Chat.tsx                   400px entry / 720px live chat; independent message scrolling
     Capabilities.tsx           Searchable free list and Pro cards
+    LiveDemo.tsx               Isolated, explicitly scripted sample walkthrough
     DocumentCanvas.tsx         Original-file / illustrative preview
     Dialog.tsx                 Native modal / keyboard behavior
     Icon.tsx                   Capability icon mapping
@@ -106,3 +107,13 @@ An optional GitHub Actions configuration is provided in `docs/ci-template.yml`. 
 “Free” and “Pro” describe the planned product grouping, not a currently available paid service. Pricing is illustrative. Risk analysis is not legal advice. Tampering detection cannot establish authenticity. Visible stamps/signatures are not necessarily legally valid digital signatures or certification. A repair engine cannot recover data that is absent. Translation and editing need fidelity checks. CV tailoring must not fabricate qualifications.
 
 No third-party model weights or PDF engines have been bundled. Dependencies retain their respective licenses; the owner must choose the licensing policy for the project's own source before public redistribution.
+
+## Conversation-first interface update
+
+- Entry: prominent local drag-and-drop upload, then Lexi chat. The attachment list and normal original preview remain available before sending.
+- First request with an attachment automatically expands the workspace: chat physically left, Live Canvas right on desktop; stacked on mobile. All 30 capabilities stay accessible through the toolbar. Removing the final attachment or starting a fresh conversation returns to entry. Reset retains attached originals.
+- Aurora uses CSS gradients with a slow transform; reduced-motion disables animation. No external image or animation request is needed.
+- “See Live Canvas in action” opens a separate scripted fictional example. Timed yellow highlights, an example summary and an example clause-review card are **not AI-generated findings** and never annotate uploaded files. Exiting restores the prior conversation and original attachments.
+- Real files remain unchanged. AI orchestration, document edits, verified highlights and genuine risk detection still require phases 2–3.
+
+Checks: `npm test`, `CHROMIUM_PATH=$(command -v chromium) npm run test:e2e`, `npm run build`. Browser tests cover the automatic split, no split without a file, isolated sample demo, responsive layouts and reduced motion, as well as the original validation and privacy checks.

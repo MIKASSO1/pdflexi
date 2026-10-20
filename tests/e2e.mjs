@@ -106,7 +106,8 @@ try {
           overflow: getComputedStyle(m).overflowY,
         };
       });
-      assert.equal(bounds.chatH, 620);
+      assert.equal(bounds.chatH, 400);
+      assert.equal(await page.locator(".is-split").count(), 0);
       assert.ok(Math.abs(bounds.bottom - bounds.composerBottom) <= 2);
       assert.ok(bounds.scroll);
       assert.equal(bounds.overflow, "auto");
@@ -236,8 +237,28 @@ try {
     assert.ok(Buffer.concat(chunks).equals(buffer));
     await page.locator(".document-canvas").scrollIntoViewIfNeeded();
     await capture("pdf-original");
-    await page.locator(".attached-file .remove-file").click();
+    assert.equal(await page.locator(".is-split").count(), 0);
+    await page.locator("#lexi-prompt").fill("Summarize section 2");
+    await page
+      .getByRole("button", { name: "Send request", exact: true })
+      .click();
+    await page.waitForSelector(".is-split");
+    assert.equal(await page.locator(".actual-document mark").count(), 0);
+    assert.equal(await page.locator(".example-risk").count(), 0);
+    assert.match(
+      await page.locator(".processing-pending").textContent(),
+      /not connected/,
+    );
+    const positions = await page.evaluate(() => ({
+      chat: document.querySelector(".conversation-pane").getBoundingClientRect()
+        .left,
+      canvas: document
+        .querySelector(".live-canvas-pane")
+        .getBoundingClientRect().left,
+    }));
+    assert.ok(positions.chat < positions.canvas);
     await page.evaluate(() => window.scrollTo(0, 0));
+    await capture("live-original");
   });
   await run("version history does not invent edited files", async () => {
     await page
@@ -250,6 +271,28 @@ try {
     );
     await capture("history");
     await page.keyboard.press("Escape");
+    await page.locator(".attached-file .remove-file").click();
+    assert.equal(await page.locator(".is-split").count(), 0);
+  });
+  await run("scripted Live Canvas is isolated from actual files", async () => {
+    await page.locator(".live-demo-cta").click();
+    await page.waitForSelector(".example-risk");
+    assert.equal(await page.locator(".demo-clause mark.revealed").count(), 2);
+    assert.match(
+      await page.locator(".demo-notice").textContent(),
+      /fictional document/,
+    );
+    assert.equal(await page.locator(".pdf-frame").count(), 0);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await capture("live-demo");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await noOverflow();
+    await page.locator(".live-demo").scrollIntoViewIfNeeded();
+    await capture("live-demo-mobile");
+    await page.locator(".demo-back").click();
+    assert.equal(await page.locator(".is-split").count(), 0);
+    await page.setViewportSize({ width: 1500, height: 1050 });
+    await page.evaluate(() => window.scrollTo(0, 0));
   });
   await run("plans and how dialogs show honest phase status", async () => {
     await page.getByRole("button", { name: "Plans", exact: true }).click();
@@ -336,6 +379,16 @@ try {
       await capture("compact-desktop");
     },
   );
+  await run("reduced motion disables Aurora", async () => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    assert.equal(
+      await page
+        .locator(".aurora-background i")
+        .first()
+        .evaluate((e) => getComputedStyle(e).animationName),
+      "none",
+    );
+  });
   await run(
     "documents do not upload and no browser runtime errors",
     async () => {

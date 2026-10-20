@@ -16,6 +16,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { LiveDemo } from "./components/LiveDemo";
+import { experience } from "./data/experience";
 import { translations } from "./data/copy";
 import { languages } from "./data/languages";
 import type { Locale } from "./data/languages";
@@ -69,7 +71,40 @@ export default function App() {
     filesRef = useRef<Attachment[]>([]),
     uploadQueue = useRef(Promise.resolve()),
     dragDepth = useRef(0);
-  const t = translations[locale];
+  const w = experience[locale];
+  const t = {
+    ...translations[locale],
+    conversation: w.chat,
+    companion: w.agentPending,
+    welcome: w.welcome,
+    placeholder: w.placeholder,
+    canvas: "Live Canvas",
+  };
+  const [hasStarted, setHasStarted] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
+  const [demoStage, setDemoStage] = useState(0);
+  const isLive = demoMode || (hasStarted && files.length > 0);
+  useEffect(() => {
+    if (isLive) window.scrollTo({ top: 0, behavior: "instant" });
+  }, [isLive]);
+  useEffect(() => {
+    if (!demoMode) {
+      setDemoStage(0);
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDemoStage(3);
+      return;
+    }
+    const timers = [450, 1100, 1800].map((delay, index) =>
+      setTimeout(() => setDemoStage(index + 1), delay),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [demoMode]);
+  const demoMessages: Message[] = [
+    { id: "sample-request", role: "user", content: w.demoRequest },
+    { id: "sample-response", role: "lexi", content: w.demoReply },
+  ];
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
@@ -93,6 +128,7 @@ export default function App() {
   const updateFiles = (next: Attachment[]) => {
     filesRef.current = next;
     setFiles(next);
+    if (!next.length) setHasStarted(false);
   };
   const upload = () => fileInput.current?.click();
   const addFiles = (incoming: File[]) => {
@@ -175,6 +211,8 @@ export default function App() {
   const send = () => {
     if (!draft.trim()) return;
     const text = draft.trim();
+    setDemoMode(false);
+    if (files.length) setHasStarted(true);
     setMessages((previous) => [
       ...previous,
       {
@@ -188,7 +226,7 @@ export default function App() {
     setDraft("");
   };
   const newChat = () => {
-    if (messages.length || draft.trim()) setModal("reset");
+    if (messages.length || draft.trim() || demoMode) setModal("reset");
     else {
       prompt.current?.focus();
       setNotice(t.resetNotice);
@@ -199,6 +237,8 @@ export default function App() {
     setModal("capabilities");
   };
   const reset = () => {
+    setHasStarted(false);
+    setDemoMode(false);
     setMessages([]);
     setDraft("");
     setModal(null);
@@ -239,6 +279,11 @@ export default function App() {
         addFiles(Array.from(e.dataTransfer.files));
       }}
     >
+      <div className="aurora-background" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
       <a className="skip-link" href="#main-workspace">
         {t.workspace}
       </a>
@@ -287,7 +332,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <div className="workspace-layout">
+      <div className={`workspace-layout ${isLive ? "is-live" : "is-entry"}`}>
         <aside className="sidebar left-sidebar" aria-label={t.freeTools}>
           <Capabilities
             locale={locale}
@@ -320,58 +365,132 @@ export default function App() {
               <span className="pro-badge">PRO</span>
             </button>
           </div>
-          <section className="hero">
-            <div className="hero-eyebrow">
-              <span />
-              {t.eyebrow}
-            </div>
-            <div className="hero-title-row">
-              <h1>
-                {t.heroFirst}
-                <br />
-                <span>{t.heroSecond}</span>
-              </h1>
-              <div className="hero-emblem" aria-hidden="true">
-                <span className="emblem-orbit" />
-                <div className="emblem-file back" />
-                <div className="emblem-file front">
-                  <FileText size={29} strokeWidth={1.3} />
-                  <span>
-                    <Sparkles size={13} />
-                  </span>
-                </div>
-                <i className="emblem-dot one" />
-                <i className="emblem-dot two" />
-                <i className="emblem-cross">+</i>
-              </div>
-            </div>
-            <p>{t.heroSub}</p>
-            <div className="hero-bottom">
-              <span className="phase-badge">
+          <section className="experience-heading">
+            <div>
+              <p className="hero-eyebrow">
                 <span />
-                {t.demo}
-              </span>
-              <button
-                className="capabilities-link"
-                onClick={() => openCapabilities("free")}
-              >
-                {t.capabilityCount}
-                <ArrowRight size={13} />
-              </button>
+                {t.eyebrow}
+              </p>
+              <h1>{isLive ? "Live Canvas" : w.hero}</h1>
+              <p>{isLive ? w.liveHint : w.lead}</p>
             </div>
+            {isLive && (
+              <div className="live-tools">
+                <button onClick={() => openCapabilities("free")}>
+                  {t.freeTools} <b>20</b>
+                </button>
+                <button onClick={() => openCapabilities("pro")}>
+                  {t.smart} <b>10</b>
+                </button>
+                <button onClick={upload}>
+                  <Plus size={16} />
+                  {t.addFiles}
+                </button>
+              </div>
+            )}
           </section>
-          <Chat
-            t={t}
-            messages={messages}
-            draft={draft}
-            setDraft={setDraft}
-            send={send}
-            attach={upload}
-            newChat={newChat}
-            suggest={suggest}
-            attachments={files}
-            inputRef={prompt}
-          />
+          {!isLive && (
+            <section className="upload-first" aria-label={w.uploadTitle}>
+              <div className="upload-step">{w.step}</div>
+              <div className="upload-first-main">
+                <div className="upload-glow-icon">
+                  <Upload size={30} strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h2>{w.uploadTitle}</h2>
+                  <p>{w.uploadLead}</p>
+                </div>
+                <button className="primary-button" onClick={upload}>
+                  {w.browse}
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+              <p className="drop-instruction">{w.drop}</p>
+              <div className="upload-first-footer">
+                <span>
+                  <ShieldCheck size={14} />
+                  {w.local}
+                </span>
+                <span>{t.formats}</span>
+              </div>
+              {files.length > 0 && (
+                <div className="entry-file-chips">
+                  {files.map((f) => (
+                    <span key={f.id}>
+                      <FileText size={14} />
+                      <bdi>{f.file.name}</bdi>
+                      <button
+                        className="icon-button"
+                        onClick={() => removeFile(f.id)}
+                        aria-label={`${t.remove}: ${f.file.name}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+          <div className={`conversation-workspace ${isLive ? "is-split" : ""}`}>
+            <div
+              className="conversation-pane"
+              dir={locale === "ar" ? "rtl" : "ltr"}
+            >
+              <Chat
+                t={t}
+                messages={demoMode ? demoMessages : messages}
+                demoLabel={demoMode ? w.demoTag : undefined}
+                draft={draft}
+                setDraft={setDraft}
+                send={send}
+                attach={upload}
+                newChat={newChat}
+                suggest={suggest}
+                attachments={files}
+                inputRef={prompt}
+              />
+              {!isLive && (
+                <button
+                  className="live-demo-cta"
+                  onClick={() => setDemoMode(true)}
+                >
+                  <Sparkles size={17} />
+                  <strong>{w.demoCta}</strong>
+                  <span>{w.demoTag}</span>
+                  <ArrowRight size={16} />
+                </button>
+              )}
+            </div>
+            {isLive && (
+              <div
+                className="live-canvas-pane"
+                dir={locale === "ar" ? "rtl" : "ltr"}
+              >
+                {demoMode ? (
+                  <LiveDemo
+                    words={w}
+                    stage={demoStage}
+                    back={() => setDemoMode(false)}
+                  />
+                ) : (
+                  <>
+                    <div className="processing-pending">
+                      <ShieldCheck size={18} />
+                      <div>
+                        <strong>{w.pending}</strong>
+                        <p>{w.pendingBody}</p>
+                      </div>
+                    </div>
+                    <DocumentCanvas
+                      {...canvasProps}
+                      onExpand={() => setModal("canvas")}
+                    />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <div className="workspace-meta">
             <span>
               <ShieldCheck size={13} />
@@ -403,10 +522,12 @@ export default function App() {
               </ul>
             </section>
           )}
-          <DocumentCanvas
-            {...canvasProps}
-            onExpand={() => setModal("canvas")}
-          />
+          {!isLive && files.length > 0 && (
+            <DocumentCanvas
+              {...canvasProps}
+              onExpand={() => setModal("canvas")}
+            />
+          )}
           <footer className="workspace-footer">
             <span>{t.footer}</span>
             <button onClick={() => setModal("privacy")}>

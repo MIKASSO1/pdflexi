@@ -44,7 +44,7 @@ const en = {
   localShort: "Local preview",
   you: "You",
   reply:
-    "Your request is saved in this conversation. In this frontend phase, AI and document processing are not connected. No file has been changed. You can preview attached PDFs and images below.",
+    "Your request is saved in this conversation. In this frontend phase, AI and document processing are not connected. No file has been changed. You can preview attached PDFs and images in Live Canvas.",
   replyTitle: "Request received · not executed",
   canvas: "Document canvas",
   canvasSub: "A little clarity, page by page.",

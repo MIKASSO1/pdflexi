@@ -13,6 +13,7 @@ import type { Copy } from "../data/copy";
 import type { Attachment, Message } from "../lib/types";
 type Props = {
   t: Copy;
+  demoLabel?: string;
   messages: Message[];
   draft: string;
   setDraft: (s: string) => void;
@@ -25,6 +26,7 @@ type Props = {
 };
 export function Chat({
   t,
+  demoLabel,
   messages,
   draft,
   setDraft,
@@ -38,7 +40,7 @@ export function Chat({
   const scroller = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = scroller.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el) el.scrollTop = messages.length ? el.scrollHeight : 0;
   }, [messages]);
   return (
     <section className="chat-card" aria-label={t.conversation}>
@@ -121,7 +123,9 @@ export function Chat({
                   {m.role === "lexi" ? "Lexi" : t.you}
                 </span>
                 {m.role === "lexi" && (
-                  <span className="not-executed">{t.replyTitle}</span>
+                  <span className="not-executed">
+                    {demoLabel || t.replyTitle}
+                  </span>
                 )}
                 <p dir="auto" className="message-bubble">
                   {m.content}
