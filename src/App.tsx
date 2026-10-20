@@ -80,6 +80,9 @@ export default function App() {
     placeholder: w.placeholder,
     canvas: "Live Canvas",
   };
+  const [activeCapabilityId, setActiveCapabilityId] = useState<string | null>(
+    null,
+  );
   const [mobilePane, setMobilePane] = useState<"chat" | "files">("chat");
   const [hasStarted, setHasStarted] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
@@ -179,7 +182,7 @@ export default function App() {
         if (added) {
           setSelectedId(current[current.length - added].id);
           setNotice(t.added);
-          setMobilePane("chat");
+          setMobilePane("files");
         }
       })
       .catch(() => {
@@ -193,6 +196,7 @@ export default function App() {
     if (id === selectedId) setSelectedId(null);
   };
   const chooseCapability = (capability: Capability) => {
+    setActiveCapabilityId(capability.id);
     setMobilePane("chat");
     setDraft(capability.prompt[locale]);
     setModal(null);
@@ -245,6 +249,7 @@ export default function App() {
     setMobilePane("chat");
     setDemoMode(false);
     setMessages([]);
+    setActiveCapabilityId(null);
     setDraft("");
     setModal(null);
     setNotice(t.resetNotice);
@@ -349,17 +354,12 @@ export default function App() {
             locale={locale}
             t={t}
             onSelect={chooseCapability}
+            activeId={activeCapabilityId}
             tier="free"
           />
-          <div className="sidebar-trust">
-            <ShieldCheck size={16} />
-            <div>
-              <strong>{t.privacy}</strong>
-              <p>{t.privacySub}</p>
-            </div>
-          </div>
           <button className="sidebar-about" onClick={() => setModal("privacy")}>
-            PDFlexi · {t.privacy}
+            <ShieldCheck size={14} />
+            {t.privacy}
             <ArrowRight size={12} />
           </button>
         </aside>
@@ -461,45 +461,65 @@ export default function App() {
                 id="document-upload-panel"
                 dir={locale === "ar" ? "rtl" : "ltr"}
               >
-                <section className="upload-first" aria-label={w.uploadTitle}>
-                  <div className="upload-step">{w.step}</div>
-                  <div className="upload-first-main">
-                    <div className="upload-glow-icon">
-                      <Upload size={30} strokeWidth={1.5} />
-                    </div>
-                    <div>
-                      <h2>{w.uploadTitle}</h2>
-                      <p>{w.uploadLead}</p>
-                    </div>
-                    <button className="primary-button" onClick={upload}>
-                      {w.browse}
-                      <ArrowRight size={16} />
-                    </button>
-                  </div>
-                  <p className="drop-instruction">{w.drop}</p>
-                  <div className="upload-first-footer">
-                    <span>
-                      <ShieldCheck size={14} />
-                      {w.local}
-                    </span>
-                    <span>{t.formats}</span>
-                  </div>
-                  {files.length > 0 && (
-                    <div className="entry-file-chips">
-                      {files.map((f) => (
-                        <span key={f.id}>
-                          <FileText size={14} />
-                          <bdi>{f.file.name}</bdi>
-                          <button
-                            className="icon-button"
-                            onClick={() => removeFile(f.id)}
-                            aria-label={`${t.remove}: ${f.file.name}`}
-                          >
-                            <X size={14} />
-                          </button>
+                <section
+                  className={`upload-first ${files.length ? "has-document" : ""}`}
+                  aria-label={w.uploadTitle}
+                >
+                  {files.length ? (
+                    <>
+                      <div className="upload-preview-title">
+                        <h2>{w.uploadTitle}</h2>
+                        <p>
+                          <ShieldCheck size={12} />
+                          {w.local}
+                        </p>
+                      </div>
+                      <DocumentCanvas
+                        {...canvasProps}
+                        embedded
+                        onExpand={() => setModal("canvas")}
+                      />
+                      <button
+                        className="preview-chat-button"
+                        onClick={() => {
+                          setMobilePane("chat");
+                          window.setTimeout(
+                            () =>
+                              prompt.current?.focus({ preventScroll: true }),
+                            0,
+                          );
+                        }}
+                      >
+                        <MessageSquare size={16} />
+                        {w.continueChat}
+                        <ArrowRight size={15} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="upload-step">{w.step}</div>
+                      <div className="upload-first-main">
+                        <div className="upload-glow-icon">
+                          <Upload size={30} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <h2>{w.uploadTitle}</h2>
+                          <p>{w.uploadLead}</p>
+                        </div>
+                        <button className="primary-button" onClick={upload}>
+                          {w.browse}
+                          <ArrowRight size={16} />
+                        </button>
+                      </div>
+                      <p className="drop-instruction">{w.drop}</p>
+                      <div className="upload-first-footer">
+                        <span>
+                          <ShieldCheck size={14} />
+                          {w.local}
                         </span>
-                      ))}
-                    </div>
+                        <span>{t.formats}</span>
+                      </div>
+                    </>
                   )}
                 </section>
                 <div className="entry-capability-links">
@@ -512,12 +532,6 @@ export default function App() {
                     {t.smart} <span className="pro-badge">PRO</span>
                   </button>
                 </div>
-                {files.length > 0 && (
-                  <DocumentCanvas
-                    {...canvasProps}
-                    onExpand={() => setModal("canvas")}
-                  />
-                )}
               </div>
             )}
             {isLive && (
@@ -593,6 +607,7 @@ export default function App() {
             locale={locale}
             t={t}
             onSelect={chooseCapability}
+            activeId={activeCapabilityId}
             tier="pro"
           />
           <p className="right-disclaimer">{t.legal}</p>
@@ -772,6 +787,7 @@ export default function App() {
             locale={locale}
             t={t}
             onSelect={chooseCapability}
+            activeId={activeCapabilityId}
             tier={capTier}
             compact
           />

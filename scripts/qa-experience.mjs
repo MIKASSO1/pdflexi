@@ -114,7 +114,7 @@ try {
     .dispatchEvent("dragenter", { dataTransfer: data });
   await page.waitForSelector(".global-drop-overlay");
   await page.locator(".app").dispatchEvent("drop", { dataTransfer: data });
-  await page.waitForSelector(".entry-file-chips");
+  await page.waitForSelector(".upload-first .embedded-canvas .attached-file");
   assert.equal(await page.locator(".is-split").count(), 0);
   await page.locator("#lexi-prompt").fill("Résume ce document");
   await page.locator(".send-button").click();

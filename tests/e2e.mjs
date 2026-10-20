@@ -94,6 +94,50 @@ try {
       await page.setViewportSize({ width: 1500, height: 1050 });
     },
   );
+  await run(
+    "sidebars stay inside the viewport and scroll internally",
+    async () => {
+      await page.setViewportSize({ width: 1336, height: 646 });
+      for (const selector of [".left-sidebar", ".right-sidebar"]) {
+        const before = await page.locator(selector).evaluate((el) => {
+          const rect = el.getBoundingClientRect();
+          const list = el.querySelector("[role=region]");
+          return {
+            top: rect.top,
+            bottom: rect.bottom,
+            overflow: getComputedStyle(list).overflowY,
+            scrolls: list.scrollHeight > list.clientHeight,
+            header: el.querySelector(".panel-title").getBoundingClientRect()
+              .top,
+          };
+        });
+        assert.ok(before.bottom <= 646 - 8);
+        assert.equal(before.overflow, "auto");
+        assert.ok(before.scrolls);
+        await page
+          .locator(`${selector} [role=region]`)
+          .evaluate((el) => (el.scrollTop = el.scrollHeight));
+        const after = await page.locator(selector).evaluate((el) => ({
+          header: el.querySelector(".panel-title").getBoundingClientRect().top,
+          scrollY,
+        }));
+        assert.equal(after.header, before.header);
+        assert.equal(after.scrollY, 0);
+        const last = page.locator(`${selector} [data-capability]`).last();
+        const b = await last.boundingBox();
+        assert.ok(b.y + b.height <= before.bottom);
+        await page
+          .locator(`${selector} [role=region]`)
+          .evaluate((el) => (el.scrollTop = 0));
+      }
+      const radius = await page
+        .locator(".left-sidebar .free-tool")
+        .first()
+        .evaluate((el) => getComputedStyle(el).borderRadius);
+      assert.equal(radius, "999px");
+      await page.setViewportSize({ width: 1500, height: 1050 });
+    },
+  );
   await run("capability search and draft, not manual execution", async () => {
     await page
       .getByRole("textbox", { name: "Search tools…", exact: true })
@@ -104,6 +148,12 @@ try {
     );
     await page.locator('.left-sidebar [data-capability="rotate"]').click();
     assert.match(await page.locator("#lexi-prompt").inputValue(), /rotate/i);
+    assert.equal(
+      await page
+        .locator('.left-sidebar [data-capability="rotate"]')
+        .getAttribute("aria-pressed"),
+      "true",
+    );
     await page
       .getByRole("textbox", { name: "Search tools…", exact: true })
       .fill("");
@@ -191,6 +241,14 @@ try {
       .locator("input[type=file]")
       .setInputFiles("artifacts/qa/sample.png");
     await page.waitForSelector(".image-preview img");
+    assert.equal(
+      await page.locator(".upload-first .image-preview img").count(),
+      1,
+    );
+    assert.equal(
+      await page.locator(".entry-upload-pane > .document-canvas").count(),
+      0,
+    );
     assert.equal(await page.locator(".attached-file").count(), 1);
     await page
       .locator("input[type=file]")
@@ -251,6 +309,7 @@ try {
       buffer,
     });
     await page.waitForSelector(".pdf-frame");
+    assert.equal(await page.locator(".upload-first .pdf-frame").count(), 1);
     assert.match(
       await page.locator(".pdf-frame").getAttribute("src"),
       /^blob:/,
@@ -430,6 +489,9 @@ try {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           buffer: Buffer.from("original"),
         });
+        await mobile.waitForSelector(".upload-first .embedded-canvas");
+        assert.equal(await mobile.locator(".upload-first").isVisible(), true);
+        await mobile.locator(".preview-chat-button").click();
         await mobile.waitForSelector(".chat-card");
         assert.equal(
           await mobile.locator("#lexi-prompt").inputValue(),

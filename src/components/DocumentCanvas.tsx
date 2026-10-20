@@ -23,6 +23,7 @@ export function DocumentCanvas({
   removeFile,
   upload,
   expanded = false,
+  embedded = false,
   onExpand,
   onHistory,
   onClose,
@@ -34,6 +35,7 @@ export function DocumentCanvas({
   removeFile: (id: string) => void;
   upload: () => void;
   expanded?: boolean;
+  embedded?: boolean;
   onExpand?: () => void;
   onHistory: () => void;
   onClose?: () => void;
@@ -42,16 +44,18 @@ export function DocumentCanvas({
   const selected = files.find((f) => f.id === selectedId) || files[0];
   return (
     <section
-      className={`document-canvas ${expanded ? "expanded-canvas" : ""}`}
+      className={`document-canvas ${expanded ? "expanded-canvas" : ""} ${embedded ? "embedded-canvas" : ""}`}
       aria-label={t.canvas}
     >
       <div className="canvas-heading">
-        <span className="canvas-symbol">
-          <FileText size={20} />
-        </span>
+        {!embedded && (
+          <span className="canvas-symbol">
+            <FileText size={20} />
+          </span>
+        )}
         <div>
-          <h2>{t.canvas}</h2>
-          <p>{t.canvasSub}</p>
+          <h2>{embedded ? t.original : t.canvas}</h2>
+          {!embedded && <p>{t.canvasSub}</p>}
         </div>
         <div className="canvas-heading-actions">
           {selected && (
@@ -146,12 +150,16 @@ export function DocumentCanvas({
           {selected.kind === "pdf" ? (
             <>
               <iframe
-                src={selected.url}
+                src={
+                  embedded
+                    ? `${selected.url}#toolbar=0&navpanes=0&view=FitH`
+                    : selected.url
+                }
                 title={`${t.canvas}: ${selected.file.name}`}
                 className="pdf-frame"
               />
               <p className="pdf-fallback">
-                {t.previewUnavailable}{" "}
+                {!embedded && <>{t.previewUnavailable} </>}
                 <a
                   href={selected.url}
                   target="_blank"
@@ -219,33 +227,37 @@ export function DocumentCanvas({
           </article>
         </div>
       )}
-      <div
-        className={`upload-area ${isDragging ? "drag-hint" : ""}`}
-        onDragEnter={() => setDragging(true)}
-        onDragLeave={() => setDragging(false)}
-        onDrop={() => setDragging(false)}
-      >
-        <span className="upload-area-icon">
-          <Upload size={21} />
-        </span>
-        <div>
-          <h3>{files.length ? t.addFiles : t.dropTitle}</h3>
-          <p>{t.dropSub}</p>
-        </div>
-        <button className="primary-button upload-button" onClick={upload}>
-          {t.upload}
-          <ArrowUpRight size={15} />
-        </button>
-      </div>
-      <p className="upload-limits">{t.formats}</p>
-      <div className="canvas-footer">
-        <ShieldCheck size={13} />
-        <span>{t.privacySub}</span>
-        <span className="canvas-footer-brand">
-          PDFlexi Canvas
-          <ChevronDown size={12} />
-        </span>
-      </div>
+      {!embedded && (
+        <>
+          <div
+            className={`upload-area ${isDragging ? "drag-hint" : ""}`}
+            onDragEnter={() => setDragging(true)}
+            onDragLeave={() => setDragging(false)}
+            onDrop={() => setDragging(false)}
+          >
+            <span className="upload-area-icon">
+              <Upload size={21} />
+            </span>
+            <div>
+              <h3>{files.length ? t.addFiles : t.dropTitle}</h3>
+              <p>{t.dropSub}</p>
+            </div>
+            <button className="primary-button upload-button" onClick={upload}>
+              {t.upload}
+              <ArrowUpRight size={15} />
+            </button>
+          </div>
+          <p className="upload-limits">{t.formats}</p>
+          <div className="canvas-footer">
+            <ShieldCheck size={13} />
+            <span>{t.privacySub}</span>
+            <span className="canvas-footer-brand">
+              PDFlexi Canvas
+              <ChevronDown size={12} />
+            </span>
+          </div>
+        </>
+      )}
     </section>
   );
 }

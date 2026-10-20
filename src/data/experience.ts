@@ -1,5 +1,6 @@
 export const experience = {
   en: {
+    continueChat: "Continue with Lexi",
     welcome: "Tell me what you want to do with your documents.",
     agentPending: "Interface ready · AI not connected yet",
     uploadTitle: "Upload your PDF",
@@ -38,6 +39,7 @@ export const experience = {
     liveHint: "Chat on the left. Your document on the right.",
   },
   ar: {
+    continueChat: "متابعة مع Lexi",
     welcome: "قل لي شنو بغيتي تدير بالوثائق ديالك.",
     agentPending: "الواجهة جاهزة · الذكاء الاصطناعي غير مربوط بعد",
     uploadTitle: "ارفع ملف PDF ديالك",
@@ -75,6 +77,7 @@ export const experience = {
     liveHint: "المحادثة على اليسار. الوثيقة على اليمين.",
   },
   fr: {
+    continueChat: "Continuer avec Lexi",
     welcome: "Dites-moi ce que vous souhaitez faire avec vos documents.",
     agentPending: "Interface prête · IA non connectée",
     uploadTitle: "Importez votre PDF",

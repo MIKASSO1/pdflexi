@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { ArrowUpRight, LockKeyhole, Search, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowUpRight,
+  ChevronDown,
+  LockKeyhole,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import registry from "../data/capabilities.json";
 import type { Locale } from "../data/languages";
 import type { Copy } from "../data/copy";
@@ -11,14 +17,29 @@ export function Capabilities({
   onSelect,
   tier,
   compact = false,
+  activeId,
 }: {
   locale: Locale;
   t: Copy;
   onSelect: (c: Capability) => void;
   tier: "free" | "pro";
   compact?: boolean;
+  activeId?: string | null;
 }) {
   const [query, setQuery] = useState("");
+  const [scrollable, setScrollable] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = listRef.current;
+    if (!element) return;
+    element.scrollTop = 0;
+    const update = () =>
+      setScrollable(element.scrollHeight > element.clientHeight + 1);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [query, locale, tier]);
   const list = registry.filter(
     (c) =>
       c.tier === tier &&
@@ -55,7 +76,13 @@ export function Capabilities({
           />
         </label>
       )}
-      <div className={tier === "free" ? "free-list" : "pro-list"}>
+      <div
+        className={tier === "free" ? "free-list" : "pro-list"}
+        ref={listRef}
+        role="region"
+        aria-label={tier === "free" ? t.freeTools : t.proTitle}
+        tabIndex={0}
+      >
         {list.map((c) => (
           <button
             key={c.id}
@@ -63,6 +90,8 @@ export function Capabilities({
             data-tier={tier}
             className={tier === "free" ? "free-tool" : "pro-tool"}
             onClick={() => onSelect(c)}
+            aria-pressed={activeId === c.id}
+            title={c.description[locale]}
           >
             {tier === "free" ? (
               <>
@@ -71,9 +100,11 @@ export function Capabilities({
                 </span>
                 <span className="tool-names">
                   <strong>{c.name[locale]}</strong>
-                  <small lang="en" dir="ltr">
-                    {locale === "en" ? c.description.en : c.name.en}
-                  </small>
+                  {locale !== "en" && (
+                    <small lang="en" dir="ltr">
+                      {c.name.en}
+                    </small>
+                  )}
                 </span>
                 <ArrowUpRight className="tool-arrow" size={14} />
               </>
@@ -94,8 +125,14 @@ export function Capabilities({
             )}
           </button>
         ))}
+        {!list.length && <p className="empty-search">{t.noTools}</p>}
       </div>
-      {!list.length && <p className="empty-search">{t.noTools}</p>}
+      {scrollable && (
+        <div className="sidebar-scroll-cue">
+          <ChevronDown size={13} />
+          {t.scrollMore}
+        </div>
+      )}
       <p className="panel-footnote">
         {tier === "free" ? t.toolHint : t.proFoot}
       </p>

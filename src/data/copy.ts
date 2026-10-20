@@ -1,5 +1,6 @@
 import type { Locale } from "./languages";
 const en = {
+  scrollMore: "Scroll for more tools",
   history: "Version history",
   historyEmpty: "No processed versions yet.",
   historyNote:
@@ -150,6 +151,7 @@ const en = {
   clearDraft: "Clear draft",
 };
 const ar: typeof en = {
+  scrollMore: "مرّر للاطلاع على بقية الأدوات",
   history: "سجل النسخ",
   historyEmpty: "لا توجد نسخ معدّلة بعد.",
   historyNote:
@@ -296,6 +298,7 @@ const ar: typeof en = {
   clearDraft: "مسح المسودة",
 };
 const fr: typeof en = {
+  scrollMore: "Faites défiler pour voir la suite",
   history: "Historique des versions",
   historyEmpty: "Aucune version traitée pour le moment.",
   historyNote:
