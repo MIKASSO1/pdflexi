@@ -1,3 +1,8 @@
+import { lazy, Suspense } from "react";
+const WorkspaceCanvas = lazy(() =>
+  import("./WorkspaceCanvas").then((m) => ({ default: m.WorkspaceCanvas })),
+);
+import type { Locale } from "../data/languages";
 import { useState } from "react";
 import {
   ArrowUpRight,
@@ -24,6 +29,7 @@ export function DocumentCanvas({
   upload,
   expanded = false,
   embedded = false,
+  locale = "en",
   onExpand,
   onHistory,
   onClose,
@@ -36,12 +42,33 @@ export function DocumentCanvas({
   upload: () => void;
   expanded?: boolean;
   embedded?: boolean;
+  locale?: Locale;
   onExpand?: () => void;
   onHistory: () => void;
   onClose?: () => void;
 }) {
   const [isDragging, setDragging] = useState(false);
   const selected = files.find((f) => f.id === selectedId) || files[0];
+  if (selected && !embedded)
+    return (
+      <Suspense fallback={<p role="status">{t.canvas}…</p>}>
+        <WorkspaceCanvas
+          {...{
+            t,
+            locale,
+            files,
+            selectedId,
+            setSelectedId,
+            removeFile,
+            upload,
+            expanded,
+            onExpand,
+            onHistory,
+            onClose,
+          }}
+        />
+      </Suspense>
+    );
   return (
     <section
       className={`document-canvas ${expanded ? "expanded-canvas" : ""} ${embedded ? "embedded-canvas" : ""}`}

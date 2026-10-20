@@ -333,8 +333,11 @@ try {
     await page.waitForSelector(".is-split");
     assert.equal(await page.locator(".actual-document mark").count(), 0);
     assert.equal(await page.locator(".example-risk").count(), 0);
+    await page.waitForSelector(".studio-canvas .pdf-page canvas");
+    assert.equal(await page.locator(".processing-pending").count(), 0);
+    assert.equal(await page.locator(".live-canvas-pane iframe").count(), 0);
     assert.match(
-      await page.locator(".processing-pending").textContent(),
+      await page.locator(".simple-lexi-title").textContent(),
       /not connected/,
     );
     const positions = await page.evaluate(() => ({
@@ -349,6 +352,7 @@ try {
     await capture("live-original");
   });
   await run("version history does not invent edited files", async () => {
+    await page.locator(".file-options-button").click();
     await page
       .getByRole("button", { name: "Version history", exact: true })
       .click();

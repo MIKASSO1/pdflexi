@@ -1,8 +1,11 @@
+import { studioCopy } from "../data/studio";
+import type { Locale } from "../data/languages";
 import { useEffect, useRef } from "react";
 import {
   ArrowUp,
   ArrowUpRight,
   FileText,
+  ListFilter,
   Paperclip,
   Plus,
   ShieldCheck,
@@ -13,6 +16,8 @@ import type { Copy } from "../data/copy";
 import type { Attachment, Message } from "../lib/types";
 type Props = {
   t: Copy;
+  locale: Locale;
+  tools?: () => void;
   demoLabel?: string;
   messages: Message[];
   draft: string;
@@ -26,6 +31,8 @@ type Props = {
 };
 export function Chat({
   t,
+  locale,
+  tools,
   demoLabel,
   messages,
   draft,
@@ -45,16 +52,19 @@ export function Chat({
   return (
     <section className="chat-card" aria-label={t.conversation}>
       <div className="chat-heading">
-        <div className="lexi-mark">
-          <Sparkles size={22} strokeWidth={1.7} />
+        <div className="simple-lexi-title" title={t.companion}>
+          <span className="ready-dot" aria-hidden="true" />
+          <h2>
+            Lexi <span>• {studioCopy[locale].preview}</span>
+          </h2>
+          <span className="sr-only">{t.companion}</span>
         </div>
-        <div>
-          <h2>{t.conversation}</h2>
-          <p>
-            <span className="status-dot" />
-            {t.companion}
-          </p>
-        </div>
+        {tools && (
+          <button className="chat-tools-button" onClick={tools}>
+            <ListFilter size={16} />
+            {studioCopy[locale].tools}
+          </button>
+        )}
         <button
           className="icon-button new-conversation"
           onClick={newChat}

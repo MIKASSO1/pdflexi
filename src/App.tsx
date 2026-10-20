@@ -255,6 +255,7 @@ export default function App() {
     setNotice(t.resetNotice);
   };
   const canvasProps = {
+    locale,
     onHistory: () => setModal("history"),
     t,
     files,
@@ -376,26 +377,6 @@ export default function App() {
               <span className="pro-badge">PRO</span>
             </button>
           </div>
-          {isLive && (
-            <section
-              className="experience-heading live-toolbar"
-              aria-label="Live Canvas"
-            >
-              <h2>Live Canvas</h2>
-              <div className="live-tools">
-                <button onClick={() => openCapabilities("free")}>
-                  {t.freeTools} <b>20</b>
-                </button>
-                <button onClick={() => openCapabilities("pro")}>
-                  {t.smart} <b>10</b>
-                </button>
-                <button onClick={upload}>
-                  <Plus size={16} />
-                  {t.addFiles}
-                </button>
-              </div>
-            </section>
-          )}
           {!isLive && (
             <div
               className="entry-pane-switch"
@@ -432,6 +413,8 @@ export default function App() {
             >
               <Chat
                 t={t}
+                locale={locale}
+                tools={isLive ? () => openCapabilities("free") : undefined}
                 messages={demoMode ? demoMessages : messages}
                 demoLabel={demoMode ? w.demoTag : undefined}
                 draft={draft}
@@ -547,13 +530,6 @@ export default function App() {
                   />
                 ) : (
                   <>
-                    <div className="processing-pending">
-                      <ShieldCheck size={18} />
-                      <div>
-                        <strong>{w.pending}</strong>
-                        <p>{w.pendingBody}</p>
-                      </div>
-                    </div>
                     <DocumentCanvas
                       {...canvasProps}
                       onExpand={() => setModal("canvas")}

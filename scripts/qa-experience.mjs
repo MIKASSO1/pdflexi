@@ -122,6 +122,7 @@ try {
   const composer = await page.locator(".chat-composer").boundingBox();
   assert.ok(composer.y + composer.height <= 646 - 8);
   await page.screenshot({ path: "artifacts/qa/side-live-original.png" });
+  await page.locator(".file-options-button").click();
   await page.locator(".remove-file").click();
   await page.locator(".live-demo-cta").click();
   await page.waitForSelector(".example-risk");

@@ -60,6 +60,14 @@ CHROMIUM_PATH=/path/to/chromium npm run test:e2e
 
 The tests cover the 30-capability distribution, desktop geometry, search/drafting, non-execution disclosure, long chat scrolling, reset confirmation, file errors, local preview, 29-language registry/3 enabled languages, RTL, mobile dialogs and overflow. Screenshots/results are written to ignored `artifacts/qa/`.
 
+### Focused Live Canvas
+
+The desktop studio gives chat and PDF preview independently scrollable, full-height panels. PDF.js renders real PDF pages locally, without the browser’s dark PDF toolbar. Page counts, navigation, zoom and original-file downloads are functional. The compact file-options menu contains attachments and version history. On mobile the panels stack without horizontal overflow.
+
+The green indicator means the interface is ready; the header says **Preview**, not that an AI service is online. Highlight and Edit are visibly unavailable until editing is connected. Share uses native file sharing when supported, otherwise explains how to download the original. **View auto-save** stores zoom only on this device; it does not modify or auto-save document contents.
+
+With the development server running, `CHROMIUM_PATH=/path/to/chromium node scripts/qa-studio.mjs` checks a 12-page PDF, navigation, scrolling, zoom persistence, responsive widths and Arabic/French layouts. It generates its own fixture in a fresh checkout.
+
 ### Portable interactive preview
 
 ```bash

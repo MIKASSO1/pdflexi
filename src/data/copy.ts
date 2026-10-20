@@ -45,7 +45,7 @@ const en = {
   localShort: "Local preview",
   you: "You",
   reply:
-    "Your request is saved in this conversation. In this frontend phase, AI and document processing are not connected. No file has been changed. You can preview attached PDFs and images in Live Canvas.",
+    "Request saved. AI and document processing are not connected yet, so your original is unchanged. You can preview and download your files.",
   replyTitle: "Request received · not executed",
   canvas: "Document canvas",
   canvasSub: "A little clarity, page by page.",
@@ -196,7 +196,7 @@ const ar: typeof en = {
   localShort: "معاينة محلية",
   you: "أنت",
   reply:
-    "تم حفظ طلبك في هذه المحادثة. في مرحلة الواجهة، الذكاء الاصطناعي ومعالجة الوثائق غير مربوطين. لم يتغيّر أي ملف. يمكنك معاينة ملفات PDF والصور المرفقة في Live Canvas.",
+    "تم حفظ طلبك. الذكاء الاصطناعي ومعالجة الوثائق غير مربوطين بعد، لذلك بقي الأصل بلا تغيير. يمكنك معاينة ملفاتك وتنزيلها.",
   replyTitle: "استُلم الطلب · لم يُنفّذ",
   canvas: "معاينة الوثيقة",
   canvasSub: "وضوح أكثر، صفحة بعد صفحة.",
@@ -344,7 +344,7 @@ const fr: typeof en = {
   localShort: "Aperçu local",
   you: "Vous",
   reply:
-    "Votre demande est conservée dans cette conversation. Dans cette phase, l’IA et le traitement ne sont pas connectés. Aucun fichier n’a été modifié. Vous pouvez prévisualiser les PDF et images dans Live Canvas.",
+    "Demande conservée. L’IA et le traitement ne sont pas encore connectés : votre original reste inchangé. Vous pouvez prévisualiser et télécharger vos fichiers.",
   replyTitle: "Demande reçue · non exécutée",
   canvas: "Aperçu du document",
   canvasSub: "Un peu de clarté, page après page.",
