@@ -65,6 +65,35 @@ try {
     await noOverflow();
     await capture("desktop");
   });
+  await run(
+    "laptop first viewport contains chat, composer and adjacent upload",
+    async () => {
+      await page.setViewportSize({ width: 1336, height: 646 });
+      const boxes = await page.evaluate(() => {
+        const b = (selector) => {
+          const r = document.querySelector(selector).getBoundingClientRect();
+          return { top: r.top, bottom: r.bottom, left: r.left, right: r.right };
+        };
+        return {
+          chat: b(".chat-card"),
+          upload: b(".upload-first"),
+          composer: b(".chat-composer"),
+          headerTitle: document.querySelector("header h1").textContent,
+          innerHeight,
+          scrollY,
+        };
+      });
+      assert.ok(boxes.chat.right < boxes.upload.left);
+      assert.ok(Math.abs(boxes.chat.top - boxes.upload.top) < 2);
+      assert.ok(boxes.composer.bottom <= boxes.innerHeight - 8);
+      assert.equal(boxes.scrollY, 0);
+      assert.match(boxes.headerTitle, /Your documents/);
+      assert.equal(await page.locator(".middle-column h1").count(), 0);
+      await noOverflow();
+      await capture("first-screen-laptop");
+      await page.setViewportSize({ width: 1500, height: 1050 });
+    },
+  );
   await run("capability search and draft, not manual execution", async () => {
     await page
       .getByRole("textbox", { name: "Search tools…", exact: true })
@@ -106,7 +135,7 @@ try {
           overflow: getComputedStyle(m).overflowY,
         };
       });
-      assert.equal(bounds.chatH, 400);
+      assert.equal(bounds.chatH, 660);
       assert.equal(await page.locator(".is-split").count(), 0);
       assert.ok(Math.abs(bounds.bottom - bounds.composerBottom) <= 2);
       assert.ok(bounds.scroll);
@@ -377,6 +406,45 @@ try {
         await noOverflow();
       }
       await capture("compact-desktop");
+    },
+  );
+  await run(
+    "mobile opens chat first and switches to upload without scrolling",
+    async () => {
+      const mobile = await browser.newPage({
+        viewport: { width: 390, height: 844 },
+      });
+      try {
+        await mobile.goto(url);
+        await mobile.waitForSelector(".chat-card");
+        assert.equal(await mobile.locator(".upload-first").isVisible(), false);
+        const composer = await mobile.locator(".chat-composer").boundingBox();
+        assert.ok(composer.y + composer.height <= 844 - 8);
+        await mobile.locator("#lexi-prompt").fill("Keep my draft");
+        await mobile.locator(".entry-pane-switch button").last().click();
+        assert.equal(await mobile.locator(".upload-first").isVisible(), true);
+        assert.equal(await mobile.locator(".chat-card").isVisible(), false);
+        await mobile.locator("input[type=file]").setInputFiles({
+          name: "mobile.docx",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          buffer: Buffer.from("original"),
+        });
+        await mobile.waitForSelector(".chat-card");
+        assert.equal(
+          await mobile.locator("#lexi-prompt").inputValue(),
+          "Keep my draft",
+        );
+        assert.equal(
+          await mobile.locator(".attachment-count").textContent(),
+          "1",
+        );
+        assert.equal(await mobile.locator(".is-split").count(), 0);
+        await mobile.locator(".send-button").click();
+        await mobile.waitForSelector(".is-split");
+      } finally {
+        await mobile.close();
+      }
     },
   );
   await run("reduced motion disables Aurora", async () => {

@@ -80,6 +80,7 @@ export default function App() {
     placeholder: w.placeholder,
     canvas: "Live Canvas",
   };
+  const [mobilePane, setMobilePane] = useState<"chat" | "files">("chat");
   const [hasStarted, setHasStarted] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [demoStage, setDemoStage] = useState(0);
@@ -178,6 +179,7 @@ export default function App() {
         if (added) {
           setSelectedId(current[current.length - added].id);
           setNotice(t.added);
+          setMobilePane("chat");
         }
       })
       .catch(() => {
@@ -191,6 +193,7 @@ export default function App() {
     if (id === selectedId) setSelectedId(null);
   };
   const chooseCapability = (capability: Capability) => {
+    setMobilePane("chat");
     setDraft(capability.prompt[locale]);
     setModal(null);
     setNotice(t.selected);
@@ -226,6 +229,7 @@ export default function App() {
     setDraft("");
   };
   const newChat = () => {
+    setMobilePane("chat");
     if (messages.length || draft.trim() || demoMode) setModal("reset");
     else {
       prompt.current?.focus();
@@ -238,6 +242,7 @@ export default function App() {
   };
   const reset = () => {
     setHasStarted(false);
+    setMobilePane("chat");
     setDemoMode(false);
     setMessages([]);
     setDraft("");
@@ -289,17 +294,23 @@ export default function App() {
       </a>
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href="#main-workspace" aria-label="PDFlexi">
-            <span className="brand-icon">
-              <FileText size={22} />
-            </span>
-            <span>
-              PDF<span className="brand-light">lexi</span>
-              <i />
-            </span>
-          </a>
-          <span className="header-divider" />
-          <span className="brand-tagline">A little less paperwork.</span>
+          <div className="header-lockup">
+            <a className="brand" href="#main-workspace" aria-label="PDFlexi">
+              <span className="brand-icon">
+                <FileText size={22} />
+              </span>
+              <span>
+                PDF<span className="brand-light">lexi</span>
+                <i />
+              </span>
+            </a>
+            <div
+              className="header-promise"
+              dir={locale === "ar" ? "rtl" : "ltr"}
+            >
+              <h1>{w.hero}</h1>
+            </div>
+          </div>
           <nav className="desktop-navigation" aria-label={t.workspace}>
             <a className="nav-active" href="#main-workspace">
               <MessageSquare size={16} />
@@ -365,16 +376,12 @@ export default function App() {
               <span className="pro-badge">PRO</span>
             </button>
           </div>
-          <section className="experience-heading">
-            <div>
-              <p className="hero-eyebrow">
-                <span />
-                {t.eyebrow}
-              </p>
-              <h1>{isLive ? "Live Canvas" : w.hero}</h1>
-              <p>{isLive ? w.liveHint : w.lead}</p>
-            </div>
-            {isLive && (
+          {isLive && (
+            <section
+              className="experience-heading live-toolbar"
+              aria-label="Live Canvas"
+            >
+              <h2>Live Canvas</h2>
               <div className="live-tools">
                 <button onClick={() => openCapabilities("free")}>
                   {t.freeTools} <b>20</b>
@@ -387,54 +394,40 @@ export default function App() {
                   {t.addFiles}
                 </button>
               </div>
-            )}
-          </section>
-          {!isLive && (
-            <section className="upload-first" aria-label={w.uploadTitle}>
-              <div className="upload-step">{w.step}</div>
-              <div className="upload-first-main">
-                <div className="upload-glow-icon">
-                  <Upload size={30} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <h2>{w.uploadTitle}</h2>
-                  <p>{w.uploadLead}</p>
-                </div>
-                <button className="primary-button" onClick={upload}>
-                  {w.browse}
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-              <p className="drop-instruction">{w.drop}</p>
-              <div className="upload-first-footer">
-                <span>
-                  <ShieldCheck size={14} />
-                  {w.local}
-                </span>
-                <span>{t.formats}</span>
-              </div>
-              {files.length > 0 && (
-                <div className="entry-file-chips">
-                  {files.map((f) => (
-                    <span key={f.id}>
-                      <FileText size={14} />
-                      <bdi>{f.file.name}</bdi>
-                      <button
-                        className="icon-button"
-                        onClick={() => removeFile(f.id)}
-                        aria-label={`${t.remove}: ${f.file.name}`}
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </section>
           )}
-          <div className={`conversation-workspace ${isLive ? "is-split" : ""}`}>
+          {!isLive && (
+            <div
+              className="entry-pane-switch"
+              role="group"
+              aria-label={t.workspace}
+            >
+              <button
+                aria-pressed={mobilePane === "chat"}
+                aria-controls="lexi-chat-panel"
+                onClick={() => setMobilePane("chat")}
+              >
+                <MessageSquare size={16} />
+                Lexi
+              </button>
+              <button
+                aria-pressed={mobilePane === "files"}
+                aria-controls="document-upload-panel"
+                onClick={() => setMobilePane("files")}
+              >
+                <Upload size={16} />
+                {t.files}
+                {files.length > 0 && <span>{files.length}</span>}
+              </button>
+            </div>
+          )}
+          <div
+            className={`conversation-workspace ${isLive ? "is-split" : "entry-workspace"}`}
+            data-mobile-pane={mobilePane}
+          >
             <div
               className="conversation-pane"
+              id="lexi-chat-panel"
               dir={locale === "ar" ? "rtl" : "ltr"}
             >
               <Chat
@@ -462,6 +455,71 @@ export default function App() {
                 </button>
               )}
             </div>
+            {!isLive && (
+              <div
+                className="entry-upload-pane"
+                id="document-upload-panel"
+                dir={locale === "ar" ? "rtl" : "ltr"}
+              >
+                <section className="upload-first" aria-label={w.uploadTitle}>
+                  <div className="upload-step">{w.step}</div>
+                  <div className="upload-first-main">
+                    <div className="upload-glow-icon">
+                      <Upload size={30} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h2>{w.uploadTitle}</h2>
+                      <p>{w.uploadLead}</p>
+                    </div>
+                    <button className="primary-button" onClick={upload}>
+                      {w.browse}
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                  <p className="drop-instruction">{w.drop}</p>
+                  <div className="upload-first-footer">
+                    <span>
+                      <ShieldCheck size={14} />
+                      {w.local}
+                    </span>
+                    <span>{t.formats}</span>
+                  </div>
+                  {files.length > 0 && (
+                    <div className="entry-file-chips">
+                      {files.map((f) => (
+                        <span key={f.id}>
+                          <FileText size={14} />
+                          <bdi>{f.file.name}</bdi>
+                          <button
+                            className="icon-button"
+                            onClick={() => removeFile(f.id)}
+                            aria-label={`${t.remove}: ${f.file.name}`}
+                          >
+                            <X size={14} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </section>
+                <div className="entry-capability-links">
+                  <button onClick={() => openCapabilities("free")}>
+                    <ListFilter size={15} />
+                    {t.freeTools} <b>20</b>
+                  </button>
+                  <button onClick={() => openCapabilities("pro")}>
+                    <Sparkles size={15} />
+                    {t.smart} <span className="pro-badge">PRO</span>
+                  </button>
+                </div>
+                {files.length > 0 && (
+                  <DocumentCanvas
+                    {...canvasProps}
+                    onExpand={() => setModal("canvas")}
+                  />
+                )}
+              </div>
+            )}
             {isLive && (
               <div
                 className="live-canvas-pane"
@@ -521,12 +579,6 @@ export default function App() {
                 ))}
               </ul>
             </section>
-          )}
-          {!isLive && files.length > 0 && (
-            <DocumentCanvas
-              {...canvasProps}
-              onExpand={() => setModal("canvas")}
-            />
           )}
           <footer className="workspace-footer">
             <span>{t.footer}</span>

@@ -194,7 +194,7 @@ const ar: typeof en = {
   localShort: "معاينة محلية",
   you: "أنت",
   reply:
-    "تم حفظ طلبك في هذه المحادثة. في مرحلة الواجهة، الذكاء الاصطناعي ومعالجة الوثائق غير مربوطين. لم يتغيّر أي ملف. يمكنك معاينة ملفات PDF والصور المرفقة أدناه.",
+    "تم حفظ طلبك في هذه المحادثة. في مرحلة الواجهة، الذكاء الاصطناعي ومعالجة الوثائق غير مربوطين. لم يتغيّر أي ملف. يمكنك معاينة ملفات PDF والصور المرفقة في Live Canvas.",
   replyTitle: "استُلم الطلب · لم يُنفّذ",
   canvas: "معاينة الوثيقة",
   canvasSub: "وضوح أكثر، صفحة بعد صفحة.",
@@ -341,7 +341,7 @@ const fr: typeof en = {
   localShort: "Aperçu local",
   you: "Vous",
   reply:
-    "Votre demande est conservée dans cette conversation. Dans cette phase, l’IA et le traitement ne sont pas connectés. Aucun fichier n’a été modifié. Vous pouvez prévisualiser les PDF et images ci-dessous.",
+    "Votre demande est conservée dans cette conversation. Dans cette phase, l’IA et le traitement ne sont pas connectés. Aucun fichier n’a été modifié. Vous pouvez prévisualiser les PDF et images dans Live Canvas.",
   replyTitle: "Demande reçue · non exécutée",
   canvas: "Aperçu du document",
   canvasSub: "Un peu de clarté, page après page.",
