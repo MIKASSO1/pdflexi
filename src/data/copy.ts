@@ -4,7 +4,7 @@ const en = {
   history: "Version history",
   historyEmpty: "No processed versions yet.",
   historyNote:
-    "Originals are shown below. Version recovery will be connected with the document engines; this preview does not create edited copies.",
+    "Originals are listed below. Manual edits live in the current draft: use Undo/Redo or download an edited copy. AI-generated version history and recovery are not connected.",
   workspace: "Workspace",
   how: "How it works",
   pricing: "Plans",
@@ -18,19 +18,19 @@ const en = {
   proTitle: "Intelligent services",
   proSub: "For the work that needs a little more.",
   proFoot: "Pro services are not connected in this preview.",
-  toolHint: "Choose a capability to draft a request. No manual editing.",
+  toolHint: "Draft a request, or use manual tools in the workspace.",
   eyebrow: "LESS CLICKING. MORE DOING.",
   heroFirst: "Your documents.",
   heroSecond: "Just say the word.",
   heroSub: "One conversation. Thirty possibilities. A calmer way to PDF.",
   conversation: "Lexi Conversation",
   companion: "Your document companion",
-  previewLabel: "Interface preview · execution not connected",
+  previewLabel: "Local PDF editor · AI not connected",
   welcomeTitle: "Let’s make light work of it.",
   welcome:
     "Upload your documents and tell me what you have in mind. I’ll help you get from “to do” to done.",
   welcomeNote:
-    "This first phase previews the experience. AI and PDF processing are not connected yet.",
+    "Manual PDF tools run locally. AI workflows and automatic document processing are not connected.",
   try: "A little inspiration",
   suggestion1: "Merge my PDFs",
   suggestion2: "Summarize a contract",
@@ -45,7 +45,7 @@ const en = {
   localShort: "Local preview",
   you: "You",
   reply:
-    "Request saved. AI and document processing are not connected yet, so your original is unchanged. You can preview and download your files.",
+    "Request saved. AI processing is not connected yet. You can review your document and use the manual tools on the right.",
   replyTitle: "Request received · not executed",
   canvas: "Document canvas",
   canvasSub: "A little clarity, page by page.",
@@ -104,7 +104,7 @@ const en = {
     "Describe the result in your own words. Capabilities can help you draft a request.",
   how3: "Review the result",
   how3body:
-    "Once execution is connected, Lexi will run the tools and show verified results. That integration comes in the next phases.",
+    "Use the manual tools and download an edited copy locally. Automated AI workflows still require integration.",
   plansTitle: "Simple tools. Thoughtful intelligence.",
   plansSub:
     "Pricing preview only. No checkout, account, quota enforcement or subscription is active.",
@@ -119,17 +119,17 @@ const en = {
   noBilling: "No payment is collected by this prototype.",
   privacyTitle: "Your files, your space.",
   privacyBody:
-    "This frontend reads attached files locally for preview. It does not upload documents, connect to an AI provider, run document transformations, or persist your chat or files after a reload. Your language preference may be stored on this device. Downloads return the original file only. No advertising or analytics scripts are included.",
+    "Files, chat and manual edits stay in this browser tab. No documents are uploaded and no AI requests are sent. Download the edited copy to keep your additions, or download the unchanged original. Drafts and chat are not retained after reload. Language preference may be stored on this device. No ads or analytics.",
   clearTitle: "Start a fresh conversation?",
   clearBody:
-    "Your conversation will be cleared. Attached files will stay available. Nothing has been processed or uploaded.",
+    "The conversation will be cleared. Attached files and manual edits remain available in this tab.",
   cancel: "Keep conversation",
   confirm: "Start fresh",
   capabilitiesTitle: "Thirty capabilities. One conversation.",
   capabilitiesSub:
     "Select a capability to write a request to Lexi. All execution integrations are pending.",
   selected: "Request drafted. Review it in the chat.",
-  added: "Files attached locally. No upload or processing performed.",
+  added: "Files attached locally. No upload.",
   invalid: "Some files were not added.",
   limit: "Maximum 10 attached files in this preview.",
   tooLarge: "File exceeds the 20 MB preview limit.",
@@ -155,7 +155,7 @@ const ar: typeof en = {
   history: "سجل النسخ",
   historyEmpty: "لا توجد نسخ معدّلة بعد.",
   historyNote:
-    "تظهر الملفات الأصلية أدناه. ستُربط استعادة النسخ مع محركات المعالجة؛ هذه المعاينة لا تنشئ نسخًا معدّلة.",
+    "تظهر الملفات الأصلية أدناه. التعديلات اليدوية تبقى في المسودة الحالية: استعمل التراجع والإعادة أو نزّل نسخة معدّلة. سجل نسخ الذكاء الاصطناعي واسترجاعها غير مربوطين بعد.",
   workspace: "مساحة العمل",
   how: "كيف تعمل",
   pricing: "الباقات",
@@ -169,19 +169,19 @@ const ar: typeof en = {
   proTitle: "الخدمات الذكية",
   proSub: "للمهام التي تحتاج إلى فهم أعمق.",
   proFoot: "خدمات Pro غير مربوطة في هذه المعاينة.",
-  toolHint: "اختر قدرة لصياغة طلب. لا يوجد تحرير يدوي.",
+  toolHint: "صِغ طلبًا، أو استعمل الأدوات اليدوية داخل الورشة.",
   eyebrow: "نقرات أقل. إنجاز أكثر.",
   heroFirst: "وثائقك.",
   heroSecond: "يكفي أن تطلب.",
   heroSub: "محادثة واحدة. ثلاثون قدرة. طريقة أهدأ للعمل مع PDF.",
   conversation: "محادثة Lexi",
   companion: "رفيقك في العمل على الوثائق",
-  previewLabel: "معاينة الواجهة · التنفيذ غير مربوط",
+  previewLabel: "محرر PDF محلي · الذكاء الاصطناعي غير مربوط",
   welcomeTitle: "لنجعل العمل أبسط.",
   welcome:
     "أرفق وثائقك وأخبرني بما تريد. ستكون المحادثة طريقك من الفكرة إلى النتيجة.",
   welcomeNote:
-    "هذه المرحلة لمعاينة التجربة. الذكاء الاصطناعي ومعالجة الملفات غير مربوطين بعد.",
+    "الأدوات اليدوية لملفات PDF تعمل محليًا. الذكاء الاصطناعي والمعالجة التلقائية غير مربوطين بعد.",
   try: "أفكار لتبدأ",
   suggestion1: "اجمع ملفات PDF",
   suggestion2: "لخّص عقدًا",
@@ -196,7 +196,7 @@ const ar: typeof en = {
   localShort: "معاينة محلية",
   you: "أنت",
   reply:
-    "تم حفظ طلبك. الذكاء الاصطناعي ومعالجة الوثائق غير مربوطين بعد، لذلك بقي الأصل بلا تغيير. يمكنك معاينة ملفاتك وتنزيلها.",
+    "تم حفظ طلبك. معالجة الذكاء الاصطناعي غير مربوطة بعد. يمكنك مراجعة وثيقتك واستعمال الأدوات اليدوية على اليمين.",
   replyTitle: "استُلم الطلب · لم يُنفّذ",
   canvas: "معاينة الوثيقة",
   canvasSub: "وضوح أكثر، صفحة بعد صفحة.",
@@ -253,7 +253,7 @@ const ar: typeof en = {
   how2body: "صف النتيجة بكلماتك. يمكنك الاستعانة بقائمة القدرات لصياغة الطلب.",
   how3: "راجع النتيجة",
   how3body:
-    "بعد ربط التنفيذ، سيشغّل Lexi الأدوات ويعرض نتائج متحقّقًا منها. هذا الربط في المراحل التالية.",
+    "استعمل الأدوات اليدوية ونزّل نسخة معدّلة محليًا. تنفيذ طلبات الذكاء الاصطناعي تلقائيًا ما زال يحتاج إلى الربط.",
   plansTitle: "أدوات بسيطة. ذكاء مدروس.",
   plansSub: "معاينة للباقات فقط. لا حسابات أو دفع أو حصص أو اشتراكات مفعّلة.",
   essentials: "الأدوات اليومية",
@@ -267,17 +267,17 @@ const ar: typeof en = {
   noBilling: "لا تُحصّل أي مدفوعات في هذا النموذج.",
   privacyTitle: "ملفاتك، مساحتك.",
   privacyBody:
-    "تقرأ هذه الواجهة الملفات محليًا للمعاينة. لا ترفع الوثائق، ولا تتصل بمزوّد ذكاء اصطناعي، ولا تعدّل الملفات، ولا تحفظ المحادثة أو الملفات بعد إعادة تحميل الصفحة. قد يُحفظ تفضيل اللغة على الجهاز. التنزيل يُعيد الملف الأصلي فقط. لا توجد سكربتات إعلانات أو تحليلات.",
+    "الملفات والمحادثة والتعديلات اليدوية تبقى في هذا التبويب. لا تُرفع الوثائق ولا تُرسل طلبات إلى ذكاء اصطناعي. نزّل النسخة المعدّلة للاحتفاظ بإضافاتك، أو نزّل الأصل بلا تغيير. المسودات والمحادثة لا تبقى بعد إعادة تحميل الصفحة. قد يُحفظ تفضيل اللغة على الجهاز. لا إعلانات أو تحليلات.",
   clearTitle: "بدء محادثة جديدة؟",
   clearBody:
-    "ستُحذف المحادثة، وتبقى الملفات المرفقة متاحة. لم يُرفع أو يُعالج أي ملف.",
+    "ستُحذف المحادثة. تبقى الملفات المرفقة والتعديلات اليدوية متاحة في هذا التبويب.",
   cancel: "إبقاء المحادثة",
   confirm: "بدء محادثة جديدة",
   capabilitiesTitle: "ثلاثون قدرة. محادثة واحدة.",
   capabilitiesSub:
     "اختر قدرة لصياغة طلب إلى Lexi. جميع تكاملات التنفيذ ما زالت قيد الإعداد.",
   selected: "تمت صياغة الطلب. راجعه في المحادثة.",
-  added: "أُرفقت الملفات محليًا دون رفع أو معالجة.",
+  added: "أُرفقت الملفات محليًا دون رفع.",
   invalid: "تعذّر إرفاق بعض الملفات.",
   limit: "الحدّ 10 ملفات مرفقة في هذه المعاينة.",
   tooLarge: "يتجاوز الملف حدّ المعاينة البالغ 20 MB.",
@@ -302,7 +302,7 @@ const fr: typeof en = {
   history: "Historique des versions",
   historyEmpty: "Aucune version traitée pour le moment.",
   historyNote:
-    "Les originaux sont présentés ci-dessous. La restauration sera connectée aux moteurs de traitement ; cet aperçu ne crée aucune copie modifiée.",
+    "Les originaux sont listés ci-dessous. Les ajouts restent dans le brouillon : utilisez Annuler/Rétablir ou téléchargez une copie modifiée. L’historique des versions IA n’est pas connecté.",
   workspace: "Espace de travail",
   how: "Comment ça marche",
   pricing: "Offres",
@@ -317,19 +317,19 @@ const fr: typeof en = {
   proSub: "Pour les tâches qui demandent un peu plus.",
   proFoot: "Les services Pro ne sont pas connectés dans cet aperçu.",
   toolHint:
-    "Choisissez une fonction pour rédiger une demande. Aucune édition manuelle.",
+    "Rédigez une demande, ou utilisez les outils manuels dans l’atelier.",
   eyebrow: "MOINS DE CLICS. PLUS D’IDÉES.",
   heroFirst: "Vos documents.",
   heroSecond: "Dites simplement quoi faire.",
   heroSub: "Une conversation. Trente possibilités. Le PDF, plus sereinement.",
   conversation: "Conversation Lexi",
   companion: "Votre compagnon documentaire",
-  previewLabel: "Aperçu d’interface · exécution non connectée",
+  previewLabel: "Éditeur PDF local · IA non connectée",
   welcomeTitle: "Allégeons votre travail.",
   welcome:
     "Joignez vos documents et dites-moi ce que vous souhaitez. La conversation sera votre chemin vers le résultat.",
   welcomeNote:
-    "Cette première phase présente l’interface. L’IA et le traitement PDF ne sont pas encore connectés.",
+    "Les outils PDF manuels fonctionnent localement. Les flux IA et le traitement automatique ne sont pas connectés.",
   try: "Un peu d’inspiration",
   suggestion1: "Fusionner mes PDF",
   suggestion2: "Résumer un contrat",
@@ -344,7 +344,7 @@ const fr: typeof en = {
   localShort: "Aperçu local",
   you: "Vous",
   reply:
-    "Demande conservée. L’IA et le traitement ne sont pas encore connectés : votre original reste inchangé. Vous pouvez prévisualiser et télécharger vos fichiers.",
+    "Demande conservée. Le traitement IA n’est pas encore connecté. Vous pouvez consulter le document et utiliser les outils manuels à droite.",
   replyTitle: "Demande reçue · non exécutée",
   canvas: "Aperçu du document",
   canvasSub: "Un peu de clarté, page après page.",
@@ -403,7 +403,7 @@ const fr: typeof en = {
     "Décrivez le résultat souhaité. Les fonctions peuvent vous aider à rédiger votre demande.",
   how3: "Vérifiez le résultat",
   how3body:
-    "Une fois connecté, Lexi exécutera les outils et présentera des résultats vérifiés. Cette intégration arrive aux prochaines phases.",
+    "Utilisez les outils manuels et téléchargez une copie modifiée. Les flux IA automatiques nécessitent encore une intégration.",
   plansTitle: "Des outils simples. Une IA réfléchie.",
   plansSub:
     "Aperçu des offres uniquement. Aucun compte, paiement, quota ou abonnement n’est actif.",
@@ -418,17 +418,17 @@ const fr: typeof en = {
   noBilling: "Aucun paiement n’est perçu par ce prototype.",
   privacyTitle: "Vos fichiers, votre espace.",
   privacyBody:
-    "Cette interface lit vos fichiers localement pour l’aperçu. Aucun envoi de document, connexion IA, transformation ou conservation des fichiers et du chat après rechargement. La préférence de langue peut être enregistrée sur cet appareil. Les téléchargements restituent uniquement l’original. Aucun script publicitaire ou analytique.",
+    "Les fichiers, la conversation et les ajouts restent dans cet onglet. Aucun document n’est envoyé et aucune requête IA n’est effectuée. Téléchargez la copie modifiée pour conserver vos ajouts, ou l’original inchangé. Les brouillons et la conversation ne sont pas conservés après rechargement. La langue peut être enregistrée sur cet appareil. Aucune publicité ni analyse.",
   clearTitle: "Repartir sur une nouvelle conversation ?",
   clearBody:
-    "La conversation sera effacée. Les pièces jointes resteront disponibles. Aucun fichier n’a été traité ou envoyé.",
+    "La conversation sera effacée. Les fichiers joints et les ajouts manuels restent disponibles dans cet onglet.",
   cancel: "Garder la conversation",
   confirm: "Recommencer",
   capabilitiesTitle: "Trente fonctions. Une conversation.",
   capabilitiesSub:
     "Choisissez une fonction pour rédiger une demande à Lexi. Les intégrations d’exécution restent à connecter.",
   selected: "Demande rédigée. Vérifiez-la dans le chat.",
-  added: "Fichiers joints localement, sans envoi ni traitement.",
+  added: "Fichiers joints localement, sans envoi.",
   invalid: "Certains fichiers n’ont pas pu être ajoutés.",
   limit: "Maximum de 10 fichiers dans cet aperçu.",
   tooLarge: "Le fichier dépasse la limite de 20 Mo.",

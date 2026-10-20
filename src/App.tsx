@@ -1,3 +1,6 @@
+import { StartCard } from "./components/StartCard";
+import { useDocumentEdits } from "./lib/useDocumentEdits";
+import { editorCopy } from "./data/editor";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -56,6 +59,7 @@ function savedLocale(): Locale {
   }
 }
 export default function App() {
+  const edits = useDocumentEdits();
   const [locale, setLocale] = useState<Locale>(savedLocale),
     [modal, setModal] = useState<Modal>(null),
     [capTier, setCapTier] = useState<"free" | "pro">("free");
@@ -83,7 +87,6 @@ export default function App() {
   const [activeCapabilityId, setActiveCapabilityId] = useState<string | null>(
     null,
   );
-  const [mobilePane, setMobilePane] = useState<"chat" | "files">("chat");
   const [hasStarted, setHasStarted] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [demoStage, setDemoStage] = useState(0);
@@ -181,8 +184,6 @@ export default function App() {
         setFileErrors(errors);
         if (added) {
           setSelectedId(current[current.length - added].id);
-          setNotice(t.added);
-          setMobilePane("files");
         }
       })
       .catch(() => {
@@ -190,6 +191,12 @@ export default function App() {
       });
   };
   const removeFile = (id: string) => {
+    if (
+      edits.controller(id).dirty &&
+      !window.confirm(editorCopy[locale].discard)
+    )
+      return;
+    edits.remove(id);
     const old = filesRef.current.find((f) => f.id === id);
     updateFiles(filesRef.current.filter((f) => f.id !== id));
     if (old) URL.revokeObjectURL(old.url);
@@ -197,17 +204,16 @@ export default function App() {
   };
   const chooseCapability = (capability: Capability) => {
     setActiveCapabilityId(capability.id);
-    setMobilePane("chat");
+
     setDraft(capability.prompt[locale]);
     setModal(null);
-    setNotice(t.selected);
     window.setTimeout(() => {
       prompt.current?.focus({ preventScroll: true });
       prompt.current?.scrollIntoView({
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
           ? "instant"
           : "smooth",
-        block: "center",
+        block: "nearest",
       });
     }, 60);
   };
@@ -217,6 +223,10 @@ export default function App() {
   };
   const send = () => {
     if (!draft.trim()) return;
+    if (!files.length) {
+      setNotice(t.noFile);
+      return;
+    }
     const text = draft.trim();
     setDemoMode(false);
     if (files.length) setHasStarted(true);
@@ -233,7 +243,6 @@ export default function App() {
     setDraft("");
   };
   const newChat = () => {
-    setMobilePane("chat");
     if (messages.length || draft.trim() || demoMode) setModal("reset");
     else {
       prompt.current?.focus();
@@ -246,7 +255,7 @@ export default function App() {
   };
   const reset = () => {
     setHasStarted(false);
-    setMobilePane("chat");
+
     setDemoMode(false);
     setMessages([]);
     setActiveCapabilityId(null);
@@ -255,6 +264,7 @@ export default function App() {
     setNotice(t.resetNotice);
   };
   const canvasProps = {
+    editor: edits.controller(selectedId || files[0]?.id || ""),
     locale,
     onHistory: () => setModal("history"),
     t,
@@ -377,147 +387,48 @@ export default function App() {
               <span className="pro-badge">PRO</span>
             </button>
           </div>
-          {!isLive && (
-            <div
-              className="entry-pane-switch"
-              role="group"
-              aria-label={t.workspace}
-            >
-              <button
-                aria-pressed={mobilePane === "chat"}
-                aria-controls="lexi-chat-panel"
-                onClick={() => setMobilePane("chat")}
-              >
-                <MessageSquare size={16} />
-                Lexi
-              </button>
-              <button
-                aria-pressed={mobilePane === "files"}
-                aria-controls="document-upload-panel"
-                onClick={() => setMobilePane("files")}
-              >
-                <Upload size={16} />
-                {t.files}
-                {files.length > 0 && <span>{files.length}</span>}
-              </button>
-            </div>
-          )}
-          <div
-            className={`conversation-workspace ${isLive ? "is-split" : "entry-workspace"}`}
-            data-mobile-pane={mobilePane}
-          >
-            <div
-              className="conversation-pane"
-              id="lexi-chat-panel"
-              dir={locale === "ar" ? "rtl" : "ltr"}
-            >
-              <Chat
-                t={t}
-                locale={locale}
-                tools={isLive ? () => openCapabilities("free") : undefined}
-                messages={demoMode ? demoMessages : messages}
-                demoLabel={demoMode ? w.demoTag : undefined}
-                draft={draft}
-                setDraft={setDraft}
-                send={send}
-                attach={upload}
-                newChat={newChat}
-                suggest={suggest}
-                attachments={files}
-                inputRef={prompt}
-              />
-              {!isLive && (
-                <button
-                  className="live-demo-cta"
-                  onClick={() => setDemoMode(true)}
-                >
-                  <Sparkles size={17} />
-                  <strong>{w.demoCta}</strong>
-                  <span>{w.demoTag}</span>
-                  <ArrowRight size={16} />
-                </button>
-              )}
-            </div>
-            {!isLive && (
+          {!isLive ? (
+            <StartCard
+              locale={locale}
+              t={t}
+              files={files}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
+              errors={fileErrors}
+              clearErrors={() => setFileErrors([])}
+              draft={draft}
+              setDraft={setDraft}
+              send={send}
+              upload={upload}
+              removeFile={removeFile}
+              suggest={suggest}
+              tools={() => openCapabilities("free")}
+              demo={() => setDemoMode(true)}
+              inputRef={prompt}
+            />
+          ) : (
+            <div className="conversation-workspace is-split">
               <div
-                className="entry-upload-pane"
-                id="document-upload-panel"
+                className="conversation-pane"
+                id="lexi-chat-panel"
                 dir={locale === "ar" ? "rtl" : "ltr"}
               >
-                <section
-                  className={`upload-first ${files.length ? "has-document" : ""}`}
-                  aria-label={w.uploadTitle}
-                >
-                  {files.length ? (
-                    <>
-                      <div className="upload-preview-title">
-                        <h2>{w.uploadTitle}</h2>
-                        <p>
-                          <ShieldCheck size={12} />
-                          {w.local}
-                        </p>
-                      </div>
-                      <DocumentCanvas
-                        {...canvasProps}
-                        embedded
-                        onExpand={() => setModal("canvas")}
-                      />
-                      <button
-                        className="preview-chat-button"
-                        onClick={() => {
-                          setMobilePane("chat");
-                          window.setTimeout(
-                            () =>
-                              prompt.current?.focus({ preventScroll: true }),
-                            0,
-                          );
-                        }}
-                      >
-                        <MessageSquare size={16} />
-                        {w.continueChat}
-                        <ArrowRight size={15} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="upload-step">{w.step}</div>
-                      <div className="upload-first-main">
-                        <div className="upload-glow-icon">
-                          <Upload size={30} strokeWidth={1.5} />
-                        </div>
-                        <div>
-                          <h2>{w.uploadTitle}</h2>
-                          <p>{w.uploadLead}</p>
-                        </div>
-                        <button className="primary-button" onClick={upload}>
-                          {w.browse}
-                          <ArrowRight size={16} />
-                        </button>
-                      </div>
-                      <p className="drop-instruction">{w.drop}</p>
-                      <div className="upload-first-footer">
-                        <span>
-                          <ShieldCheck size={14} />
-                          {w.local}
-                        </span>
-                        <span>{t.formats}</span>
-                      </div>
-                    </>
-                  )}
-                </section>
-                <div className="entry-capability-links">
-                  <button onClick={() => openCapabilities("free")}>
-                    <ListFilter size={15} />
-                    {t.freeTools} <b>20</b>
-                  </button>
-                  <button onClick={() => openCapabilities("pro")}>
-                    <Sparkles size={15} />
-                    {t.smart} <span className="pro-badge">PRO</span>
-                  </button>
-                </div>
+                <Chat
+                  t={t}
+                  locale={locale}
+                  tools={() => openCapabilities("free")}
+                  messages={demoMode ? demoMessages : messages}
+                  demoLabel={demoMode ? w.demoTag : undefined}
+                  draft={draft}
+                  setDraft={setDraft}
+                  send={send}
+                  attach={upload}
+                  newChat={newChat}
+                  suggest={suggest}
+                  attachments={files}
+                  inputRef={prompt}
+                />
               </div>
-            )}
-            {isLive && (
               <div
                 className="live-canvas-pane"
                 dir={locale === "ar" ? "rtl" : "ltr"}
@@ -529,16 +440,14 @@ export default function App() {
                     back={() => setDemoMode(false)}
                   />
                 ) : (
-                  <>
-                    <DocumentCanvas
-                      {...canvasProps}
-                      onExpand={() => setModal("canvas")}
-                    />
-                  </>
+                  <DocumentCanvas
+                    {...canvasProps}
+                    onExpand={() => setModal("canvas")}
+                  />
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
           <div className="workspace-meta">
             <span>
               <ShieldCheck size={13} />
@@ -550,7 +459,7 @@ export default function App() {
             </button>
             <span className="execution-status">{t.previewLabel}</span>
           </div>
-          {fileErrors.length > 0 && (
+          {isLive && fileErrors.length > 0 && (
             <section className="file-errors" role="alert">
               <div>
                 <Info size={17} />

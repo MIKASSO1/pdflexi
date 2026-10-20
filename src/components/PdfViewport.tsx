@@ -1,25 +1,41 @@
 import { useEffect, useRef, useState } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-GlobalWorkerOptions.workerSrc = workerUrl;
-
+import { openPdf } from "../lib/pdfRuntime";
+import { AnnotationLayer } from "./AnnotationLayer";
+import type { EditingProps } from "./AnnotationLayer";
+export type ZoomValue = "page" | "width" | number;
+type Size = { width: number; height: number };
+const noop = () => {};
+function scaleFor(size: Size, available: Size, zoom: ZoomValue) {
+  return zoom === "page"
+    ? Math.min(1, available.width / size.width, available.height / size.height)
+    : zoom === "width"
+      ? available.width / size.width
+      : zoom;
+}
 function PdfPage({
   doc,
   number,
-  width,
+  size,
+  scale,
   root,
+  editing,
+  errorText,
 }: {
   doc: PDFDocumentProxy;
   number: number;
-  width: number;
+  size: Size;
+  scale: number;
   root: HTMLDivElement | null;
+  editing?: EditingProps;
+  errorText: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [ratio, setRatio] = useState(1.414);
-  const [error, setError] = useState(false);
+  const ref = useRef<HTMLDivElement>(null),
+    canvas = useRef<HTMLCanvasElement>(null);
+  const [visible, setVisible] = useState(false),
+    [error, setError] = useState(false);
+  const width = size.width * scale,
+    height = size.height * scale;
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
@@ -29,27 +45,31 @@ function PdfPage({
     return () => observer.disconnect();
   }, [root]);
   useEffect(() => {
-    if (!visible || !canvas.current || width < 1) return;
+    const target = canvas.current;
+    if (!target) return;
+    if (!visible) {
+      target.width = 0;
+      target.height = 0;
+      return;
+    }
     let cancelled = false;
     let task: ReturnType<PDFPageProxy["render"]> | undefined;
-    const target = canvas.current;
+    setError(false);
     void doc
       .getPage(number)
       .then(async (page) => {
         if (cancelled) return;
-        const original = page.getViewport({ scale: 1 });
-        setRatio(original.height / original.width);
-        const view = page.getViewport({ scale: width / original.width });
-        const pixelRatio = Math.min(devicePixelRatio || 1, 2);
-        target.width = Math.ceil(view.width * pixelRatio);
-        target.height = Math.ceil(view.height * pixelRatio);
+        const view = page.getViewport({ scale });
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        target.width = Math.ceil(view.width * dpr);
+        target.height = Math.ceil(view.height * dpr);
         const ctx = target.getContext("2d");
         if (!ctx) return;
         task = page.render({
           canvas: target,
           canvasContext: ctx,
           viewport: view,
-          transform: [pixelRatio, 0, 0, pixelRatio, 0, 0],
+          transform: [dpr, 0, 0, dpr, 0, 0],
         });
         await task.promise;
       })
@@ -63,13 +83,14 @@ function PdfPage({
       target.width = 0;
       target.height = 0;
     };
-  }, [doc, number, width, visible]);
+  }, [doc, number, scale, visible]);
   return (
     <div
       ref={ref}
       className="pdf-page"
       data-page-number={number}
-      style={{ width, height: width * ratio }}
+      data-render-scale={scale}
+      style={{ width, height }}
     >
       <canvas
         ref={canvas}
@@ -77,36 +98,56 @@ function PdfPage({
         aria-label={`PDF · ${number}`}
         style={{ width: "100%", height: "100%" }}
       />
-      {error && <span role="alert">⚠ {number}</span>}
+      {editing && !error && (
+        <AnnotationLayer
+          width={width}
+          height={height}
+          page={number}
+          pageWidth={size.width}
+          editing={editing}
+          visible={visible}
+        />
+      )}
+      {error && (
+        <p className="pdf-page-error" role="alert">
+          {errorText}
+        </p>
+      )}
     </div>
   );
 }
 export function PdfViewport({
   file,
-  zoom,
-  page,
-  onPage,
-  onCount,
+  zoom = "page",
+  page = 1,
+  onPage = noop,
+  onCount = noop,
+  onScale = noop,
   loading,
   errorText,
+  editing,
 }: {
   file: File;
-  zoom: number;
-  page: number;
-  onPage: (n: number) => void;
-  onCount: (n: number) => void;
+  zoom?: ZoomValue;
+  page?: number;
+  onPage?: (n: number) => void;
+  onCount?: (n: number) => void;
+  onScale?: (n: number) => void;
   loading: string;
   errorText: string;
+  editing?: EditingProps;
 }) {
   const root = useRef<HTMLDivElement>(null);
-  const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
-  const [width, setWidth] = useState(500);
-  const [error, setError] = useState(false);
+  const [doc, setDoc] = useState<PDFDocumentProxy | null>(null),
+    [sizes, setSizes] = useState<Size[]>([]),
+    [available, setAvailable] = useState<Size>({ width: 500, height: 450 }),
+    [error, setError] = useState(false);
   const current = useRef(1);
   useEffect(() => {
     let cancelled = false;
-    let task: ReturnType<typeof getDocument> | undefined;
+    let task: ReturnType<typeof openPdf> | undefined;
     setDoc(null);
+    setSizes([]);
     setError(false);
     onCount(0);
     current.current = 1;
@@ -114,31 +155,37 @@ export function PdfViewport({
       .arrayBuffer()
       .then((bytes) => {
         if (cancelled) return;
-        task = getDocument({
-          data: new Uint8Array(bytes),
-          isEvalSupported: false,
-          cMapUrl: new URL(
-            `${import.meta.env.BASE_URL}pdfjs/cmaps/`,
-            document.baseURI,
-          ).href,
-          cMapPacked: true,
-          standardFontDataUrl: new URL(
-            `${import.meta.env.BASE_URL}pdfjs/standard_fonts/`,
-            document.baseURI,
-          ).href,
-          wasmUrl: new URL(
-            `${import.meta.env.BASE_URL}pdfjs/wasm/`,
-            document.baseURI,
-          ).href,
-          useWorkerFetch: !import.meta.env.PDFLEXI_STANDALONE,
-        });
+        task = openPdf(bytes);
         return task.promise;
       })
-      .then((pdf) => {
-        if (pdf && !cancelled) {
-          setDoc(pdf);
-          onCount(pdf.numPages);
-        }
+      .then(async (pdf) => {
+        if (!pdf || cancelled) return;
+        const first = await pdf.getPage(1);
+        if (cancelled) return;
+        const v = first.getViewport({ scale: 1 });
+        const dimensions: Size[] = Array.from({ length: pdf.numPages }, () => ({
+          width: v.width,
+          height: v.height,
+        }));
+        setSizes(dimensions);
+        setDoc(pdf);
+        onCount(pdf.numPages);
+        let next = 2;
+        await Promise.all(
+          Array.from({ length: Math.min(4, pdf.numPages - 1) }, async () => {
+            while (!cancelled && next <= pdf.numPages) {
+              const n = next++;
+              try {
+                const p = await pdf.getPage(n),
+                  view = p.getViewport({ scale: 1 });
+                dimensions[n - 1] = { width: view.width, height: view.height };
+              } catch {
+                /* The page displays a recoverable error when rendered. */
+              }
+            }
+          }),
+        );
+        if (!cancelled) setSizes([...dimensions]);
       })
       .catch(() => {
         if (!cancelled) setError(true);
@@ -152,15 +199,21 @@ export function PdfViewport({
     const el = root.current;
     if (!el) return;
     const observer = new ResizeObserver(() =>
-      setWidth(Math.max(120, el.clientWidth - 48)),
+      setAvailable({
+        width: Math.max(80, el.clientWidth - 48),
+        height: Math.max(80, el.clientHeight - 48),
+      }),
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+  const active = sizes[page - 1] || sizes[0];
   useEffect(() => {
-    if (page === current.current || !doc) return;
-    const el = root.current;
-    const target = el?.querySelector(`[data-page-number="${page}"]`);
+    if (active) onScale(scaleFor(active, available, zoom));
+  }, [active, available, zoom, onScale]);
+  function scrollToPage(n: number) {
+    const el = root.current,
+      target = el?.querySelector(`[data-page-number="${n}"]`);
     if (el && target)
       el.scrollTo({
         top:
@@ -170,22 +223,30 @@ export function PdfViewport({
           24,
         behavior: "instant",
       });
-    current.current = page;
+  }
+  useEffect(() => {
+    if (page !== current.current && doc) {
+      scrollToPage(page);
+      current.current = page;
+    }
   }, [page, doc]);
+  useEffect(() => {
+    if (doc) scrollToPage(current.current);
+  }, [zoom, available, doc]);
   function scrolled() {
     const el = root.current;
     if (!el) return;
     const viewport = el.getBoundingClientRect();
-    let candidate = current.current;
-    let largest = 0;
+    let candidate = current.current,
+      largest = 0;
     for (const item of el.querySelectorAll<HTMLElement>("[data-page-number]")) {
       const box = item.getBoundingClientRect();
-      const visible = Math.max(
+      const overlap = Math.max(
         0,
         Math.min(box.bottom, viewport.bottom) - Math.max(box.top, viewport.top),
       );
-      if (visible > largest) {
-        largest = visible;
+      if (overlap > largest) {
+        largest = overlap;
         candidate = Number(item.dataset.pageNumber);
       }
       if (box.top > viewport.bottom) break;
@@ -195,6 +256,10 @@ export function PdfViewport({
       onPage(candidate);
     }
   }
+  const widest = Math.max(
+    available.width,
+    ...sizes.map((size) => size.width * scaleFor(size, available, zoom)),
+  );
   return (
     <div
       className="pdf-viewer"
@@ -212,17 +277,17 @@ export function PdfViewport({
           {loading}
         </p>
       ) : (
-        <div
-          className="pdf-pages"
-          style={{ minWidth: Math.round(width * zoom) + 48 }}
-        >
-          {Array.from({ length: doc.numPages }, (_, i) => (
+        <div className="pdf-pages" style={{ minWidth: widest + 48 }}>
+          {sizes.map((size, i) => (
             <PdfPage
               key={i}
               doc={doc}
               number={i + 1}
-              width={Math.round(width * zoom)}
+              size={size}
+              scale={scaleFor(size, available, zoom)}
               root={root.current}
+              editing={editing}
+              errorText={errorText}
             />
           ))}
         </div>

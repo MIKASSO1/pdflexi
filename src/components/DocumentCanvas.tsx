@@ -1,3 +1,4 @@
+import type { EditController } from "../lib/annotations";
 import { lazy, Suspense } from "react";
 const WorkspaceCanvas = lazy(() =>
   import("./WorkspaceCanvas").then((m) => ({ default: m.WorkspaceCanvas })),
@@ -33,6 +34,7 @@ export function DocumentCanvas({
   onExpand,
   onHistory,
   onClose,
+  editor,
 }: {
   t: Copy;
   files: Attachment[];
@@ -46,6 +48,7 @@ export function DocumentCanvas({
   onExpand?: () => void;
   onHistory: () => void;
   onClose?: () => void;
+  editor?: EditController;
 }) {
   const [isDragging, setDragging] = useState(false);
   const selected = files.find((f) => f.id === selectedId) || files[0];
@@ -65,6 +68,7 @@ export function DocumentCanvas({
             onExpand,
             onHistory,
             onClose,
+            editor,
           }}
         />
       </Suspense>

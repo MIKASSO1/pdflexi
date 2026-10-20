@@ -1,35 +1,37 @@
 # Architecture and integration boundaries
 
-## Phase 1
+## Entry and studio
 
-Static React + TypeScript frontend, built by Vite. React renders escaped text; there is no HTML injection, arbitrary code execution, document upload endpoint or secret. Attachments are native File objects and object URLs held in memory; object URLs are revoked when removed or the application unmounts. The locale preference is the only browser-storage entry.
+React + TypeScript + Vite, with escaped user text and no document-upload endpoint or client secret. `StartCard` places upload and first request in one central card. Capabilities are opened in a dialog; hidden sidebars do not compete with the main task. Selecting a capability drafts a request only. Upload validation errors appear inside the entry card.
 
-The outer entry layout retains the 240/760/320 desktop columns. Inside the middle column, conversation and upload are adjacent peers in a 1.4fr / 0.9fr grid, with a minimum 240px upload column. The former body headline moves into the left header beside the logo. Entry chat uses a bounded viewport-relative height (360–660px on desktop) so the composer is visible at laptop heights; only messages scroll within the card. The main document remains the page scroller. Sidebars retain their sticky, hidden-scrollbar behavior. The fixed Aurora layer is decorative and pointer-inert.
+A valid first request with attachments sets `hasStarted` and opens chat physically left and document physically right, irrespective of locale. Each panel has its own bounded scroll region. Phones stack the panels. Reset clears conversation but preserves files and manual edits. Removing the last attachment returns to entry. Selected-file state is shared by entry, studio and expanded modal.
 
-Below 768px, `mobilePane` switches between Lexi and Files via visible controls; Lexi opens first and uses a 340–620px viewport-relative height. Both components remain mounted, preserving drafts and file state. A successful attachment or capability selection switches back to chat. Reset also restores the chat pane. This avoids squeezing two unreadable columns onto a phone or hiding the composer below an oversized upload panel. Capability dialogs remain reachable even when sidebars collapse.
+`demoMode` remains separate from real files/edits. It presents a labeled, fictional scripted walkthrough. Its highlights are not annotations on an uploaded file. Reduced motion skips staged animation; exiting restores the real session.
 
-`hasStarted` is set only by sending a request with attachments. With at least one file, this activates a full-width split: chat physically left and the original Live Canvas physically right, regardless of locale. At 900px and below the panels stack. Live chat also uses a bounded viewport-relative height (up to 720px on desktop, 620px on phones) with an attached composer. Its compact toolbar replaces the earlier tall workspace heading. Capability toolbar buttons keep the original 20/10 registry accessible when sidebars collapse. File addition alone does not activate the split. Removing the final file or resetting conversation clears `hasStarted`; reset preserves files.
+## Local document rendering
 
-`demoMode` is independent of real messages and attachments. It renders derived sample messages and `LiveDemo` instead of `DocumentCanvas`; no sample annotation is written to an uploaded document. Three cleaned-up timers reveal two fictional clause highlights, a scripted summary and an example review card. Reduced motion reveals all stages immediately. Leaving the demonstration restores the original session state. The real-file canvas instead states that processing is not connected and shows unchanged originals; no processing event or success is fabricated.
+`pdfRuntime.ts` configures a locally bundled PDF.js worker, CMaps, standard fonts and image decoders. No CDN is involved. `PdfViewport` reads a native File, obtains page dimensions and lazily rasterizes visible/nearby pages. Offscreen canvases release their bitmap memory. Page count comes from the PDF; the current-page indicator follows the most-visible page.
 
-## Canonical capability registry
+New files always open in Fit page, capped at actual 100%, so a complete page fits the available viewport. Fit width, actual percentage and explicit zoom-out/in controls are distinct. Resizing or showing tool properties recomputes fitting. Page navigation changes the document scroller, not the outer page.
 
-`src/data/capabilities.json` is the source of truth for exactly 30 capabilities. IDs, grouping, translated names, descriptions and draft prompts are centralized. No UI label is evidence of a working engine. Tool selection drafts a request only. The current send handler uses an explicitly disclosed acknowledgement; it is **not** intent understanding or AI inference.
+## Manual edits and export
 
-## Planned phase 2 boundary
+`useDocumentEdits` owns immutable annotation histories keyed by attachment ID in App. Each annotation stores its page, normalized coordinates, natural page dimensions and style. All pages and the expanded modal use the same controller. Undo/Redo are per attachment and bounded to 100 history snapshots. File changes do not mix histories. Unexported changes trigger before-unload and removal warnings. No draft is saved to localStorage or a server.
 
-`DocumentEngine.execute` in `src/lib/types.ts` defines an initial integration boundary. A production implementation will need typed per-tool parameter schemas, file-type validation, worker isolation, cancellation/timeouts, memory budgeting and independently verified output files. File IDs, never executable model text, should cross execution boundaries. Implement and benchmark these rather than assuming any chosen library supports all devices.
+`AnnotationLayer` handles pointer drawing, text placement, selection/movement and erasure of additions only. It commits an entire gesture as one undo action; cancellation discards the preview. Text can be formatted and updated explicitly with Apply. Original PDF text is not rewritten or securely redacted.
 
-## Planned phase 3 boundary
+`annotations.ts` shares drawing/geometry code between the visible overlay and export. PDF-lib reads the immutable original, adds transparent raster overlays only on annotated pages, and creates a separately named edited copy. Crop boxes and page rotation are accounted for. Existing PDF content is preserved; added text/drawings are flattened into an image and are not selectable/editable annotations after reopening that exported copy. Signatures may be invalidated. Original downloads use the untouched File/object URL.
 
-A separately selected and benchmarked local language model proposes allowlisted tool calls. Treat document content as untrusted data, not instructions. Validate calls deterministically. Preserve immutable originals and version lineage. Never report completion from a model response alone. Verify engine output before updating state to success. Do not request document passwords in the chat; introduce a private, short-lived parameter path at the appropriate phase.
+The UI marks an exported snapshot separately from an in-tab draft. Export failure keeps the draft. Editing during an export does not mark later changes as exported. No cloud auto-save is claimed.
 
-AI model selection, hardware/locale support and weight distribution remain open. No promise is made that a 1.5B model can reliably execute every language or advanced capability. Browser-managed Gemini availability is optional and must be feature-detected; it cannot be the universal execution foundation.
+## Planned AI capability boundary
 
-## Planned commercial services
+`data/capabilities.json` remains the source of truth for exactly 30 planned conversational capabilities: 20 free and 10 Pro. Manual annotation operations are independent from this registry. The send handler acknowledges AI requests honestly; it performs no inference or automatic processing.
 
-Accounts, quotas, billing, advertisements and optional server-side processing are separate infrastructure concerns. Frontend-only quotas are bypassable. Never put a paid API key or secret in the browser. No documents should be sent off-device without explicit disclosure and consent. Keep third-party ad scripts out of sensitive document-workspace origins where feasible.
+`DocumentEngine.execute` in `lib/types.ts` defines a future typed boundary. Future engines require validated per-tool parameters, isolation, cancellation/timeouts, resource budgets and independent output verification. Treat document content as untrusted data, not instructions; only allowlisted structured tool calls should cross model/execution boundaries. Do not request document passwords in ordinary chat. Preserve originals and version lineage.
 
-## Accessibility and compatibility
+## Security, accessibility and deployment
 
-Semantic landmarks, labels, keyboard focus rings, native modal dialogs, reduced-motion support and responsive layouts are included. PDF rendering uses the browser's own viewer, with original-file open/download alternatives. No claim is made of identical embedded-preview support on every device. Screen-reader, real-device, large-document and production security testing remain release requirements.
+Files, messages and edits remain in the current tab. Object URLs are revoked on removal/unmount; temporary export URLs expire. Locale preferences may be stored locally. No ads, analytics, AI requests, account credentials or payments exist in this frontend. The self-contained review artifact embeds its worker/assets; production uses the stricter header baseline.
+
+Labels, keyboard focus, native dialogs and reduced motion are included. Undo/Redo shortcuts operate on the focused editing surface, not while typing in a text field. The eraser is not a redaction tool. PDF text is rendered as canvas in this implementation; screen-reader/text-selection improvements, complex form/signature fidelity, very large documents and broader real-device testing remain release work.

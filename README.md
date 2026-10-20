@@ -1,128 +1,89 @@
 # PDFlexi
 
-**Your documents. Just say the word.**
+**Your document. A clearer next step.**
 
-Phase 1 of a conversation-first PDF workspace: a responsive, multilingual frontend for the 30 agreed capabilities. Users describe changes to Lexi; there is no manual document editor.
+A local-first React/TypeScript PDF workspace: a simple upload-and-request card opens into chat alongside a real manual annotation editor. The 30 conversational capabilities remain a planned AI workflow, not an automatic execution engine.
 
-## Status — read this first
+## Working now
 
-This is a **frontend implementation**, not a finished PDF or AI service. The interface deliberately identifies requests as **received, not executed**.
+- One entry card contains document upload/thumbnail and the first request. All tools are available on demand, instead of filling both sides of the page.
+- Uploading alone does not open the studio. A first request with a file opens full-height chat and document panels; they stack on phones.
+- PDF.js renders all PDF pages locally. Documents open in **Fit page**, showing the entire page. Explicit minus/plus, fit-width and percentage/actual-100% controls are available.
+- Seven manual modes: select/move, add text, freehand pen, translucent rectangle highlighting, rectangle, arrow and eraser.
+- Added text supports font family, point size, bold, italic, underline, alignment, color and multiple lines. Select existing added text, click the text tool, change properties and Apply.
+- Eraser/Delete remove **additions only**. They do not erase, redact or rewrite original PDF content.
+- Undo/Redo and selection movement. Histories are kept per attachment and shared with the expanded canvas. Removing unsaved edits asks for confirmation; leaving the tab with unsaved edits triggers the browser warning.
+- **Download edited PDF** exports a separate copy with additions. The original download remains byte-for-byte unchanged. Exported additions are flattened transparent images; added text is not selectable PDF text. Existing document signatures may become invalid.
+- File/image previews, duplicate/extension/size checks, PDF-header validation, explicit errors and original-file downloads.
+- Exactly 30 conversational capabilities: 20 free + 10 Pro. Selection drafts a request, not an automatic transformation. OCR remains one of the 20 planned free capabilities.
+- English, Arabic/RTL and French interfaces. A 29-language registry explicitly disables the other planned translations.
+- Scripted sample walkthrough, capability browser, language chooser, pricing/how/privacy dialogs and confirmation before resetting chat.
+- No document upload, AI request, advertising, analytics, payment or remote font service.
 
-### Working now
+## Important boundaries
 
-- Responsive desktop workspace: 240 px free-tools sidebar, center up to 760 px, 320 px intelligent-services sidebar at wide desktop sizes.
-- A single document scrollbar, independently scrollable sticky sidebars, and a 620 px chat with a fixed-in-container composer and a message-only scroll region.
-- All 30 capabilities: 20 traditional PDF operations and 10 Pro services; search and selection draft conversational requests, never open a manual editor.
-- English, Arabic (RTL), and French interfaces. Registry for 29 languages; remaining 26 are visibly planned and disabled, not presented as translated.
-- Drag-and-drop and file picker, local file listing/removal, PDF/image previews, original-file downloads, enlarged canvas, and file validation feedback.
-- Capability browser, language chooser, planned pricing, privacy, how-it-works, files and new-conversation dialogs.
-- In-memory conversation and attachment state. No chat or file persistence after reload. Only locale is stored in localStorage, if available.
-- No AI calls, document upload, ads, analytics, checkout or external fonts.
+AI inference, automatic PDF conversions/merge/split/OCR, true original-text rewriting, secure redaction, execution-version recovery, accounts, billing and quotas are not implemented. Chat acknowledges requests without pretending they executed. Manual annotations are real local operations, independent of AI.
 
-### Not implemented in this phase
+Files, conversations and edits live in memory in the current tab. **Download to keep edits.** There is no document/cloud auto-save or draft persistence after reload. Only preferences such as language may use localStorage. New documents always start in Fit page.
 
-PDF transformations, OCR, conversions, execution history/version recovery, an AI model, automated planning, legal certification, authenticity verification, accounts, payment, quota enforcement and rewarded ads. The canvas displays **original files**, not transformed results. The default document is explicitly labeled as an illustrative example.
-
-Phase 1 accepts at most **10 attachments of 20 MiB each**, including PDF, DOCX, XLSX, JPG/JPEG and PNG. These are preview safeguards, not permanent product limits. The eventual 100-document stamping service is planned, not operational here. Basic PDF header checks do not certify safety or validity; metadata acceptance is not document processing.
+Up to 10 attachments of 20 MiB each: PDF, DOCX, XLSX, JPG/JPEG and PNG. Office files can be attached, not converted or edited by the PDF annotation tools. Metadata checks are not malware detection or proof that an Office/PDF file is valid. Password-protected or damaged PDFs can be downloaded as originals; private password handling is not implemented.
 
 ## Development
 
-Requires Node.js **22 or newer**, npm and a modern browser. No environment variables, API keys or paid services are required.
+Node.js 22+ and npm are required; no API key is needed.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite (normally `http://localhost:5173`).
+The local URL is normally `http://localhost:5173`. Installation/build copies the PDF renderer’s fonts, CMaps and image-decoder assets to ignored `public/pdfjs/`, which Vite includes in production output.
 
 ```bash
 npm run typecheck
 npm test
 npm run build
 npm run preview
+npm run format:check
 ```
 
-### End-to-end tests
+## Browser tests
 
-With the dev server running in another terminal:
+With the development server running:
 
 ```bash
 npx playwright install chromium
 npm run test:e2e
-```
-
-For a system Chromium instead of a Playwright download:
-
-```bash
+# Or use installed system Chromium:
 CHROMIUM_PATH=/path/to/chromium npm run test:e2e
 ```
 
-The tests cover the 30-capability distribution, desktop geometry, search/drafting, non-execution disclosure, long chat scrolling, reset confirmation, file errors, local preview, 29-language registry/3 enabled languages, RTL, mobile dialogs and overflow. Screenshots/results are written to ignored `artifacts/qa/`.
+The suite creates its own PDF fixtures. It exercises entry layout, capability selection, validation, full-page fitting, zoom, real page counts/navigation, drawing/highlighting/shapes, formatted text, movement/eraser/undo/redo, download and re-render of edited PDFs, byte-identical originals, shared per-file state, removal confirmation, rotated/cropped export alignment, corrupt-file errors, RTL and phone widths. Results and screenshots are in ignored `artifacts/qa/`. The older `qa-studio.mjs` and `qa-experience.mjs` commands are aliases to the current suite.
 
-### Focused Live Canvas
-
-The desktop studio gives chat and PDF preview independently scrollable, full-height panels. PDF.js renders real PDF pages locally, without the browser’s dark PDF toolbar. Page counts, navigation, zoom and original-file downloads are functional. The compact file-options menu contains attachments and version history. On mobile the panels stack without horizontal overflow.
-
-The green indicator means the interface is ready; the header says **Preview**, not that an AI service is online. Highlight and Edit are visibly unavailable until editing is connected. Share uses native file sharing when supported, otherwise explains how to download the original. **View auto-save** stores zoom only on this device; it does not modify or auto-save document contents.
-
-With the development server running, `CHROMIUM_PATH=/path/to/chromium node scripts/qa-studio.mjs` checks a 12-page PDF, navigation, scrolling, zoom persistence, responsive widths and Arabic/French layouts. It generates its own fixture in a fresh checkout.
-
-### Portable interactive preview
+## Portable preview
 
 ```bash
 npm run package:preview
 ```
 
-Produces `artifacts/pdflexi-preview.html`, a self-contained, offline frontend preview. This is a review artifact, not the deployment build. Some file-preview behavior depends on browser capabilities.
+Produces `artifacts/pdflexi-preview.html`, a self-contained frontend review artifact with embedded PDF worker/assets. It is separate from the production build and its stricter CSP.
 
-## Deploy
+## Deployment and security
 
-Build with `npm ci && npm run build`; publish **`dist/`** to a compatible static host, for example Cloudflare Pages. Keep the code in GitHub; do not assume GitHub Pages is suitable for a commercial SaaS. No deployment or custom domain is configured by this commit.
+Build with `npm ci && npm run build`; publish **`dist/`** to a compatible static host. GitHub code updates are not automatic public deployments. No domain/production deployment is configured here. Do not deploy the Vite development server as production.
 
-`public/_headers` supplies a deployment security-header baseline for hosts supporting that format. Other hosts must configure equivalent headers separately. Never deploy the Vite development server as production. The self-contained review HTML embeds scripts and is intentionally separate from the stricter production CSP.
-
-A static host serves the frontend only. It does **not** provide PDF processing, AI inference, identity, payment processing, model hosting or unlimited capacity. Any future model-distribution scheme requires separate licensing, bandwidth, device-compatibility and cost evaluation.
+`public/_headers` supplies a security baseline for compatible hosts, including local workers and narrowly scoped WebAssembly support. Configure equivalent headers on other hosts. A static host does not add AI inference, cloud storage, authentication, payments or unlimited PDF capacity. Review [SECURITY.md](SECURITY.md) before commercial release.
 
 ## Structure
 
-```text
-src/
-  App.tsx                      Workspace state and interactions
-  components/
-    Chat.tsx                   Viewport-aware chat; independently scrolling messages
-    Capabilities.tsx           Searchable free list and Pro cards
-    LiveDemo.tsx               Isolated, explicitly scripted sample walkthrough
-    DocumentCanvas.tsx         Original-file / illustrative preview
-    Dialog.tsx                 Native modal / keyboard behavior
-    Icon.tsx                   Capability icon mapping
-  data/
-    capabilities.json          Canonical registry: 20 free + 10 Pro
-    languages.ts               29-language foundation, explicit availability
-    copy.ts                    English / Arabic / French interface copy
-  lib/
-    types.ts                   Typed future execution-engine boundary
-    files.mjs                  Preview limits and metadata validation
-  styles.css                   Responsive and RTL styles
-```
+- `StartCard.tsx`, `PdfThumbnail.tsx`: upload and first-request entry.
+- `Chat.tsx`, `LiveDemo.tsx`: real conversation state and isolated scripted sample.
+- `DocumentCanvas.tsx`, `WorkspaceCanvas.tsx`: canvas shell, toolbar/properties and export UI.
+- `PdfViewport.tsx`, `AnnotationLayer.tsx`: lazy page raster rendering and interactive overlay.
+- `lib/annotations.ts`: shared drawing, geometry, hit testing, movement and PDF export.
+- `lib/useDocumentEdits.ts`: per-file undo/redo and exported-snapshot state.
+- `lib/pdfRuntime.ts`: same-origin PDF worker and assets.
+- `data/capabilities.json`: canonical 20 free + 10 Pro conversational capabilities.
+- `data/copy.ts`, `data/editor.ts`, `data/languages.ts`: localized copy and availability.
 
-See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), and [security](SECURITY.md).
-
-An optional GitHub Actions configuration is provided in `docs/ci-template.yml`. It is not active. The repository owner can place it in `.github/workflows/ci.yml` later; publishing workflow files requires the appropriate GitHub authorization.
-
-## Product/legal boundaries
-
-“Free” and “Pro” describe the planned product grouping, not a currently available paid service. Pricing is illustrative. Risk analysis is not legal advice. Tampering detection cannot establish authenticity. Visible stamps/signatures are not necessarily legally valid digital signatures or certification. A repair engine cannot recover data that is absent. Translation and editing need fidelity checks. CV tailoring must not fabricate qualifications.
-
-No third-party model weights or PDF engines have been bundled. Dependencies retain their respective licenses; the owner must choose the licensing policy for the project's own source before public redistribution.
-
-## Conversation-first interface update
-
-- Entry on desktop: Lexi chat and local drag-and-drop upload sit side by side from the first screen, with the composer visible at laptop viewport heights. The product headline lives beside the logo in the left header, not above the workspace. The attachment list and original preview remain in the upload column before sending.
-- On phones, Lexi opens first with the composer in view. Adjacent Lexi / Files controls switch panels without scrolling or losing the draft; successful attachment switches back to chat. Choosing a capability also returns to chat. The original 20/10 capability groups remain accessible.
-- First request with an attachment automatically expands the workspace: chat physically left, Live Canvas right on desktop; stacked on mobile. All 30 capabilities stay accessible through the toolbar. Removing the final attachment or starting a fresh conversation returns to entry. Reset retains attached originals.
-- Aurora uses CSS gradients with a slow transform; reduced-motion disables animation. No external image or animation request is needed.
-- “See Live Canvas in action” opens a separate scripted fictional example. Timed yellow highlights, an example summary and an example clause-review card are **not AI-generated findings** and never annotate uploaded files. Exiting restores the prior conversation and original attachments.
-- Real files remain unchanged. AI orchestration, document edits, verified highlights and genuine risk detection still require phases 2–3.
-
-Checks: `npm test`, `CHROMIUM_PATH=$(command -v chromium) npm run test:e2e`, `npm run build`. Browser tests cover laptop first-screen composer visibility, mobile panel switching, the automatic split, no split without a file, isolated sample demo, responsive layouts and reduced motion, as well as the original validation and privacy checks.
+See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md) and [Arabic handoff](docs/HANDOFF.ar.md). An optional CI template is supplied in `docs/ci-template.yml`; enabling it is a separate repository-owner action.
