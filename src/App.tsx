@@ -50,6 +50,7 @@ type Modal =
   | "canvas"
   | "menu"
   | null;
+
 function savedLocale(): Locale {
   try {
     const value = localStorage.getItem("pdflexi:locale");
@@ -58,11 +59,14 @@ function savedLocale(): Locale {
     return "en";
   }
 }
+
 export default function App() {
   const edits = useDocumentEdits();
+
   const [locale, setLocale] = useState<Locale>(savedLocale),
     [modal, setModal] = useState<Modal>(null),
     [capTier, setCapTier] = useState<"free" | "pro">("free");
+
   const [draft, setDraft] = useState(""),
     [messages, setMessages] = useState<Message[]>([]),
     [files, setFiles] = useState<Attachment[]>([]),
@@ -70,118 +74,157 @@ export default function App() {
     [notice, setNotice] = useState(""),
     [fileErrors, setFileErrors] = useState<string[]>([]),
     [dragging, setDragging] = useState(false);
+
   const fileInput = useRef<HTMLInputElement>(null),
     prompt = useRef<HTMLTextAreaElement>(null),
     filesRef = useRef<Attachment[]>([]),
     uploadQueue = useRef(Promise.resolve()),
     dragDepth = useRef(0);
+
   const w = experience[locale];
+
   const t = {
     ...translations[locale],
+    comingSoon: {
+      en: "Coming soon",
+      ar: "قريبًا",
+      fr: "À venir",
+    }[locale],
+    replyNoFile: {
+      en: "Message saved in this tab. AI replies are not connected yet, so this is not an AI-generated answer. You can attach a document whenever you’re ready.",
+      ar: "حُفظت رسالتك في علامة التبويب هذه. ردود الذكاء الاصطناعي غير متصلة بعد؛ هذا إشعار استلام وليس إجابة مولّدة. يمكنك إرفاق مستند متى أردت.",
+      fr: "Message conservé dans cet onglet. Les réponses IA ne sont pas encore connectées : ceci est un accusé de réception, pas une réponse générée. Vous pouvez joindre un document quand vous le souhaitez.",
+    }[locale],
     conversation: w.chat,
     companion: w.agentPending,
     welcome: w.welcome,
     placeholder: w.placeholder,
     canvas: "Live Canvas",
   };
+
   const [activeCapabilityId, setActiveCapabilityId] = useState<string | null>(
     null,
   );
   const [hasStarted, setHasStarted] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [demoStage, setDemoStage] = useState(0);
-  const isLive = demoMode || (hasStarted && files.length > 0);
+
+  const isLive = demoMode || hasStarted;
+
   useEffect(() => {
     if (isLive) window.scrollTo({ top: 0, behavior: "instant" });
   }, [isLive]);
+
   useEffect(() => {
     if (!demoMode) {
       setDemoStage(0);
       return;
     }
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setDemoStage(3);
       return;
     }
+
     const timers = [450, 1100, 1800].map((delay, index) =>
       setTimeout(() => setDemoStage(index + 1), delay),
     );
+
     return () => timers.forEach(clearTimeout);
   }, [demoMode]);
+
   const demoMessages: Message[] = [
     { id: "sample-request", role: "user", content: w.demoRequest },
     { id: "sample-response", role: "lexi", content: w.demoReply },
   ];
+
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+
     try {
       localStorage.setItem("pdflexi:locale", locale);
     } catch {
       /* storage can be unavailable */
     }
   }, [locale]);
+
   useEffect(
     () => () => {
       filesRef.current.forEach((f) => URL.revokeObjectURL(f.url));
     },
     [],
   );
+
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 6000);
     return () => clearTimeout(timer);
   }, [notice]);
+
   const updateFiles = (next: Attachment[]) => {
     filesRef.current = next;
     setFiles(next);
-    if (!next.length) setHasStarted(false);
   };
+
   const upload = () => fileInput.current?.click();
+
   const addFiles = (incoming: File[]) => {
     uploadQueue.current = uploadQueue.current
       .then(async () => {
         const current = [...filesRef.current],
           errors: string[] = [];
+
         let added = 0;
+
         for (const file of incoming) {
           if (current.length >= MAX_FILES) {
             errors.push(t.limit);
             break;
           }
+
           const invalid = validateMetadata(file);
+
           if (invalid) {
             errors.push(`${file.name}: ${t[invalid]}`);
             continue;
           }
+
           if (current.some((f) => fileKey(f.file) === fileKey(file))) {
             errors.push(`${file.name}: ${t.duplicate}`);
             continue;
           }
+
           const kind = extension(file.name);
+
           try {
             if (kind === "pdf") {
               const header = new TextDecoder().decode(
                 await file.slice(0, 1024).arrayBuffer(),
               );
+
               if (!header.includes("%PDF-")) {
                 errors.push(`${file.name}: ${t.badPdf}`);
                 continue;
               }
             }
+
             current.push({
               id: crypto.randomUUID(),
               file,
               url: URL.createObjectURL(file),
               kind,
             });
+
             added++;
           } catch {
             errors.push(`${file.name}: ${t.readError}`);
           }
         }
+
         updateFiles(current);
         setFileErrors(errors);
+
         if (added) {
           setSelectedId(current[current.length - added].id);
         }
@@ -190,23 +233,30 @@ export default function App() {
         setFileErrors([t.readError]);
       });
   };
+
   const removeFile = (id: string) => {
     if (
       edits.controller(id).dirty &&
       !window.confirm(editorCopy[locale].discard)
-    )
+    ) {
       return;
+    }
+
     edits.remove(id);
+
     const old = filesRef.current.find((f) => f.id === id);
+
     updateFiles(filesRef.current.filter((f) => f.id !== id));
+
     if (old) URL.revokeObjectURL(old.url);
     if (id === selectedId) setSelectedId(null);
   };
+
   const chooseCapability = (capability: Capability) => {
     setActiveCapabilityId(capability.id);
-
     setDraft(capability.prompt[locale]);
     setModal(null);
+
     window.setTimeout(() => {
       prompt.current?.focus({ preventScroll: true });
       prompt.current?.scrollIntoView({
@@ -217,19 +267,20 @@ export default function App() {
       });
     }, 60);
   };
+
   const suggest = (id: string) => {
     const cap = registry.find((c) => c.id === id);
     if (cap) chooseCapability(cap);
   };
+
   const send = () => {
     if (!draft.trim()) return;
-    if (!files.length) {
-      setNotice(t.noFile);
-      return;
-    }
+
     const text = draft.trim();
+
     setDemoMode(false);
-    if (files.length) setHasStarted(true);
+    setHasStarted(true);
+
     setMessages((previous) => [
       ...previous,
       {
@@ -238,24 +289,32 @@ export default function App() {
         content: text,
         attachmentNames: files.map((f) => f.file.name),
       },
-      { id: crypto.randomUUID(), role: "lexi", content: t.reply },
+      {
+        id: crypto.randomUUID(),
+        role: "lexi",
+        content: files.length ? t.reply : t.replyNoFile,
+      },
     ]);
+
     setDraft("");
   };
+
   const newChat = () => {
-    if (messages.length || draft.trim() || demoMode) setModal("reset");
-    else {
+    if (messages.length || draft.trim() || demoMode) {
+      setModal("reset");
+    } else {
       prompt.current?.focus();
       setNotice(t.resetNotice);
     }
   };
+
   const openCapabilities = (tier: "free" | "pro") => {
     setCapTier(tier);
     setModal("capabilities");
   };
+
   const reset = () => {
     setHasStarted(false);
-
     setDemoMode(false);
     setMessages([]);
     setActiveCapabilityId(null);
@@ -263,6 +322,7 @@ export default function App() {
     setModal(null);
     setNotice(t.resetNotice);
   };
+
   const canvasProps = {
     editor: edits.controller(selectedId || files[0]?.id || ""),
     locale,
@@ -274,6 +334,7 @@ export default function App() {
     removeFile,
     upload,
   };
+
   return (
     <div
       className="app"
@@ -305,9 +366,11 @@ export default function App() {
         <i />
         <i />
       </div>
+
       <a className="skip-link" href="#main-workspace">
         {t.workspace}
       </a>
+
       <header className="site-header">
         <div className="header-inner">
           <div className="header-lockup">
@@ -320,6 +383,7 @@ export default function App() {
                 <i />
               </span>
             </a>
+
             <div
               className="header-promise"
               dir={locale === "ar" ? "rtl" : "ltr"}
@@ -327,6 +391,7 @@ export default function App() {
               <h1>{w.hero}</h1>
             </div>
           </div>
+
           <nav className="desktop-navigation" aria-label={t.workspace}>
             <a className="nav-active" href="#main-workspace">
               <MessageSquare size={16} />
@@ -335,6 +400,7 @@ export default function App() {
             <button onClick={() => setModal("how")}>{t.how}</button>
             <button onClick={() => setModal("plans")}>{t.pricing}</button>
           </nav>
+
           <div className="header-actions">
             <button
               className="language-button"
@@ -345,10 +411,12 @@ export default function App() {
               <span>{locale.toUpperCase()}</span>
               <ChevronDown size={12} />
             </button>
+
             <button className="new-chat-button" onClick={newChat}>
               <Plus size={16} />
               <span>{t.newChat}</span>
             </button>
+
             <button
               className="mobile-menu-button icon-button"
               onClick={() => setModal("menu")}
@@ -359,6 +427,7 @@ export default function App() {
           </div>
         </div>
       </header>
+
       <div className={`workspace-layout ${isLive ? "is-live" : "is-entry"}`}>
         <aside className="sidebar left-sidebar" aria-label={t.freeTools}>
           <Capabilities
@@ -368,12 +437,14 @@ export default function App() {
             activeId={activeCapabilityId}
             tier="free"
           />
+
           <button className="sidebar-about" onClick={() => setModal("privacy")}>
             <ShieldCheck size={14} />
             {t.privacy}
             <ArrowRight size={12} />
           </button>
         </aside>
+
         <main className="middle-column" id="main-workspace">
           <div className="mobile-shortcuts">
             <button onClick={() => openCapabilities("free")}>
@@ -381,12 +452,14 @@ export default function App() {
               {t.freeTools}
               <span>20</span>
             </button>
+
             <button onClick={() => openCapabilities("pro")}>
               <Sparkles size={16} />
               {t.smart}
-              <span className="pro-badge">PRO</span>
+              <span className="coming-soon-badge">{t.comingSoon}</span>
             </button>
           </div>
+
           {!isLive ? (
             <StartCard
               locale={locale}
@@ -407,7 +480,9 @@ export default function App() {
               inputRef={prompt}
             />
           ) : (
-            <div className="conversation-workspace is-split">
+            <div
+              className={`conversation-workspace is-split ${!demoMode && !files.length ? "is-chat-only" : ""}`}
+            >
               <div
                 className="conversation-pane"
                 id="lexi-chat-panel"
@@ -429,6 +504,7 @@ export default function App() {
                   inputRef={prompt}
                 />
               </div>
+
               <div
                 className="live-canvas-pane"
                 dir={locale === "ar" ? "rtl" : "ltr"}
@@ -448,17 +524,21 @@ export default function App() {
               </div>
             </div>
           )}
+
           <div className="workspace-meta">
             <span>
               <ShieldCheck size={13} />
               {t.localShort}
             </span>
+
             <button onClick={() => setModal("files")}>
               <Layers3 size={13} />
               {files.length} {t.fileCount}
             </button>
+
             <span className="execution-status">{t.previewLabel}</span>
           </div>
+
           {isLive && fileErrors.length > 0 && (
             <section className="file-errors" role="alert">
               <div>
@@ -472,6 +552,7 @@ export default function App() {
                   <X size={16} />
                 </button>
               </div>
+
               <ul>
                 {fileErrors.map((error, i) => (
                   <li key={i}>{error}</li>
@@ -479,6 +560,7 @@ export default function App() {
               </ul>
             </section>
           )}
+
           <footer className="workspace-footer">
             <span>{t.footer}</span>
             <button onClick={() => setModal("privacy")}>
@@ -487,6 +569,7 @@ export default function App() {
             </button>
           </footer>
         </main>
+
         <aside className="sidebar right-sidebar" aria-label={t.proTitle}>
           <Capabilities
             locale={locale}
@@ -498,6 +581,7 @@ export default function App() {
           <p className="right-disclaimer">{t.legal}</p>
         </aside>
       </div>
+
       <input
         ref={fileInput}
         className="sr-only"
@@ -511,6 +595,7 @@ export default function App() {
           e.target.value = "";
         }}
       />
+
       {modal === "languages" && (
         <Dialog
           title={t.languagesTitle}
@@ -534,6 +619,7 @@ export default function App() {
                   <strong lang={language.code}>{language.native}</strong>
                   <small>{language.name}</small>
                 </span>
+
                 {language.ready ? (
                   language.code === locale ? (
                     <Check size={17} />
@@ -548,6 +634,7 @@ export default function App() {
           </div>
         </Dialog>
       )}
+
       {modal === "how" && (
         <Dialog
           title={t.howTitle}
@@ -570,12 +657,14 @@ export default function App() {
               </div>
             ))}
           </div>
+
           <div className="modal-notice">
             <Info size={16} />
             {t.welcomeNote}
           </div>
         </Dialog>
       )}
+
       {modal === "plans" && (
         <Dialog
           title={t.plansTitle}
@@ -594,6 +683,7 @@ export default function App() {
               <p>{t.essentialsBody}</p>
               <span className="plan-status">20 {t.soon}</span>
             </div>
+
             <div className="plan-card premium">
               <span className="plan-icon">
                 <Sparkles size={24} />
@@ -604,12 +694,14 @@ export default function App() {
               <span className="plan-status">10 {t.soon}</span>
             </div>
           </div>
+
           <p className="billing-note">
             <ShieldCheck size={14} />
             {t.noBilling}
           </p>
         </Dialog>
       )}
+
       {modal === "privacy" && (
         <Dialog
           title={t.privacyTitle}
@@ -622,6 +714,7 @@ export default function App() {
           <p className="privacy-body">{t.privacyBody}</p>
         </Dialog>
       )}
+
       {modal === "reset" && (
         <Dialog
           title={t.clearTitle}
@@ -639,6 +732,7 @@ export default function App() {
           </div>
         </Dialog>
       )}
+
       {modal === "capabilities" && (
         <Dialog
           title={t.capabilitiesTitle}
@@ -659,6 +753,7 @@ export default function App() {
               {t.freeTools}
               <span>20</span>
             </button>
+
             <button
               aria-pressed={capTier === "pro"}
               onClick={() => setCapTier("pro")}
@@ -667,6 +762,7 @@ export default function App() {
               <span>10</span>
             </button>
           </div>
+
           <Capabilities
             key={capTier}
             locale={locale}
@@ -678,6 +774,7 @@ export default function App() {
           />
         </Dialog>
       )}
+
       {modal === "files" && (
         <Dialog
           title={`${t.files} · ${files.length}`}
@@ -694,6 +791,7 @@ export default function App() {
                     <bdi>{file.file.name}</bdi>
                     <small>{formatBytes(file.file.size)}</small>
                   </span>
+
                   <button
                     className="icon-button"
                     onClick={() => removeFile(file.id)}
@@ -707,12 +805,14 @@ export default function App() {
               <p>{t.emptyFiles}</p>
             )}
           </div>
+
           <button className="primary-button" onClick={upload}>
             <Upload size={16} />
             {t.addFiles}
           </button>
         </Dialog>
       )}
+
       {modal === "history" && (
         <Dialog
           title={t.history}
@@ -724,6 +824,7 @@ export default function App() {
             <Layers3 size={28} />
             <h3>{t.historyEmpty}</h3>
           </div>
+
           <div className="history-originals">
             {files.map((file) => (
               <button
@@ -746,6 +847,7 @@ export default function App() {
           </div>
         </Dialog>
       )}
+
       {modal === "canvas" && (
         <Dialog
           title={t.canvas}
@@ -760,6 +862,7 @@ export default function App() {
           />
         </Dialog>
       )}
+
       {modal === "menu" && (
         <Dialog
           title="PDFlexi"
@@ -771,18 +874,22 @@ export default function App() {
               <MessageSquare size={19} />
               {t.workspace}
             </button>
+
             <button onClick={() => setModal("how")}>
               <Info size={19} />
               {t.how}
             </button>
+
             <button onClick={() => setModal("plans")}>
               <Sparkles size={19} />
               {t.pricing}
             </button>
+
             <button onClick={() => setModal("languages")}>
               <Globe2 size={19} />
               {t.language}
             </button>
+
             <button
               onClick={() => {
                 setModal(null);
@@ -795,12 +902,14 @@ export default function App() {
           </nav>
         </Dialog>
       )}
+
       {notice && (
         <div className="toast" role="status">
           <span className="toast-check">
             <Check size={15} />
           </span>
           <p>{notice}</p>
+
           <button
             className="icon-button"
             onClick={() => setNotice("")}
@@ -810,6 +919,7 @@ export default function App() {
           </button>
         </div>
       )}
+
       {dragging && (
         <div className="global-drop-overlay" aria-hidden="true">
           <div>
