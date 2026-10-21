@@ -5609,3 +5609,162 @@ textarea {
 .start-file-errors > div .icon-button {
   margin-inline-start: auto;
 }
+/*
+ * Entry page: keep the upload/chat composer, but place it inside the familiar
+ * three-column home layout used by professional social products.
+ */
+.app:has(.start-screen) {
+  background: #f4f2ee;
+}
+.app:has(.start-screen) .aurora-background {
+  display: none;
+}
+.app:has(.start-screen) .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  height: 64px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+.app:has(.start-screen) .header-inner {
+  max-width: 1440px;
+}
+.workspace-layout.is-entry {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
+  align-items: start;
+}
+.is-entry .start-intro,
+.is-entry .start-demo-link {
+  display: none;
+}
+.is-entry .middle-column {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.is-entry .sidebar {
+  display: block;
+  position: sticky;
+  top: 88px;
+  height: calc(100vh - 104px);
+}
+.is-entry .free-panel,
+.is-entry .pro-panel,
+.is-entry .start-card {
+  border-color: #d9d9d9;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.is-entry .free-panel,
+.is-entry .pro-panel {
+  background: #fff;
+}
+.is-entry .start-card-heading {
+  min-height: 56px;
+  padding-inline: 20px;
+  border-bottom-color: #e6e6e6;
+}
+.is-entry .start-columns {
+  gap: 20px;
+  padding: 20px;
+}
+.is-entry .start-dropzone,
+.is-entry .start-request > textarea {
+  border-color: #c9c9c9;
+  border-radius: 8px;
+}
+.is-entry .start-dropzone {
+  background: #fafafa;
+}
+.is-entry .start-drop-button:hover,
+.is-entry .start-suggestions button:hover {
+  background: #f3f6f8;
+}
+.is-entry .start-upload-icon {
+  color: var(--blue);
+  background: #e8f3ff;
+  border-radius: 8px;
+}
+.is-entry .start-browse {
+  border-color: #b7c7d9;
+  border-radius: 18px;
+  color: #174b7a;
+  font-weight: 600;
+}
+.is-entry .start-request > textarea:focus {
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 1px #0a66c2;
+}
+.is-entry .start-suggestions button {
+  border-color: #b7c7d9;
+  border-radius: 16px;
+  color: #355875;
+}
+.is-entry .start-submit {
+  background: #0a66c2;
+  border-radius: 18px;
+  font-weight: 600;
+}
+.is-entry .start-submit:hover {
+  background: #004182;
+}
+.is-entry .start-submit:disabled {
+  color: #777;
+  background: #e7e7e7;
+}
+
+@media (min-width: 1200px) {
+  .workspace-layout.is-entry {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 760px) 288px;
+    gap: 24px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 1199px) and (min-width: 900px) {
+  .workspace-layout.is-entry {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 760px);
+    gap: 24px;
+    max-width: 1052px;
+  }
+  .is-entry .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .workspace-layout.is-entry {
+    display: block;
+    max-width: 800px;
+    padding: 20px 24px;
+  }
+  .is-entry .sidebar {
+    display: none;
+  }
+  .is-entry .mobile-shortcuts {
+    display: flex;
+    margin: 0 0 12px;
+    justify-content: space-between;
+  }
+  .is-entry .mobile-shortcuts > button:first-child {
+    display: flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .app:has(.start-screen) .site-header {
+    height: 68px;
+  }
+  .workspace-layout.is-entry {
+    padding: 16px;
+  }
+  .is-entry .start-card {
+    border-radius: 8px;
+  }
+}
