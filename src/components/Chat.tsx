@@ -1,6 +1,6 @@
 import { studioCopy } from "../data/studio";
 import type { Locale } from "../data/languages";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   ArrowUp,
   ArrowUpRight,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Copy } from "../data/copy";
 import type { Attachment, Message } from "../lib/types";
+
 type Props = {
   t: Copy;
   locale: Locale;
@@ -29,6 +30,7 @@ type Props = {
   attachments: Attachment[];
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 };
+
 export function Chat({
   t,
   locale,
@@ -45,26 +47,71 @@ export function Chat({
   inputRef,
 }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const resize = () => {
+      const minimum = draft.length ? 120 : 64;
+
+      input.style.minHeight = `${minimum}px`;
+      input.style.height = "0px";
+      input.style.height = `${Math.min(
+        240,
+        Math.max(minimum, input.scrollHeight),
+      )}px`;
+
+      input.style.overflowY =
+        input.scrollHeight > 240 ? "auto" : "hidden";
+    };
+
+    resize();
+
+    window.addEventListener("resize", resize);
+
+    return () => window.removeEventListener("resize", resize);
+  }, [inputRef, draft, locale]);
+
   useEffect(() => {
     const el = scroller.current;
-    if (el) el.scrollTop = messages.length ? el.scrollHeight : 0;
+
+    if (el) {
+      el.scrollTop = messages.length ? el.scrollHeight : 0;
+    }
   }, [messages]);
+
   return (
     <section className="chat-card" aria-label={t.conversation}>
       <div className="chat-heading">
-        <div className="simple-lexi-title" title={t.companion}>
-          <span className="ready-dot" aria-hidden="true" />
+        <div
+          className="simple-lexi-title"
+          title={t.companion}
+        >
+          <span
+            className="ready-dot"
+            aria-hidden="true"
+          />
+
           <h2>
             Lexi <span>• {studioCopy[locale].preview}</span>
           </h2>
-          <span className="sr-only">{t.companion}</span>
+
+          <span className="sr-only">
+            {t.companion}
+          </span>
         </div>
+
         {tools && (
-          <button className="chat-tools-button" onClick={tools}>
+          <button
+            className="chat-tools-button"
+            onClick={tools}
+          >
             <ListFilter size={16} />
             {studioCopy[locale].tools}
           </button>
         )}
+
         <button
           className="icon-button new-conversation"
           onClick={newChat}
@@ -74,6 +121,7 @@ export function Chat({
           <Plus size={20} />
         </button>
       </div>
+
       <div
         className="chat-messages"
         ref={scroller}
@@ -88,33 +136,44 @@ export function Chat({
               {t.greeting}
               <span />
             </div>
+
             <div className="welcome-message">
               <span className="small-lexi">
                 <Sparkles size={16} />
               </span>
+
               <div className="welcome-bubble">
                 <h3>{t.welcomeTitle}</h3>
                 <p>{t.welcome}</p>
               </div>
             </div>
+
             <div className="chat-inspiration">
               <span>{t.try}</span>
+
               <button onClick={() => suggest("merge")}>
                 <span className="suggestion-dot blue" />
                 {t.suggestion1}
                 <ArrowUpRight size={15} />
               </button>
-              <button onClick={() => suggest("summarize-contract")}>
+
+              <button
+                onClick={() => suggest("summarize-contract")}
+              >
                 <span className="suggestion-dot amber" />
                 {t.suggestion2}
                 <ArrowUpRight size={15} />
               </button>
-              <button onClick={() => suggest("translate-layout")}>
+
+              <button
+                onClick={() => suggest("translate-layout")}
+              >
                 <span className="suggestion-dot purple" />
                 {t.suggestion3}
                 <ArrowUpRight size={15} />
               </button>
             </div>
+
             <div className="preview-disclaimer">
               <span className="tiny-spark">
                 <Sparkles size={13} />
@@ -124,22 +183,42 @@ export function Chat({
           </>
         ) : (
           messages.map((m) => (
-            <div className={`message ${m.role}`} key={m.id}>
-              <span className={m.role === "lexi" ? "small-lexi" : "small-user"}>
-                {m.role === "lexi" ? <Sparkles size={15} /> : "Y"}
+            <div
+              className={`message ${m.role}`}
+              key={m.id}
+            >
+              <span
+                className={
+                  m.role === "lexi"
+                    ? "small-lexi"
+                    : "small-user"
+                }
+              >
+                {m.role === "lexi" ? (
+                  <Sparkles size={15} />
+                ) : (
+                  "Y"
+                )}
               </span>
+
               <div className="message-content">
                 <span className="message-name">
                   {m.role === "lexi" ? "Lexi" : t.you}
                 </span>
+
                 {m.role === "lexi" && (
                   <span className="not-executed">
                     {demoLabel || t.replyTitle}
                   </span>
                 )}
-                <p dir="auto" className="message-bubble">
+
+                <p
+                  dir="auto"
+                  className="message-bubble"
+                >
                   {m.content}
                 </p>
+
                 {m.attachmentNames?.length ? (
                   <div className="message-attachments">
                     {m.attachmentNames.map((name, i) => (
@@ -155,44 +234,64 @@ export function Chat({
           ))
         )}
       </div>
+
       <div className="chat-composer">
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
+          onSubmit={(event) => {
+            event.preventDefault();
             send();
           }}
         >
-          <label className="sr-only" htmlFor="lexi-prompt">
+          <label
+            className="sr-only"
+            htmlFor="lexi-prompt"
+          >
             {t.placeholder}
           </label>
+
           <textarea
             ref={inputRef}
             id="lexi-prompt"
             placeholder={t.placeholder}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(event) =>
+              setDraft(event.target.value)
+            }
             maxLength={8000}
             rows={2}
+            style={{
+              flex: "none",
+              resize: "none",
+            }}
             dir="auto"
-            onKeyDown={(e) => {
+            onKeyDown={(event) => {
               if (
-                e.key === "Enter" &&
-                !e.shiftKey &&
-                !e.nativeEvent.isComposing
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
               ) {
-                e.preventDefault();
+                event.preventDefault();
                 send();
               }
             }}
           />
+
           <div className="composer-toolbar">
-            <button type="button" className="attach-button" onClick={attach}>
+            <button
+              type="button"
+              className="attach-button"
+              onClick={attach}
+            >
               <Paperclip size={16} />
               {t.attach}
+
               {attachments.length > 0 && (
-                <span className="attachment-count">{attachments.length}</span>
+                <span className="attachment-count">
+                  {attachments.length}
+                </span>
               )}
             </button>
+
             <div className="composer-end">
               {draft && (
                 <button
@@ -204,7 +303,11 @@ export function Chat({
                   <X size={14} />
                 </button>
               )}
-              <span className="enter-hint">{t.enter}</span>
+
+              <span className="enter-hint">
+                {t.enter}
+              </span>
+
               <button
                 className="send-button"
                 type="submit"
@@ -216,6 +319,7 @@ export function Chat({
             </div>
           </div>
         </form>
+
         <p className="composer-privacy">
           <ShieldCheck size={12} />
           {t.noSecrets}
