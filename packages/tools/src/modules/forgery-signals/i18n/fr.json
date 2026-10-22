@@ -1,0 +1,5 @@
+{
+  "name": "Détecter des indices d’altération",
+  "description": "Examinez les cachets et signatures. Pas une preuve d’authenticité.",
+  "prompt": "Examine les indices de manipulation des cachets et signatures, avec les limites."
+}

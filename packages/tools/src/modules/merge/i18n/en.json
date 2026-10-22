@@ -1,0 +1,5 @@
+{
+  "name": "Merge PDF",
+  "description": "Multiple files, one PDF",
+  "prompt": "Merge my PDF files into one document."
+}

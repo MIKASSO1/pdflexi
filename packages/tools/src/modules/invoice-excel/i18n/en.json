@@ -1,0 +1,5 @@
+{
+  "name": "Invoices to Excel",
+  "description": "Turn invoice details into structured rows.",
+  "prompt": "Extract my invoices into an Excel spreadsheet and flag uncertain values."
+}

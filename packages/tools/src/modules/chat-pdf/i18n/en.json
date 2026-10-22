@@ -1,0 +1,5 @@
+{
+  "name": "Chat with your PDF",
+  "description": "Ask a question. Find the answer in your document.",
+  "prompt": "Help me understand this document and cite the relevant passages."
+}

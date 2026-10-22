@@ -1,0 +1,5 @@
+{
+  "name": "Repair PDF",
+  "description": "Attempt document recovery",
+  "prompt": "Check whether my damaged PDF can be repaired."
+}

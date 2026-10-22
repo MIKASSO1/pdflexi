@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import assert from "node:assert/strict";
 await mkdir("artifacts/qa", { recursive: true });
@@ -148,11 +148,11 @@ let edited;
 try {
   await page.goto(url);
   await run(
-    "one calm card with adjacent upload and request, tools hidden",
+    "entry keeps the latest three-column layout and an adjacent upload/request card",
     async () => {
       await page.waitForSelector(".start-card");
       assert.equal(await page.locator(".start-card").count(), 1);
-      assert.equal(await page.locator(".sidebar:visible").count(), 0);
+      assert.equal(await page.locator(".sidebar:visible").count(), 2);
       const a = await page.locator(".start-upload").boundingBox(),
         b = await page.locator(".start-request").boundingBox();
       assert.ok(a.x + a.width < b.x);

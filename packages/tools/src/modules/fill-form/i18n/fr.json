@@ -1,0 +1,5 @@
+{
+  "name": "Remplir un formulaire par chat",
+  "description": "Donnez les informations, Lexi repère les champs.",
+  "prompt": "Aide-moi à remplir ce formulaire. Demande seulement les informations manquantes."
+}

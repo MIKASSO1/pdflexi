@@ -1,0 +1,5 @@
+{
+  "name": "Stamp up to 100 documents",
+  "description": "Batch stamping. Legal certification requires an authorized provider.",
+  "prompt": "Help me batch-stamp up to 100 documents. Clarify whether legal certification is required."
+}

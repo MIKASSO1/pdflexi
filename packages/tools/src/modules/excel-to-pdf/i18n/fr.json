@@ -1,0 +1,5 @@
+{
+  "name": "Excel en PDF",
+  "description": "Partagez vos feuilles au format PDF.",
+  "prompt": "Convertis mon fichier Excel en PDF."
+}

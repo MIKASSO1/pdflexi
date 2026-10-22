@@ -1,0 +1,5 @@
+{
+  "name": "Comparer deux contrats",
+  "description": "Identifiez les modifications importantes.",
+  "prompt": "Compare ces deux contrats et explique les différences."
+}

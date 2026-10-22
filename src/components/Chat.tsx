@@ -62,8 +62,7 @@ export function Chat({
         Math.max(minimum, input.scrollHeight),
       )}px`;
 
-      input.style.overflowY =
-        input.scrollHeight > 240 ? "auto" : "hidden";
+      input.style.overflowY = input.scrollHeight > 240 ? "auto" : "hidden";
     };
 
     resize();
@@ -84,29 +83,18 @@ export function Chat({
   return (
     <section className="chat-card" aria-label={t.conversation}>
       <div className="chat-heading">
-        <div
-          className="simple-lexi-title"
-          title={t.companion}
-        >
-          <span
-            className="ready-dot"
-            aria-hidden="true"
-          />
+        <div className="simple-lexi-title" title={t.companion}>
+          <span className="ready-dot" aria-hidden="true" />
 
           <h2>
             Lexi <span>• {studioCopy[locale].preview}</span>
           </h2>
 
-          <span className="sr-only">
-            {t.companion}
-          </span>
+          <span className="sr-only">{t.companion}</span>
         </div>
 
         {tools && (
-          <button
-            className="chat-tools-button"
-            onClick={tools}
-          >
+          <button className="chat-tools-button" onClick={tools}>
             <ListFilter size={16} />
             {studioCopy[locale].tools}
           </button>
@@ -157,17 +145,13 @@ export function Chat({
                 <ArrowUpRight size={15} />
               </button>
 
-              <button
-                onClick={() => suggest("summarize-contract")}
-              >
+              <button onClick={() => suggest("summarize-contract")}>
                 <span className="suggestion-dot amber" />
                 {t.suggestion2}
                 <ArrowUpRight size={15} />
               </button>
 
-              <button
-                onClick={() => suggest("translate-layout")}
-              >
+              <button onClick={() => suggest("translate-layout")}>
                 <span className="suggestion-dot purple" />
                 {t.suggestion3}
                 <ArrowUpRight size={15} />
@@ -183,22 +167,9 @@ export function Chat({
           </>
         ) : (
           messages.map((m) => (
-            <div
-              className={`message ${m.role}`}
-              key={m.id}
-            >
-              <span
-                className={
-                  m.role === "lexi"
-                    ? "small-lexi"
-                    : "small-user"
-                }
-              >
-                {m.role === "lexi" ? (
-                  <Sparkles size={15} />
-                ) : (
-                  "Y"
-                )}
+            <div className={`message ${m.role}`} key={m.id}>
+              <span className={m.role === "lexi" ? "small-lexi" : "small-user"}>
+                {m.role === "lexi" ? <Sparkles size={15} /> : "Y"}
               </span>
 
               <div className="message-content">
@@ -212,10 +183,7 @@ export function Chat({
                   </span>
                 )}
 
-                <p
-                  dir="auto"
-                  className="message-bubble"
-                >
+                <p dir="auto" className="message-bubble">
                   {m.content}
                 </p>
 
@@ -242,10 +210,7 @@ export function Chat({
             send();
           }}
         >
-          <label
-            className="sr-only"
-            htmlFor="lexi-prompt"
-          >
+          <label className="sr-only" htmlFor="lexi-prompt">
             {t.placeholder}
           </label>
 
@@ -254,9 +219,7 @@ export function Chat({
             id="lexi-prompt"
             placeholder={t.placeholder}
             value={draft}
-            onChange={(event) =>
-              setDraft(event.target.value)
-            }
+            onChange={(event) => setDraft(event.target.value)}
             maxLength={8000}
             rows={2}
             style={{
@@ -277,18 +240,12 @@ export function Chat({
           />
 
           <div className="composer-toolbar">
-            <button
-              type="button"
-              className="attach-button"
-              onClick={attach}
-            >
+            <button type="button" className="attach-button" onClick={attach}>
               <Paperclip size={16} />
               {t.attach}
 
               {attachments.length > 0 && (
-                <span className="attachment-count">
-                  {attachments.length}
-                </span>
+                <span className="attachment-count">{attachments.length}</span>
               )}
             </button>
 
@@ -304,9 +261,7 @@ export function Chat({
                 </button>
               )}
 
-              <span className="enter-hint">
-                {t.enter}
-              </span>
+              <span className="enter-hint">{t.enter}</span>
 
               <button
                 className="send-button"

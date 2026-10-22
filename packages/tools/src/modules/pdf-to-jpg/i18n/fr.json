@@ -1,0 +1,5 @@
+{
+  "name": "PDF en JPG",
+  "description": "Exportez les pages en images.",
+  "prompt": "Convertis les pages de mon PDF en images JPG."
+}

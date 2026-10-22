@@ -1,0 +1,5 @@
+{
+  "name": "Repérer les clauses à risque",
+  "description": "Repérez les points à examiner. Pas un avis juridique.",
+  "prompt": "Signale les clauses potentiellement risquées, avec références et limites."
+}

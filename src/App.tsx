@@ -1,7 +1,7 @@
 import { StartCard } from "./components/StartCard";
-import { useDocumentEdits } from "./lib/useDocumentEdits";
+import { useDocumentEdits } from "./features/editor/useDocumentEdits";
 import { editorCopy } from "./data/editor";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -25,18 +25,20 @@ import { translations } from "./data/copy";
 import { languages } from "./data/languages";
 import type { Locale } from "./data/languages";
 import registry from "./data/capabilities.json";
-import type { Attachment, Capability, Message } from "./lib/types";
-import {
-  extension,
-  fileKey,
-  formatBytes,
-  MAX_FILES,
-  validateMetadata,
-} from "./lib/files.mjs";
+import type { Capability, Message } from "./lib/types";
+import { formatBytes } from "./lib/files.mjs";
+import { useAttachments } from "./features/attachments/useAttachments";
+import { useConversation } from "./features/conversation/useConversation";
 import { Capabilities } from "./components/Capabilities";
 import { Chat } from "./components/Chat";
 import { Dialog } from "./components/Dialog";
 import { DocumentCanvas } from "./components/DocumentCanvas";
+
+import { useExecution } from "./features/execution/useExecution";
+import { executionCopy } from "./i18n/execution";
+const ExecutionPanel = lazy(
+  () => import("./features/execution/ExecutionPanel"),
+);
 
 type Modal =
   | "languages"
@@ -62,25 +64,24 @@ function savedLocale(): Locale {
 
 export default function App() {
   const edits = useDocumentEdits();
-
+  const execution = useExecution();
+  const [executionOpen, setExecutionOpen] = useState(false);
   const [locale, setLocale] = useState<Locale>(savedLocale),
     [modal, setModal] = useState<Modal>(null),
     [capTier, setCapTier] = useState<"free" | "pro">("free");
-
-  const [draft, setDraft] = useState(""),
-    [messages, setMessages] = useState<Message[]>([]),
-    [files, setFiles] = useState<Attachment[]>([]),
-    [selectedId, setSelectedId] = useState<string | null>(null),
-    [notice, setNotice] = useState(""),
-    [fileErrors, setFileErrors] = useState<string[]>([]),
-    [dragging, setDragging] = useState(false);
-
+  const [notice, setNotice] = useState("");
+  const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null),
     prompt = useRef<HTMLTextAreaElement>(null),
-    filesRef = useRef<Attachment[]>([]),
-    uploadQueue = useRef(Promise.resolve()),
     dragDepth = useRef(0);
-
+  const {
+    draft,
+    setDraft,
+    messages,
+    hasStarted,
+    acknowledgeRequest,
+    resetConversation,
+  } = useConversation();
   const w = experience[locale];
 
   const t = {
@@ -105,7 +106,15 @@ export default function App() {
   const [activeCapabilityId, setActiveCapabilityId] = useState<string | null>(
     null,
   );
-  const [hasStarted, setHasStarted] = useState(false);
+  const {
+    files,
+    selectedId,
+    setSelectedId,
+    fileErrors,
+    clearErrors,
+    addFiles,
+    removeAttachment,
+  } = useAttachments(t);
   const [demoMode, setDemoMode] = useState(false);
   const [demoStage, setDemoStage] = useState(0);
 
@@ -148,92 +157,12 @@ export default function App() {
       /* storage can be unavailable */
     }
   }, [locale]);
-
-  useEffect(
-    () => () => {
-      filesRef.current.forEach((f) => URL.revokeObjectURL(f.url));
-    },
-    [],
-  );
-
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 6000);
     return () => clearTimeout(timer);
   }, [notice]);
-
-  const updateFiles = (next: Attachment[]) => {
-    filesRef.current = next;
-    setFiles(next);
-  };
-
   const upload = () => fileInput.current?.click();
-
-  const addFiles = (incoming: File[]) => {
-    uploadQueue.current = uploadQueue.current
-      .then(async () => {
-        const current = [...filesRef.current],
-          errors: string[] = [];
-
-        let added = 0;
-
-        for (const file of incoming) {
-          if (current.length >= MAX_FILES) {
-            errors.push(t.limit);
-            break;
-          }
-
-          const invalid = validateMetadata(file);
-
-          if (invalid) {
-            errors.push(`${file.name}: ${t[invalid]}`);
-            continue;
-          }
-
-          if (current.some((f) => fileKey(f.file) === fileKey(file))) {
-            errors.push(`${file.name}: ${t.duplicate}`);
-            continue;
-          }
-
-          const kind = extension(file.name);
-
-          try {
-            if (kind === "pdf") {
-              const header = new TextDecoder().decode(
-                await file.slice(0, 1024).arrayBuffer(),
-              );
-
-              if (!header.includes("%PDF-")) {
-                errors.push(`${file.name}: ${t.badPdf}`);
-                continue;
-              }
-            }
-
-            current.push({
-              id: crypto.randomUUID(),
-              file,
-              url: URL.createObjectURL(file),
-              kind,
-            });
-
-            added++;
-          } catch {
-            errors.push(`${file.name}: ${t.readError}`);
-          }
-        }
-
-        updateFiles(current);
-        setFileErrors(errors);
-
-        if (added) {
-          setSelectedId(current[current.length - added].id);
-        }
-      })
-      .catch(() => {
-        setFileErrors([t.readError]);
-      });
-  };
-
   const removeFile = (id: string) => {
     if (
       edits.controller(id).dirty &&
@@ -241,15 +170,9 @@ export default function App() {
     ) {
       return;
     }
-
+    execution.reset();
     edits.remove(id);
-
-    const old = filesRef.current.find((f) => f.id === id);
-
-    updateFiles(filesRef.current.filter((f) => f.id !== id));
-
-    if (old) URL.revokeObjectURL(old.url);
-    if (id === selectedId) setSelectedId(null);
+    removeAttachment(id);
   };
 
   const chooseCapability = (capability: Capability) => {
@@ -275,28 +198,19 @@ export default function App() {
 
   const send = () => {
     if (!draft.trim()) return;
-
-    const text = draft.trim();
-
-    setDemoMode(false);
-    setHasStarted(true);
-
-    setMessages((previous) => [
-      ...previous,
-      {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: text,
-        attachmentNames: files.map((f) => f.file.name),
-      },
-      {
-        id: crypto.randomUUID(),
-        role: "lexi",
-        content: files.length ? t.reply : t.replyNoFile,
-      },
-    ]);
-
-    setDraft("");
+    if (execution.running) return;
+    if (!files.length) {
+      acknowledgeRequest(files, t.replyNoFile);
+      setDemoMode(false);
+      return;
+    }
+    const request = draft;
+    if (acknowledgeRequest(files, t.reply)) {
+      setDemoMode(false);
+      void execution.propose(request, files).then((ready) => {
+        if (ready) setExecutionOpen(true);
+      });
+    }
   };
 
   const newChat = () => {
@@ -314,11 +228,11 @@ export default function App() {
   };
 
   const reset = () => {
-    setHasStarted(false);
+    execution.reset();
+    setExecutionOpen(false);
+    resetConversation();
     setDemoMode(false);
-    setMessages([]);
     setActiveCapabilityId(null);
-    setDraft("");
     setModal(null);
     setNotice(t.resetNotice);
   };
@@ -403,6 +317,14 @@ export default function App() {
 
           <div className="header-actions">
             <button
+              className="icon-button"
+              onClick={() => setExecutionOpen(true)}
+              aria-label={executionCopy[locale].title}
+              title={executionCopy[locale].title}
+            >
+              <Layers3 size={20} />
+            </button>
+            <button
               className="language-button"
               onClick={() => setModal("languages")}
               aria-label={t.language}
@@ -459,7 +381,26 @@ export default function App() {
               <span className="coming-soon-badge">{t.comingSoon}</span>
             </button>
           </div>
-
+          {executionOpen && !demoMode && !modal && (
+            <Dialog
+              title={executionCopy[locale].title}
+              closeLabel={executionCopy[locale].close}
+              onClose={() => setExecutionOpen(false)}
+              wide
+            >
+              <Suspense
+                fallback={<p role="status">{executionCopy[locale].running}</p>}
+              >
+                <ExecutionPanel
+                  execution={execution}
+                  files={files}
+                  locale={locale}
+                  initialTool={activeCapabilityId}
+                  close={() => setExecutionOpen(false)}
+                />
+              </Suspense>
+            </Dialog>
+          )}
           {!isLive ? (
             <StartCard
               locale={locale}
@@ -468,7 +409,7 @@ export default function App() {
               selectedId={selectedId}
               setSelectedId={setSelectedId}
               errors={fileErrors}
-              clearErrors={() => setFileErrors([])}
+              clearErrors={clearErrors}
               draft={draft}
               setDraft={setDraft}
               send={send}
@@ -547,7 +488,7 @@ export default function App() {
                 <button
                   className="icon-button"
                   aria-label={t.close}
-                  onClick={() => setFileErrors([])}
+                  onClick={clearErrors}
                 >
                   <X size={16} />
                 </button>

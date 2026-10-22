@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { usePdfExport } from "../features/editor/usePdfExport";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   Bold,
@@ -33,7 +34,6 @@ import { editorCopy } from "../data/editor";
 import {
   annotationBounds,
   defaultMarkStyle,
-  exportAnnotatedPdf,
   moveAnnotation,
 } from "../lib/annotations";
 import type {
@@ -92,10 +92,12 @@ export function WorkspaceCanvas({
     [actualScale, setActualScale] = useState(1),
     [tool, setTool] = useState<EditTool>("select"),
     [style, setStyle] = useState<MarkStyle>(defaultMarkStyle),
-    [selectedMark, setSelectedMark] = useState<string | null>(null),
-    [exporting, setExporting] = useState(false);
+    [selectedMark, setSelectedMark] = useState<string | null>(null);
+  const { exporting, downloadEdits: exportEdits } = usePdfExport();
   const mark = editor.annotations.find((a) => a.id === selectedMark);
   const isPdf = selected.kind === "pdf";
+  const activeDocument = useRef(selected.id);
+  activeDocument.current = selected.id;
   useEffect(() => {
     setPage(1);
     setCount(0);
@@ -162,25 +164,13 @@ export function WorkspaceCanvas({
     setNote("");
   }
   async function downloadEdits() {
-    if (!editor.annotations.length || exporting) return;
-    setExporting(true);
     setNote("");
-    const marks = editor.annotations;
+    const documentId = selected.id;
     try {
-      const bytes = await exportAnnotatedPdf(selected.file, marks);
-      const url = URL.createObjectURL(
-        new Blob([new Uint8Array(bytes)], { type: "application/pdf" }),
-      );
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = selected.file.name.replace(/\.pdf$/i, "") + "-edited.pdf";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-      editor.markExported(marks);
+      await exportEdits(selected, editor);
     } catch {
-      setNote(e.exportError);
-    } finally {
-      setExporting(false);
+      // Do not attach an old document's export error to another selected file.
+      if (activeDocument.current === documentId) setNote(e.exportError);
     }
   }
   async function share() {

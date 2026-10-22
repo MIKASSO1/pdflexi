@@ -1,0 +1,5 @@
+{
+  "name": "PDF to Excel",
+  "description": "Tables, ready for Excel",
+  "prompt": "Convert the tables in my PDF to Excel."
+}

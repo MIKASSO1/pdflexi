@@ -1,0 +1,5 @@
+{
+  "name": "Supprimer des pages",
+  "description": "Retirez les pages inutiles.",
+  "prompt": "Aide-moi à supprimer des pages de mon PDF. Demande lesquelles."
+}
