@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useLayoutEffect } from "react";
 import {
   ArrowRight,
   FilePlus2,
@@ -14,7 +14,9 @@ import type { Locale } from "../data/languages";
 import type { Copy } from "../data/copy";
 import { startCopy } from "../data/editor";
 import { formatBytes } from "../lib/files.mjs";
+
 const PdfThumbnail = lazy(() => import("./PdfThumbnail"));
+
 export function StartCard({
   locale,
   t,
@@ -50,21 +52,82 @@ export function StartCard({
   demo: () => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
-  const s = startCopy[locale],
-    first = files.find((file) => file.id === selectedId) || files[0];
+  const labels = {
+    en: {
+      upload: "Add a document (optional)",
+      drop: "Drop your document here",
+      placeholder: "Write a message or describe what you need…",
+      send: "Send message",
+      messageHint:
+        "No file required. Enter to send · Shift+Enter for a new line. AI is not connected yet.",
+    },
+    ar: {
+      upload: "أضف مستندًا (اختياري)",
+      drop: "اسحب مستندك هنا",
+      placeholder: "اكتب رسالة أو صف ما تحتاجه…",
+      send: "إرسال الرسالة",
+      messageHint:
+        "الملف اختياري. Enter للإرسال وShift+Enter لسطر جديد. الذكاء الاصطناعي غير متصل بعد.",
+    },
+    fr: {
+      upload: "Ajoutez un document (facultatif)",
+      drop: "Déposez votre document ici",
+      placeholder: "Écrivez un message ou décrivez votre besoin…",
+      send: "Envoyer le message",
+      messageHint:
+        "Fichier facultatif. Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne. IA non connectée.",
+    },
+  };
+
+  const s = { ...startCopy[locale], ...labels[locale] };
+
+  const first =
+    files.find((file) => file.id === selectedId) || files[0];
+
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const resize = () => {
+      const minimum = draft.length ? 240 : 144;
+
+      input.style.minHeight = `${minimum}px`;
+      input.style.height = "0px";
+      input.style.height = `${Math.min(
+        400,
+        Math.max(minimum, input.scrollHeight),
+      )}px`;
+
+      input.style.overflowY =
+        input.scrollHeight > 400 ? "auto" : "hidden";
+    };
+
+    resize();
+
+    window.addEventListener("resize", resize);
+
+    return () => window.removeEventListener("resize", resize);
+  }, [inputRef, draft, locale]);
+
   return (
-    <div className="start-screen" dir={locale === "ar" ? "rtl" : "ltr"}>
+    <div
+      className="start-screen"
+      dir={locale === "ar" ? "rtl" : "ltr"}
+    >
       <div className="start-intro">
         <span className="start-eyebrow">
-          <Sparkles size={16} /> PDFlexi Workspace
+          <Sparkles size={16} />
+          PDFlexi Workspace
         </span>
         <h1>{s.title}</h1>
         <p>{s.lead}</p>
       </div>
+
       <section className="start-card" aria-label={t.workspace}>
         <div className="start-card-heading">
           <span>
-            <span className="ready-dot" /> Lexi{" "}
+            <span className="ready-dot" />
+            Lexi{" "}
             <span className="start-preview-label">
               •{" "}
               {locale === "ar"
@@ -74,15 +137,21 @@ export function StartCard({
                   : "Preview"}
             </span>
           </span>
+
           <button onClick={tools}>
             <ListFilter size={16} />
             {s.tools}
           </button>
         </div>
+
         {errors.length > 0 && (
-          <div className="file-errors start-file-errors" role="alert">
+          <div
+            className="file-errors start-file-errors"
+            role="alert"
+          >
             <div>
               <strong>{t.fileErrorTitle}</strong>
+
               <button
                 className="icon-button"
                 aria-label={t.close}
@@ -91,6 +160,7 @@ export function StartCard({
                 <X size={16} />
               </button>
             </div>
+
             <ul>
               {errors.map((error, i) => (
                 <li key={i}>{error}</li>
@@ -98,69 +168,112 @@ export function StartCard({
             </ul>
           </div>
         )}
-        <div className="start-columns">
+
+        <div
+          className={`start-columns ${
+            draft.length ? "is-composing" : ""
+          }`}
+        >
           <div className="start-upload">
             <h2>
               <span>01</span>
               {s.upload}
             </h2>
-            <div className={`start-dropzone ${first ? "has-file" : ""}`}>
+
+            <div
+              className={`start-dropzone ${
+                first ? "has-file" : ""
+              }`}
+            >
               {!first ? (
-                <button className="start-drop-button" onClick={upload}>
+                <button
+                  className="start-drop-button"
+                  onClick={upload}
+                >
                   <span className="start-upload-icon">
                     <Upload size={25} />
                   </span>
+
                   <strong>{s.drop}</strong>
+
                   <span className="start-browse">
                     {s.browse}
                     <ArrowRight size={15} />
                   </span>
+
                   <small>{s.formats}</small>
                 </button>
               ) : (
                 <>
                   <div className="start-file-preview">
                     {first.kind === "pdf" ? (
-                      <Suspense fallback={<FileText size={30} />}>
+                      <Suspense
+                        fallback={<FileText size={30} />}
+                      >
                         <PdfThumbnail
                           key={first.id}
                           file={first.file}
                           label={first.file.name}
                         />
                       </Suspense>
-                    ) : ["png", "jpg", "jpeg"].includes(first.kind) ? (
-                      <img src={first.url} alt={first.file.name} />
+                    ) : ["png", "jpg", "jpeg"].includes(
+                        first.kind,
+                      ) ? (
+                      <img
+                        src={first.url}
+                        alt={first.file.name}
+                      />
                     ) : (
                       <FileText size={38} />
                     )}
                   </div>
+
                   <div className="start-file-details">
                     <span className="start-file-ready">
                       <ShieldCheck size={14} />
                       {s.ready}
                     </span>
+
                     <div className="start-file-list">
                       {files.map((file) => (
-                        <div className="start-file" key={file.id}>
+                        <div
+                          className="start-file"
+                          key={file.id}
+                        >
                           <button
                             className="start-file-select"
-                            onClick={() => setSelectedId(file.id)}
-                            aria-pressed={first?.id === file.id}
+                            onClick={() =>
+                              setSelectedId(file.id)
+                            }
+                            aria-pressed={
+                              first?.id === file.id
+                            }
                           >
-                            <bdi title={file.file.name}>{file.file.name}</bdi>
-                            <small>{formatBytes(file.file.size)}</small>
+                            <bdi title={file.file.name}>
+                              {file.file.name}
+                            </bdi>
+                            <small>
+                              {formatBytes(file.file.size)}
+                            </small>
                           </button>
+
                           <button
                             className="icon-button remove-file"
                             aria-label={`${t.remove}: ${file.file.name}`}
-                            onClick={() => removeFile(file.id)}
+                            onClick={() =>
+                              removeFile(file.id)
+                            }
                           >
                             <X size={15} />
                           </button>
                         </div>
                       ))}
                     </div>
-                    <button className="start-add-files" onClick={upload}>
+
+                    <button
+                      className="start-add-files"
+                      onClick={upload}
+                    >
                       <FilePlus2 size={16} />
                       {s.addMore}
                     </button>
@@ -169,57 +282,101 @@ export function StartCard({
               )}
             </div>
           </div>
+
           <form
             className="start-request"
             onSubmit={(event) => {
               event.preventDefault();
-              if (files.length) send();
+              send();
             }}
           >
             <label htmlFor="lexi-prompt">
               <span>02</span>
               {s.request}
             </label>
+
             <textarea
               ref={inputRef}
               id="lexi-prompt"
               value={draft}
-              onChange={(event) => setDraft(event.target.value)}
+              onChange={(event) =>
+                setDraft(event.target.value)
+              }
               maxLength={8000}
               rows={5}
+              style={{
+                flex: "none",
+                resize: "none",
+              }}
               placeholder={s.placeholder}
               dir="auto"
+              aria-describedby="start-message-hint"
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  send();
+                }
+              }}
             />
+
             <div className="start-suggestions">
               <button
                 type="button"
-                onClick={() => suggest("summarize-contract")}
+                onClick={() =>
+                  suggest("summarize-contract")
+                }
               >
                 {s.summary}
               </button>
-              <button type="button" onClick={() => suggest("translate-layout")}>
+
+              <button
+                type="button"
+                onClick={() =>
+                  suggest("translate-layout")
+                }
+              >
                 {s.translate}
               </button>
-              <button type="button" onClick={() => suggest("contract-risks")}>
+
+              <button
+                type="button"
+                onClick={() =>
+                  suggest("contract-risks")
+                }
+              >
                 {s.extract}
               </button>
             </div>
+
             <button
               type="submit"
               className="start-submit"
-              disabled={!files.length || !draft.trim()}
-              title={!files.length ? s.needFile : undefined}
+              disabled={!draft.trim()}
+              aria-describedby="start-message-hint"
             >
               {s.send}
               <ArrowRight size={17} />
             </button>
+
+            <p
+              className="start-message-hint"
+              id="start-message-hint"
+            >
+              {s.messageHint}
+            </p>
           </form>
         </div>
+
         <p className="start-privacy">
           <ShieldCheck size={14} />
           {s.local}
         </p>
       </section>
+
       <button className="start-demo-link" onClick={demo}>
         <Sparkles size={15} />
         {s.demo}
