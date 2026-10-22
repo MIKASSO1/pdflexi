@@ -19,7 +19,7 @@
     "tools:sync": "node scripts/sync-tools.mjs && prettier --write packages/tools/src/{index,loaders,translations}.ts"
   },
   "dependencies": {
-    "lucide-react": "^0.468.0",
+    "lucide-react": "^1.59.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.296",
     "react": "^19.0.0",
