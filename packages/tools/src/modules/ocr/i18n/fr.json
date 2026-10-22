@@ -1,0 +1,5 @@
+{
+  "name": "Extraire le texte / OCR",
+  "description": "Lisez le texte et les pages numérisées.",
+  "prompt": "Extrais le texte de mon PDF avec OCR pour les pages numérisées."
+}

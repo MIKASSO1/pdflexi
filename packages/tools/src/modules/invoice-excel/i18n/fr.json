@@ -1,0 +1,5 @@
+{
+  "name": "Factures vers Excel",
+  "description": "Transformez les factures en lignes structurées.",
+  "prompt": "Extrais mes factures vers Excel et signale les valeurs incertaines."
+}

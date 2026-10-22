@@ -1,0 +1,5 @@
+{
+  "name": "Add watermark",
+  "description": "Make your mark",
+  "prompt": "Add a watermark to my PDF. Ask me for the text and position."
+}

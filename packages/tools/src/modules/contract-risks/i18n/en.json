@@ -1,0 +1,5 @@
+{
+  "name": "Spot risky clauses",
+  "description": "Flag terms worth a closer look. Not legal advice.",
+  "prompt": "Flag potentially risky clauses in this contract, with references and uncertainty."
+}

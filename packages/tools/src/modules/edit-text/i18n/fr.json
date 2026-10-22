@@ -1,0 +1,5 @@
+{
+  "name": "Modifier le texte PDF",
+  "description": "Décrivez le texte à modifier.",
+  "prompt": "Aide-moi à remplacer du texte en préservant la mise en page si possible."
+}

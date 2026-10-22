@@ -1,0 +1,5 @@
+{
+  "name": "Fill forms by chatting",
+  "description": "Tell Lexi the details. Let it find the fields.",
+  "prompt": "Help me fill in this PDF form. Ask only for the missing information."
+}

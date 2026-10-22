@@ -1,0 +1,5 @@
+{
+  "name": "Edit PDF text",
+  "description": "Describe your text changes",
+  "prompt": "Help me replace text in my PDF while preserving its layout where possible."
+}

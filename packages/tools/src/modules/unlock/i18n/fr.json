@@ -1,0 +1,5 @@
+{
+  "name": "Déverrouiller un PDF",
+  "description": "Retirez une protection avec autorisation.",
+  "prompt": "Aide-moi à déverrouiller un PDF auquel j’ai le droit d’accéder."
+}

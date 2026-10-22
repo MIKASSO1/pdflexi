@@ -1,0 +1,5 @@
+{
+  "name": "Compare two contracts",
+  "description": "See what changed, and where it matters.",
+  "prompt": "Compare these two contracts and explain what changed."
+}

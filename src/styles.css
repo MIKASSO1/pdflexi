@@ -5767,7 +5767,7 @@ textarea {
   .is-entry .start-card {
     border-radius: 8px;
   }
-}/* Clear availability, readable rails, and an expanding composer. */
+} /* Clear availability, readable rails, and an expanding composer. */
 
 .is-entry .sidebar {
   display: flex;
@@ -5919,4 +5919,81 @@ textarea {
   .is-entry .right-sidebar {
     display: none;
   }
+}
+
+/* Shared execution surface: existing workspace design, no external UI dependencies. */
+.execution-panel {
+  margin: 16px auto;
+  padding: 20px;
+  max-width: 1100px;
+  width: calc(100% - 32px);
+  border: 1px solid #dce2ed;
+  border-radius: 16px;
+  background: #fff;
+  color: #27344b;
+  overflow-wrap: anywhere;
+}
+.execution-heading,
+.execution-result {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.execution-panel p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.execution-panel h2 {
+  font-size: 18px;
+}
+.execution-panel button {
+  border: 1px solid #cbd5e1;
+  background: #f5f7fb;
+  color: #243c65;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 4px;
+}
+.execution-panel button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.execution-panel label {
+  display: block;
+  margin: 8px 0;
+}
+.execution-panel select,
+.execution-panel textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #27344b;
+}
+.execution-panel fieldset {
+  padding: 12px;
+  border: 1px solid #dce2ed;
+  min-width: 0;
+}
+.execution-panel input[type="checkbox"] {
+  margin-inline-end: 8px;
+}
+.execution-panel li {
+  margin: 8px 24px;
+}
+.execution-panel [role="alert"] {
+  color: #a52a33;
+}
+.execution-panel a {
+  color: #1e52a0;
+  text-decoration: underline;
+}
+.execution-result {
+  margin: 8px 0;
 }

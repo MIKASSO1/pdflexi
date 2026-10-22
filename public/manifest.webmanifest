@@ -1,0 +1,10 @@
+{
+  "name": "PDFlexi — Local document workspace",
+  "short_name": "PDFlexi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f4f2ee",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

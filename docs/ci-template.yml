@@ -1,3 +1,5 @@
+# The maintained workflow is .github/workflows/frontend.yml.
+# This legacy template is retained for existing links; use that workflow for new setups.
 name: Frontend checks
 on:
   push:
@@ -7,7 +9,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,10 +20,19 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
-      - run: npm run package:preview
+      - run: npm exec -- playwright install --with-deps chromium
+      - name: Browser regression tests against production build
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/pdflexi-preview.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          TEST_URL=http://localhost:4173 npm run test:e2e
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: pdflexi-frontend
-          path: |
-            dist/
-            artifacts/pdflexi-preview.html
+          name: pdflexi-qa
+          path: artifacts/qa/

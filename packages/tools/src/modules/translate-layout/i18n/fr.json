@@ -1,0 +1,5 @@
+{
+  "name": "Traduire et conserver la mise en page",
+  "description": "Changez de langue en préservant au mieux la mise en page.",
+  "prompt": "Traduis mon PDF en préservant au mieux la mise en page. Demande la langue cible."
+}

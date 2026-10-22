@@ -1,0 +1,5 @@
+{
+  "name": "A CV that fits the role",
+  "description": "Tailor your experience. Never invent it.",
+  "prompt": "Tailor my CV to this job description without inventing experience or qualifications."
+}

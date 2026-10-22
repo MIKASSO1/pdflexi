@@ -1,0 +1,5 @@
+{
+  "name": "Translate, keep the layout",
+  "description": "A new language. A familiar document layout, where possible.",
+  "prompt": "Translate my PDF, preserving the layout where possible. Ask for the target language."
+}

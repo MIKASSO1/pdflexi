@@ -81,8 +81,7 @@ export function StartCard({
 
   const s = { ...startCopy[locale], ...labels[locale] };
 
-  const first =
-    files.find((file) => file.id === selectedId) || files[0];
+  const first = files.find((file) => file.id === selectedId) || files[0];
 
   useLayoutEffect(() => {
     const input = inputRef.current;
@@ -98,8 +97,7 @@ export function StartCard({
         Math.max(minimum, input.scrollHeight),
       )}px`;
 
-      input.style.overflowY =
-        input.scrollHeight > 400 ? "auto" : "hidden";
+      input.style.overflowY = input.scrollHeight > 400 ? "auto" : "hidden";
     };
 
     resize();
@@ -110,10 +108,7 @@ export function StartCard({
   }, [inputRef, draft, locale]);
 
   return (
-    <div
-      className="start-screen"
-      dir={locale === "ar" ? "rtl" : "ltr"}
-    >
+    <div className="start-screen" dir={locale === "ar" ? "rtl" : "ltr"}>
       <div className="start-intro">
         <span className="start-eyebrow">
           <Sparkles size={16} />
@@ -145,10 +140,7 @@ export function StartCard({
         </div>
 
         {errors.length > 0 && (
-          <div
-            className="file-errors start-file-errors"
-            role="alert"
-          >
+          <div className="file-errors start-file-errors" role="alert">
             <div>
               <strong>{t.fileErrorTitle}</strong>
 
@@ -169,27 +161,16 @@ export function StartCard({
           </div>
         )}
 
-        <div
-          className={`start-columns ${
-            draft.length ? "is-composing" : ""
-          }`}
-        >
+        <div className={`start-columns ${draft.length ? "is-composing" : ""}`}>
           <div className="start-upload">
             <h2>
               <span>01</span>
               {s.upload}
             </h2>
 
-            <div
-              className={`start-dropzone ${
-                first ? "has-file" : ""
-              }`}
-            >
+            <div className={`start-dropzone ${first ? "has-file" : ""}`}>
               {!first ? (
-                <button
-                  className="start-drop-button"
-                  onClick={upload}
-                >
+                <button className="start-drop-button" onClick={upload}>
                   <span className="start-upload-icon">
                     <Upload size={25} />
                   </span>
@@ -207,22 +188,15 @@ export function StartCard({
                 <>
                   <div className="start-file-preview">
                     {first.kind === "pdf" ? (
-                      <Suspense
-                        fallback={<FileText size={30} />}
-                      >
+                      <Suspense fallback={<FileText size={30} />}>
                         <PdfThumbnail
                           key={first.id}
                           file={first.file}
                           label={first.file.name}
                         />
                       </Suspense>
-                    ) : ["png", "jpg", "jpeg"].includes(
-                        first.kind,
-                      ) ? (
-                      <img
-                        src={first.url}
-                        alt={first.file.name}
-                      />
+                    ) : ["png", "jpg", "jpeg"].includes(first.kind) ? (
+                      <img src={first.url} alt={first.file.name} />
                     ) : (
                       <FileText size={38} />
                     )}
@@ -236,33 +210,20 @@ export function StartCard({
 
                     <div className="start-file-list">
                       {files.map((file) => (
-                        <div
-                          className="start-file"
-                          key={file.id}
-                        >
+                        <div className="start-file" key={file.id}>
                           <button
                             className="start-file-select"
-                            onClick={() =>
-                              setSelectedId(file.id)
-                            }
-                            aria-pressed={
-                              first?.id === file.id
-                            }
+                            onClick={() => setSelectedId(file.id)}
+                            aria-pressed={first?.id === file.id}
                           >
-                            <bdi title={file.file.name}>
-                              {file.file.name}
-                            </bdi>
-                            <small>
-                              {formatBytes(file.file.size)}
-                            </small>
+                            <bdi title={file.file.name}>{file.file.name}</bdi>
+                            <small>{formatBytes(file.file.size)}</small>
                           </button>
 
                           <button
                             className="icon-button remove-file"
                             aria-label={`${t.remove}: ${file.file.name}`}
-                            onClick={() =>
-                              removeFile(file.id)
-                            }
+                            onClick={() => removeFile(file.id)}
                           >
                             <X size={15} />
                           </button>
@@ -270,10 +231,7 @@ export function StartCard({
                       ))}
                     </div>
 
-                    <button
-                      className="start-add-files"
-                      onClick={upload}
-                    >
+                    <button className="start-add-files" onClick={upload}>
                       <FilePlus2 size={16} />
                       {s.addMore}
                     </button>
@@ -299,9 +257,7 @@ export function StartCard({
               ref={inputRef}
               id="lexi-prompt"
               value={draft}
-              onChange={(event) =>
-                setDraft(event.target.value)
-              }
+              onChange={(event) => setDraft(event.target.value)}
               maxLength={8000}
               rows={5}
               style={{
@@ -326,28 +282,16 @@ export function StartCard({
             <div className="start-suggestions">
               <button
                 type="button"
-                onClick={() =>
-                  suggest("summarize-contract")
-                }
+                onClick={() => suggest("summarize-contract")}
               >
                 {s.summary}
               </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  suggest("translate-layout")
-                }
-              >
+              <button type="button" onClick={() => suggest("translate-layout")}>
                 {s.translate}
               </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  suggest("contract-risks")
-                }
-              >
+              <button type="button" onClick={() => suggest("contract-risks")}>
                 {s.extract}
               </button>
             </div>
@@ -362,10 +306,7 @@ export function StartCard({
               <ArrowRight size={17} />
             </button>
 
-            <p
-              className="start-message-hint"
-              id="start-message-hint"
-            >
+            <p className="start-message-hint" id="start-message-hint">
               {s.messageHint}
             </p>
           </form>

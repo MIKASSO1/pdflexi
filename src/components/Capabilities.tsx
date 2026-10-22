@@ -1,3 +1,5 @@
+import { toolDefinitions } from "../../packages/tools/src/index.ts";
+import { executionCopy } from "../i18n/execution";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
@@ -91,7 +93,7 @@ export function Capabilities({
             className={tier === "free" ? "free-tool" : "pro-tool"}
             onClick={() => onSelect(c)}
             aria-pressed={activeId === c.id}
-            title={c.description[locale]}
+            title={`${c.description[locale]} — ${toolDefinitions.find((tool) => tool.id === c.id)?.status === "ready" ? executionCopy[locale].ready : executionCopy[locale].planned}`}
           >
             {tier === "free" ? (
               <>
@@ -100,6 +102,12 @@ export function Capabilities({
                 </span>
                 <span className="tool-names">
                   <strong>{c.name[locale]}</strong>
+                  <small>
+                    {toolDefinitions.find((tool) => tool.id === c.id)
+                      ?.status === "ready"
+                      ? executionCopy[locale].ready
+                      : executionCopy[locale].planned}
+                  </small>
                   {locale !== "en" && (
                     <small lang="en" dir="ltr">
                       {c.name.en}

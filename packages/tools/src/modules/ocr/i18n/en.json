@@ -1,0 +1,5 @@
+{
+  "name": "Extract text / OCR",
+  "description": "Read digital or scanned text",
+  "prompt": "Extract the text from my PDF, using OCR for scanned pages."
+}

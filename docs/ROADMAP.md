@@ -1,5 +1,7 @@
 # Four-phase delivery plan
 
+Current increment: the modular local execution foundation is implemented with 8 real worker executors, validated multi-step planning, explicit confirmation, optional IndexedDB saving and bounded static-resource Offline caching. See [architecture V2](ARCHITECTURE-V2.ar.md). The remaining 22 tools, LLM, accounts and commercial controls are not complete.
+
 All 30 capabilities remain in product scope. These phases divide implementation work, not the intended product into three-tool releases.
 
 1. **Foundation and frontend (this version):** complete workspace shell, capability registry, chat UX, original-file preview, responsive/RTL layout, localization foundation, informational dialogs and tests. Not an operational PDF/AI service.

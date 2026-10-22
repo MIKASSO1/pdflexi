@@ -1,0 +1,5 @@
+{
+  "name": "Split PDF",
+  "description": "Separate your pages",
+  "prompt": "Split my PDF into separate files."
+}

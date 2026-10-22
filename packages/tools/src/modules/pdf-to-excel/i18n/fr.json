@@ -1,0 +1,5 @@
+{
+  "name": "PDF en Excel",
+  "description": "Transférez les tableaux vers Excel.",
+  "prompt": "Convertis les tableaux de mon PDF en Excel."
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Check for tampering",
+  "description": "Look for editing signals in stamps and signatures. Not proof of authenticity.",
+  "prompt": "Check for possible manipulation of stamps or signatures, explaining the limitations."
+}

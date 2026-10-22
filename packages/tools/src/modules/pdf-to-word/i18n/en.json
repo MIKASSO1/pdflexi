@@ -1,0 +1,5 @@
+{
+  "name": "PDF to Word",
+  "description": "From PDF to editable text",
+  "prompt": "Convert my PDF to an editable Word document."
+}

@@ -7,19 +7,11 @@ export type Message = {
   content: string;
   attachmentNames?: string[];
 };
-// Integration boundary for phases 2–3. Never execute arbitrary code from a model.
-export type ToolCall = {
-  capabilityId: Capability["id"];
-  inputFileIds: string[];
-  parameters: Record<string, unknown>;
-};
-export type ExecutionResult =
-  | { status: "success"; outputFileIds: string[]; warnings: string[] }
-  | { status: "unsupported" | "failed"; reason: string };
-export interface DocumentEngine {
-  execute(
-    call: ToolCall,
-    files: Attachment[],
-    signal: AbortSignal,
-  ): Promise<ExecutionResult>;
-}
+// One source of truth for planner/executor contracts across the workspace.
+export type {
+  ExecutionPlan,
+  PlanStep,
+  Artifact,
+  ExecutionAdapter,
+  InputDocument,
+} from "../../packages/core/src/index.ts";

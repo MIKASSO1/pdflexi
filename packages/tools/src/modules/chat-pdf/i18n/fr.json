@@ -1,0 +1,5 @@
+{
+  "name": "Discuter avec un PDF",
+  "description": "Posez vos questions sur votre document.",
+  "prompt": "Aide-moi à comprendre ce document en citant les passages pertinents."
+}

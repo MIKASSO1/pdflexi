@@ -1,0 +1,5 @@
+{
+  "name": "Protect PDF",
+  "description": "Add password protection",
+  "prompt": "Help me password-protect my PDF. Do not ask for passwords in chat."
+}

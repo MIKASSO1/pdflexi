@@ -1,0 +1,5 @@
+{
+  "name": "تحويل PDF إلى Excel",
+  "description": "انقل جداول PDF إلى ملف Excel.",
+  "prompt": "حوّل الجداول في ملف PDF إلى Excel."
+}

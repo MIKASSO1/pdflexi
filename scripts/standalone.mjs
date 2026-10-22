@@ -13,6 +13,8 @@ const result = await build({
     "process.env.NODE_ENV": '"production"',
     "import.meta.env.BASE_URL": '"./"',
     "import.meta.env.PDFLEXI_STANDALONE": "true",
+    "import.meta.env.PROD": "false",
+    "import.meta.url": '"about:blank"',
   },
   plugins: [
     {

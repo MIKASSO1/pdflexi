@@ -1,0 +1,5 @@
+{
+  "name": "Ajouter un filigrane",
+  "description": "Ajoutez un filigrane texte ou image.",
+  "prompt": "Ajoute un filigrane à mon PDF. Demande le texte et la position."
+}

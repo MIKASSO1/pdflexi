@@ -1,0 +1,5 @@
+{
+  "name": "A contract in 3 lines",
+  "description": "The essentials, without the information overload.",
+  "prompt": "Summarize this contract in three clear lines."
+}

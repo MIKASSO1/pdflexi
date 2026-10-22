@@ -1,0 +1,5 @@
+{
+  "name": "Word to PDF",
+  "description": "Word documents, in PDF",
+  "prompt": "Convert my Word document to PDF."
+}
