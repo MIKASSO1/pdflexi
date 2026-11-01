@@ -150,20 +150,23 @@ try {
   await run(
     "entry keeps the latest three-column layout and an adjacent upload/request card",
     async () => {
-      await page.waitForSelector(".start-card");
-      assert.equal(await page.locator(".start-card").count(), 1);
-      assert.equal(await page.locator(".sidebar:visible").count(), 2);
-      const a = await page.locator(".start-upload").boundingBox(),
-        b = await page.locator(".start-request").boundingBox();
+      await page.waitForSelector(".hero-card");
+      assert.equal(await page.locator(".hero-card").count(), 1);
+      assert.equal(
+        await page.locator(".sh-sidebar:visible, .sh-rail:visible").count(),
+        2,
+      );
+      const a = await page.locator(".hero-composer").boundingBox(),
+        b = await page.locator(".hero-drop").boundingBox();
       assert.ok(a.x + a.width < b.x);
-      assert.ok(await page.locator(".start-submit").isDisabled());
+      assert.ok(await page.locator(".hero-send").isDisabled());
       await capture("new-entry-desktop");
     },
   );
   await run(
     "all 30 tools are available on demand; selecting one only drafts",
     async () => {
-      await page.locator(".start-card-heading>button").click();
+      await page.locator(".hero-tools-chip").click();
       assert.equal(await page.locator('dialog [data-tier="free"]').count(), 20);
       await page.locator(".capability-tabs button").last().click();
       assert.equal(await page.locator('dialog [data-tier="pro"]').count(), 10);
@@ -183,19 +186,16 @@ try {
         buffer: Buffer.from("not pdf"),
       });
       await page.waitForSelector(".file-errors");
-      assert.equal(await page.locator(".start-file").count(), 0);
+      assert.equal(await page.locator(".hero-file").count(), 0);
       await page.locator(".file-errors button").click();
       await page.locator("input[type=file]").setInputFiles(fixturePath);
-      await page.waitForSelector(".start-thumbnail canvas");
+      await page.waitForSelector(".file-thumbnail canvas");
       await page.waitForFunction(
         () =>
-          document.querySelector(".start-thumbnail canvas")?.style
-            .visibility === "visible",
+          document.querySelector(".file-thumbnail canvas")?.style.visibility ===
+          "visible",
       );
-      assert.equal(
-        await page.locator(".start-dropzone .start-file").count(),
-        1,
-      );
+      assert.equal(await page.locator(".hero-dropzone .hero-file").count(), 1);
       assert.equal(await page.locator(".is-split").count(), 0);
       await capture("new-entry-uploaded");
     },
@@ -203,7 +203,7 @@ try {
   await run("duplicate file is rejected without losing the draft", async () => {
     await page.locator("input[type=file]").setInputFiles(fixturePath);
     await page.waitForSelector(".file-errors");
-    assert.equal(await page.locator(".start-file").count(), 1);
+    assert.equal(await page.locator(".hero-file").count(), 1);
     assert.ok((await page.locator("#lexi-prompt").inputValue()).length > 0);
     await page.locator(".file-errors button").click();
   });
@@ -213,7 +213,7 @@ try {
       await page
         .locator("#lexi-prompt")
         .fill("Summarize this agreement in three clear points.");
-      await page.locator(".start-submit").click();
+      await page.locator(".hero-send").click();
       await page.waitForSelector(".pdf-page .annotation-layer");
       await page.waitForFunction(
         () => document.querySelector(".pdf-page canvas")?.width > 0,
@@ -616,7 +616,7 @@ try {
             locale,
           );
           await mobile.reload();
-          await mobile.waitForSelector(".start-card");
+          await mobile.waitForSelector(".hero-card");
           assert.ok(
             await mobile.evaluate(
               () => document.documentElement.scrollWidth <= innerWidth,
@@ -628,7 +628,7 @@ try {
           });
           await mobile.locator("input[type=file]").setInputFiles(fixturePath);
           await mobile.locator("#lexi-prompt").fill("Review");
-          await mobile.locator(".start-submit").click();
+          await mobile.locator(".hero-send").click();
           await mobile.waitForSelector(".annotation-layer");
           await mobile.locator(".studio-canvas").scrollIntoViewIfNeeded();
           await mobile.waitForTimeout(500);

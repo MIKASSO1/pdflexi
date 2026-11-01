@@ -1,17 +1,19 @@
-import { StartCard } from "./components/StartCard";
+import { Hero } from "./features/home/Hero";
+import { HomeSections } from "./features/home/HomeSections";
+import { Sidebar } from "./features/shell/Sidebar";
+import { TopBar } from "./features/shell/TopBar";
+import { IconRail } from "./features/shell/IconRail";
+import { defaultProfile } from "./data/profile";
 import { useDocumentEdits } from "./features/editor/useDocumentEdits";
 import { editorCopy } from "./data/editor";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
-  ArrowRight,
   Check,
-  ChevronDown,
   FileText,
   Globe2,
   Info,
   Layers3,
   ListFilter,
-  Menu,
   MessageSquare,
   Plus,
   ShieldCheck,
@@ -251,7 +253,7 @@ export default function App() {
 
   return (
     <div
-      className="app"
+      className="app shell"
       onDragEnter={(e) => {
         if (e.dataTransfer.types.includes("Files")) {
           e.preventDefault();
@@ -275,252 +277,209 @@ export default function App() {
         addFiles(Array.from(e.dataTransfer.files));
       }}
     >
-      <div className="aurora-background" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </div>
-
       <a className="skip-link" href="#main-workspace">
         {t.workspace}
       </a>
 
-      <header className="site-header">
-        <div className="header-inner">
-          <div className="header-lockup">
-            <a className="brand" href="#main-workspace" aria-label="PDFlexi">
-              <span className="brand-icon">
-                <FileText size={22} />
-              </span>
-              <span>
-                PDF<span className="brand-light">lexi</span>
-                <i />
-              </span>
-            </a>
+      <Sidebar
+        locale={locale}
+        profile={defaultProfile}
+        activeId={activeCapabilityId}
+        onSelect={chooseCapability}
+        onOpenTools={() => openCapabilities("free")}
+        onNewTask={newChat}
+        onMyPdfs={() => setModal("files")}
+        onUpgrade={() => setModal("plans")}
+        onProject={() => setNotice(t.comingSoon)}
+      />
 
-            <div
-              className="header-promise"
-              dir={locale === "ar" ? "rtl" : "ltr"}
-            >
-              <h1>{w.hero}</h1>
+      <IconRail
+        locale={locale}
+        profile={defaultProfile}
+        actions={{
+          privacy: () => setModal("privacy"),
+          smart: () => openCapabilities("pro"),
+          chat: () => prompt.current?.focus(),
+          watermark: () => suggest("watermark"),
+          tools: () => openCapabilities("free"),
+          files: () => setModal("files"),
+          account: () => setModal("plans"),
+        }}
+      />
+
+      <div className="sh-main">
+        <TopBar
+          t={t}
+          locale={locale}
+          executionLabel={executionCopy[locale].title}
+          onHow={() => setModal("how")}
+          onPlans={() => setModal("plans")}
+          onExecution={() => setExecutionOpen(true)}
+          onLanguage={() => setModal("languages")}
+          onNewChat={newChat}
+          onMenu={() => setModal("menu")}
+        />
+
+        <div className={`sh-content ${isLive ? "is-live" : "is-entry"}`}>
+          <main className="sh-page" id="main-workspace" tabIndex={-1}>
+            {isLive && <h1 className="sr-only">{w.hero}</h1>}
+            <div className="mobile-shortcuts">
+              <button onClick={() => openCapabilities("free")}>
+                <ListFilter size={16} />
+                {t.freeTools}
+                <span>20</span>
+              </button>
+
+              <button onClick={() => openCapabilities("pro")}>
+                <Sparkles size={16} />
+                {t.smart}
+                <span className="coming-soon-badge">{t.comingSoon}</span>
+              </button>
             </div>
-          </div>
-
-          <nav className="desktop-navigation" aria-label={t.workspace}>
-            <a className="nav-active" href="#main-workspace">
-              <MessageSquare size={16} />
-              {t.workspace}
-            </a>
-            <button onClick={() => setModal("how")}>{t.how}</button>
-            <button onClick={() => setModal("plans")}>{t.pricing}</button>
-          </nav>
-
-          <div className="header-actions">
-            <button
-              className="icon-button"
-              onClick={() => setExecutionOpen(true)}
-              aria-label={executionCopy[locale].title}
-              title={executionCopy[locale].title}
-            >
-              <Layers3 size={20} />
-            </button>
-            <button
-              className="language-button"
-              onClick={() => setModal("languages")}
-              aria-label={t.language}
-            >
-              <Globe2 size={17} />
-              <span>{locale.toUpperCase()}</span>
-              <ChevronDown size={12} />
-            </button>
-
-            <button className="new-chat-button" onClick={newChat}>
-              <Plus size={16} />
-              <span>{t.newChat}</span>
-            </button>
-
-            <button
-              className="mobile-menu-button icon-button"
-              onClick={() => setModal("menu")}
-              aria-label="Menu"
-            >
-              <Menu size={21} />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className={`workspace-layout ${isLive ? "is-live" : "is-entry"}`}>
-        <aside className="sidebar left-sidebar" aria-label={t.freeTools}>
-          <Capabilities
-            locale={locale}
-            t={t}
-            onSelect={chooseCapability}
-            activeId={activeCapabilityId}
-            tier="free"
-          />
-
-          <button className="sidebar-about" onClick={() => setModal("privacy")}>
-            <ShieldCheck size={14} />
-            {t.privacy}
-            <ArrowRight size={12} />
-          </button>
-        </aside>
-
-        <main className="middle-column" id="main-workspace">
-          <div className="mobile-shortcuts">
-            <button onClick={() => openCapabilities("free")}>
-              <ListFilter size={16} />
-              {t.freeTools}
-              <span>20</span>
-            </button>
-
-            <button onClick={() => openCapabilities("pro")}>
-              <Sparkles size={16} />
-              {t.smart}
-              <span className="coming-soon-badge">{t.comingSoon}</span>
-            </button>
-          </div>
-          {executionOpen && !demoMode && !modal && (
-            <Dialog
-              title={executionCopy[locale].title}
-              closeLabel={executionCopy[locale].close}
-              onClose={() => setExecutionOpen(false)}
-              wide
-            >
-              <Suspense
-                fallback={<p role="status">{executionCopy[locale].running}</p>}
+            {executionOpen && !demoMode && !modal && (
+              <Dialog
+                title={executionCopy[locale].title}
+                closeLabel={executionCopy[locale].close}
+                onClose={() => setExecutionOpen(false)}
+                wide
               >
-                <ExecutionPanel
-                  execution={execution}
-                  files={files}
-                  locale={locale}
-                  initialTool={activeCapabilityId}
-                  close={() => setExecutionOpen(false)}
-                />
-              </Suspense>
-            </Dialog>
-          )}
-          {!isLive ? (
-            <StartCard
-              locale={locale}
-              t={t}
-              files={files}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-              errors={fileErrors}
-              clearErrors={clearErrors}
-              draft={draft}
-              setDraft={setDraft}
-              send={send}
-              upload={upload}
-              removeFile={removeFile}
-              suggest={suggest}
-              tools={() => openCapabilities("free")}
-              demo={() => setDemoMode(true)}
-              inputRef={prompt}
-            />
-          ) : (
-            <div
-              className={`conversation-workspace is-split ${!demoMode && !files.length ? "is-chat-only" : ""}`}
-            >
-              <div
-                className="conversation-pane"
-                id="lexi-chat-panel"
-                dir={locale === "ar" ? "rtl" : "ltr"}
-              >
-                <Chat
-                  t={t}
-                  locale={locale}
-                  tools={() => openCapabilities("free")}
-                  messages={demoMode ? demoMessages : messages}
-                  demoLabel={demoMode ? w.demoTag : undefined}
-                  draft={draft}
-                  setDraft={setDraft}
-                  send={send}
-                  attach={upload}
-                  newChat={newChat}
-                  suggest={suggest}
-                  attachments={files}
-                  inputRef={prompt}
-                />
-              </div>
-
-              <div
-                className="live-canvas-pane"
-                dir={locale === "ar" ? "rtl" : "ltr"}
-              >
-                {demoMode ? (
-                  <LiveDemo
-                    words={w}
-                    stage={demoStage}
-                    back={() => setDemoMode(false)}
-                  />
-                ) : (
-                  <DocumentCanvas
-                    {...canvasProps}
-                    onExpand={() => setModal("canvas")}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="workspace-meta">
-            <span>
-              <ShieldCheck size={13} />
-              {t.localShort}
-            </span>
-
-            <button onClick={() => setModal("files")}>
-              <Layers3 size={13} />
-              {files.length} {t.fileCount}
-            </button>
-
-            <span className="execution-status">{t.previewLabel}</span>
-          </div>
-
-          {isLive && fileErrors.length > 0 && (
-            <section className="file-errors" role="alert">
-              <div>
-                <Info size={17} />
-                <strong>{t.fileErrorTitle}</strong>
-                <button
-                  className="icon-button"
-                  aria-label={t.close}
-                  onClick={clearErrors}
+                <Suspense
+                  fallback={
+                    <p role="status">{executionCopy[locale].running}</p>
+                  }
                 >
-                  <X size={16} />
-                </button>
+                  <ExecutionPanel
+                    execution={execution}
+                    files={files}
+                    locale={locale}
+                    initialTool={activeCapabilityId}
+                    close={() => setExecutionOpen(false)}
+                  />
+                </Suspense>
+              </Dialog>
+            )}
+            {!isLive ? (
+              <Hero
+                locale={locale}
+                t={t}
+                profile={defaultProfile}
+                files={files}
+                selectedId={selectedId}
+                setSelectedId={setSelectedId}
+                errors={fileErrors}
+                clearErrors={clearErrors}
+                draft={draft}
+                setDraft={setDraft}
+                send={send}
+                upload={upload}
+                removeFile={removeFile}
+                clearFiles={() => files.forEach((file) => removeFile(file.id))}
+                suggest={suggest}
+                tools={() => openCapabilities("free")}
+                demo={() => setDemoMode(true)}
+                inputRef={prompt}
+              />
+            ) : (
+              <div
+                className={`conversation-workspace is-split ${!demoMode && !files.length ? "is-chat-only" : ""}`}
+              >
+                <div
+                  className="conversation-pane"
+                  id="lexi-chat-panel"
+                  dir={locale === "ar" ? "rtl" : "ltr"}
+                >
+                  <Chat
+                    t={t}
+                    locale={locale}
+                    tools={() => openCapabilities("free")}
+                    messages={demoMode ? demoMessages : messages}
+                    demoLabel={demoMode ? w.demoTag : undefined}
+                    draft={draft}
+                    setDraft={setDraft}
+                    send={send}
+                    attach={upload}
+                    newChat={newChat}
+                    suggest={suggest}
+                    attachments={files}
+                    inputRef={prompt}
+                  />
+                </div>
+
+                <div
+                  className="live-canvas-pane"
+                  dir={locale === "ar" ? "rtl" : "ltr"}
+                >
+                  {demoMode ? (
+                    <LiveDemo
+                      words={w}
+                      stage={demoStage}
+                      back={() => setDemoMode(false)}
+                    />
+                  ) : (
+                    <DocumentCanvas
+                      {...canvasProps}
+                      onExpand={() => setModal("canvas")}
+                    />
+                  )}
+                </div>
               </div>
+            )}
 
-              <ul>
-                {fileErrors.map((error, i) => (
-                  <li key={i}>{error}</li>
-                ))}
-              </ul>
-            </section>
-          )}
+            <div className="workspace-meta">
+              <span>
+                <ShieldCheck size={13} />
+                {t.localShort}
+              </span>
 
-          <footer className="workspace-footer">
-            <span>{t.footer}</span>
-            <button onClick={() => setModal("privacy")}>
-              PDFlexi © 2026
-              <ShieldCheck size={12} />
-            </button>
-          </footer>
-        </main>
+              <button onClick={() => setModal("files")}>
+                <Layers3 size={13} />
+                {files.length} {t.fileCount}
+              </button>
 
-        <aside className="sidebar right-sidebar" aria-label={t.proTitle}>
-          <Capabilities
-            locale={locale}
-            t={t}
-            onSelect={chooseCapability}
-            activeId={activeCapabilityId}
-            tier="pro"
-          />
-          <p className="right-disclaimer">{t.legal}</p>
-        </aside>
+              <span className="execution-status">{t.previewLabel}</span>
+            </div>
+
+            {isLive && fileErrors.length > 0 && (
+              <section className="file-errors" role="alert">
+                <div>
+                  <Info size={17} />
+                  <strong>{t.fileErrorTitle}</strong>
+                  <button
+                    className="icon-button"
+                    aria-label={t.close}
+                    onClick={clearErrors}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <ul>
+                  {fileErrors.map((error, i) => (
+                    <li key={i}>{error}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {isLive ? (
+              <footer className="workspace-footer">
+                <span>{t.footer}</span>
+                <button onClick={() => setModal("privacy")}>
+                  PDFlexi © 2026
+                  <ShieldCheck size={12} />
+                </button>
+              </footer>
+            ) : (
+              <HomeSections
+                locale={locale}
+                onSelectTool={suggest}
+                onOpenSample={() => setNotice(t.comingSoon)}
+                onTryMulti={() => setDemoMode(true)}
+                onLearnMore={() => setModal("how")}
+              />
+            )}
+          </main>
+        </div>
       </div>
 
       <input

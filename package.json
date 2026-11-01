@@ -16,7 +16,7 @@
     "postinstall": "node scripts/copy-pdf-assets.mjs",
     "predev": "node scripts/copy-pdf-assets.mjs",
     "lint": "eslint src packages tests scripts vite.config.ts",
-    "tools:sync": "node scripts/sync-tools.mjs && prettier --write packages/tools/src/{index,loaders,translations}.ts"
+    "tools:sync": "node scripts/sync-tools.mjs && prettier --write packages/tools/src/index.ts packages/tools/src/loaders.ts packages/tools/src/translations.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

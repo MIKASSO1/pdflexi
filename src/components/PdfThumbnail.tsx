@@ -54,7 +54,7 @@ export default function PdfThumbnail({
     };
   }, [file]);
   return (
-    <div className="start-thumbnail">
+    <div className="file-thumbnail">
       {!ready && <FileText size={32} />}
       <canvas
         ref={ref}
