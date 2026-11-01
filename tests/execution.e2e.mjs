@@ -79,8 +79,8 @@ try {
     "uploading originals does not execute tools or send files to a server",
     async () => {
       await page.locator("input[type=file]").setInputFiles(fixtures);
-      await page.waitForSelector(".start-file");
-      assert.equal(await page.locator(".start-file").count(), 2);
+      await page.waitForSelector(".hero-file");
+      assert.equal(await page.locator(".hero-file").count(), 2);
       assert.equal(await page.evaluate(() => window.__toolWorkers), 0);
       assert.equal(badRequests.length, 0);
     },
@@ -91,7 +91,7 @@ try {
       await page
         .locator("#lexi-prompt")
         .fill("merge files then delete pages 2 then rotate 90");
-      await page.locator(".start-submit").click();
+      await page.locator(".hero-send").click();
       await panel().waitFor();
       assert.equal(await panel().locator("ol li").count(), 3);
       assert.equal(await page.evaluate(() => window.__toolWorkers), 0);
@@ -194,7 +194,7 @@ try {
     "invalid structured parameters are rejected before a worker starts",
     async () => {
       await page.locator("input[type=file]").setInputFiles(fixtures[0]);
-      await page.waitForSelector(".start-file");
+      await page.waitForSelector(".hero-file");
       await openPanel();
       await panel().getByRole("combobox").selectOption("rotate");
       await panel().getByRole("textbox").fill('{"degrees":45}');
@@ -248,7 +248,7 @@ try {
       await page.reload();
       await page.waitForFunction(() => !!navigator.serviceWorker.controller);
       await page.locator("input[type=file]").setInputFiles(fixtures[0]);
-      await page.waitForSelector(".start-file");
+      await page.waitForSelector(".hero-file");
       await openPanel();
       await panel().getByRole("combobox").selectOption("rotate");
       await panel()
@@ -271,9 +271,9 @@ try {
       });
       await context.setOffline(true);
       await page.reload();
-      await page.locator(".start-card").waitFor();
+      await page.locator(".hero-card").waitFor();
       await page.locator("input[type=file]").setInputFiles(fixtures[0]);
-      await page.waitForSelector(".start-file");
+      await page.waitForSelector(".hero-file");
       await openPanel();
       await panel().getByRole("combobox").selectOption("rotate");
       await panel()
