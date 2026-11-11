@@ -29,7 +29,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.6.2",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.2",
     "playwright": "^1.51.0",
     "postcss": "^8.5.32",
     "prettier": "^3.9.10",
