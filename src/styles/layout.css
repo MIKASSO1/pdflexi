@@ -1,0 +1,224 @@
+.leftSidebarScroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.35) transparent;
+}
+
+.leftSidebarScroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.leftSidebarScroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 40px 0;
+}
+
+.leftSidebarScroll::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.35);
+  border-radius: 999px;
+}
+
+.leftSidebarScroll::-webkit-scrollbar-thumb:hover {
+  background: #7c3aed;
+}
+
+.hideMob {
+  display: flex;
+}
+
+.hamburgerBtn {
+  display: none !important;
+}
+
+.mobileOnlyBtn {
+  display: none !important;
+}
+
+.rightBar {
+  display: flex;
+}
+
+.headerFixed {
+  left: 280px !important;
+  right: 56px !important;
+}
+
+[dir="rtl"] .headerFixed {
+  left: 56px !important;
+  right: 280px !important;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 28px;
+  text-align: left;
+}
+
+.plansGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px auto 0;
+  max-width: 840px;
+  text-align: left;
+}
+
+[dir="rtl"] .plansGrid,
+[dir="rtl"] .plansGrid2 {
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .hideMob {
+    display: none !important;
+  }
+  .hamburgerBtn {
+    display: grid !important;
+    place-items: center;
+  }
+  .mobileOnlyBtn {
+    display: block !important;
+  }
+  .hideOnSmall {
+    display: none !important;
+  }
+  .rightBar {
+    display: none !important;
+  }
+  .headerFixed,
+  [dir="rtl"] .headerFixed {
+    left: 0 !important;
+    right: 0 !important;
+  }
+  .mainResponsive {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .threeColGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .pagePad {
+    padding: 32px 20px !important;
+  }
+  .plansGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .ws-main-row {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .ws-left {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 44vh !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    order: 2;
+  }
+  .ws-right-wrap {
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: column !important;
+    padding: 10px !important;
+    order: 1;
+    overflow: visible !important;
+  }
+  .ws-middle {
+    width: 100% !important;
+    min-height: 62vh !important;
+    flex: none !important;
+  }
+  .ws-queue {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    order: 3;
+  }
+}
+
+@media (max-width: 700px) {
+  .heroGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .pdfGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .bottomGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .threeColGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .twoColGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .compareGrid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+  .splitGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .plansGrid,
+  .plansGrid2 {
+    grid-template-columns: 1fr !important;
+  }
+  .heroTitle {
+    font-size: 28px !important;
+    line-height: 1.2 !important;
+  }
+  .pageTitle {
+    font-size: 26px !important;
+    line-height: 1.25 !important;
+  }
+  .pagePad {
+    padding: 24px 16px !important;
+  }
+  .heroGlow {
+    width: 320px !important;
+    height: 240px !important;
+  }
+  .heroPad {
+    padding: 24px 16px 20px !important;
+  }
+  .adBanner {
+    flex-wrap: wrap !important;
+  }
+  .headerFixed {
+    padding: 0 12px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .ws-left {
+    max-height: 38vh !important;
+  }
+  .ws-middle {
+    min-height: 58vh !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdfGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .heroTitle {
+    font-size: 24px !important;
+  }
+  .pageTitle {
+    font-size: 24px !important;
+  }
+  .heroGlow {
+    width: 260px !important;
+    height: 200px !important;
+  }
+  .headerFixed {
+    padding: 0 10px !important;
+    gap: 8px !important;
+  }
+}

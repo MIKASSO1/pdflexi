@@ -1,0 +1,161 @@
+/* Local PDF.js Viewport & Vector/Raster Annotation Layer */
+.live-canvas-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: #edeef2;
+}
+
+.pdf-viewer {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  padding: 24px;
+  outline: none;
+  background: #edeef2;
+}
+
+.pdf-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.pdf-page {
+  position: relative;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  flex-shrink: 0;
+  overflow: hidden;
+  user-select: none;
+}
+
+.pdf-page > canvas:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pdf-load-state {
+  margin: 32px auto;
+  max-width: 480px;
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.pdf-page-error {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(254, 242, 242, 0.96);
+  color: #991b1b;
+  font-size: 12px;
+  text-align: center;
+}
+
+.annotation-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  touch-action: none;
+  outline: none;
+}
+
+.annotation-layer.tool-select {
+  cursor: default;
+}
+
+.annotation-layer.tool-select.has-selection {
+  cursor: move;
+}
+
+.annotation-layer.tool-text {
+  cursor: text;
+}
+
+.annotation-layer.tool-pen,
+.annotation-layer.tool-highlight,
+.annotation-layer.tool-rectangle,
+.annotation-layer.tool-arrow {
+  cursor: crosshair;
+}
+
+.annotation-layer.tool-eraser {
+  cursor: cell;
+}
+
+.pdf-thumbnail {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+
+.pdf-thumbnail canvas {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* Annotation Toolbar inside Workspace */
+.ws-annotation-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.ws-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #1f2937;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.ws-tool-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.ws-tool-btn.is-active {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+.ws-tool-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

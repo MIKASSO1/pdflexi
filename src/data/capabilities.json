@@ -1,0 +1,602 @@
+[
+  {
+    "id": "merge",
+    "tier": "free",
+    "icon": "combine",
+    "name": {
+      "en": "Merge PDF",
+      "ar": "دمج PDF",
+      "fr": "Fusionner des PDF"
+    },
+    "description": {
+      "en": "Multiple files, one PDF",
+      "ar": "اجمع عدة ملفات في وثيقة واحدة.",
+      "fr": "Réunissez plusieurs PDF."
+    },
+    "prompt": {
+      "en": "Merge my PDF files into one document.",
+      "ar": "اجمع ملفات PDF المرفقة في وثيقة واحدة.",
+      "fr": "Fusionne mes PDF en un document."
+    }
+  },
+  {
+    "id": "split",
+    "tier": "free",
+    "icon": "scissors",
+    "name": {
+      "en": "Split PDF",
+      "ar": "تقسيم PDF",
+      "fr": "Diviser un PDF"
+    },
+    "description": {
+      "en": "Separate your pages",
+      "ar": "قسّم الصفحات إلى ملفات جديدة.",
+      "fr": "Séparez les pages en nouveaux fichiers."
+    },
+    "prompt": {
+      "en": "Split my PDF into separate files.",
+      "ar": "قسّم ملف PDF إلى ملفات منفصلة.",
+      "fr": "Divise mon PDF en fichiers séparés."
+    }
+  },
+  {
+    "id": "compress",
+    "tier": "free",
+    "icon": "minimize",
+    "name": {
+      "en": "Compress PDF",
+      "ar": "ضغط PDF",
+      "fr": "Compresser un PDF"
+    },
+    "description": {
+      "en": "Make your files lighter",
+      "ar": "قلّل حجم وثائقك.",
+      "fr": "Allégez vos documents."
+    },
+    "prompt": {
+      "en": "Reduce the size of my PDF while keeping it readable.",
+      "ar": "قلّل حجم ملف PDF مع الحفاظ على وضوحه.",
+      "fr": "Réduis la taille de mon PDF en préservant sa lisibilité."
+    }
+  },
+  {
+    "id": "pdf-to-word",
+    "tier": "free",
+    "icon": "file-text",
+    "name": {
+      "en": "PDF to Word",
+      "ar": "تحويل PDF إلى Word",
+      "fr": "PDF en Word"
+    },
+    "description": {
+      "en": "From PDF to editable text",
+      "ar": "حوّل PDF إلى مستند Word.",
+      "fr": "Transformez un PDF en document Word."
+    },
+    "prompt": {
+      "en": "Convert my PDF to an editable Word document.",
+      "ar": "حوّل ملف PDF إلى مستند Word قابل للتحرير.",
+      "fr": "Convertis mon PDF en document Word modifiable."
+    }
+  },
+  {
+    "id": "word-to-pdf",
+    "tier": "free",
+    "icon": "file-input",
+    "name": {
+      "en": "Word to PDF",
+      "ar": "تحويل Word إلى PDF",
+      "fr": "Word en PDF"
+    },
+    "description": {
+      "en": "Word documents, in PDF",
+      "ar": "أنشئ PDF من مستند Word.",
+      "fr": "Créez un PDF à partir de Word."
+    },
+    "prompt": {
+      "en": "Convert my Word document to PDF.",
+      "ar": "حوّل مستند Word إلى PDF.",
+      "fr": "Convertis mon document Word en PDF."
+    }
+  },
+  {
+    "id": "pdf-to-excel",
+    "tier": "free",
+    "icon": "table",
+    "name": {
+      "en": "PDF to Excel",
+      "ar": "تحويل PDF إلى Excel",
+      "fr": "PDF en Excel"
+    },
+    "description": {
+      "en": "Tables, ready for Excel",
+      "ar": "انقل جداول PDF إلى ملف Excel.",
+      "fr": "Transférez les tableaux vers Excel."
+    },
+    "prompt": {
+      "en": "Convert the tables in my PDF to Excel.",
+      "ar": "حوّل الجداول في ملف PDF إلى Excel.",
+      "fr": "Convertis les tableaux de mon PDF en Excel."
+    }
+  },
+  {
+    "id": "excel-to-pdf",
+    "tier": "free",
+    "icon": "sheet",
+    "name": {
+      "en": "Excel to PDF",
+      "ar": "تحويل Excel إلى PDF",
+      "fr": "Excel en PDF"
+    },
+    "description": {
+      "en": "Spreadsheets, ready to share",
+      "ar": "حوّل جداول البيانات إلى PDF.",
+      "fr": "Partagez vos feuilles au format PDF."
+    },
+    "prompt": {
+      "en": "Convert my Excel spreadsheet to PDF.",
+      "ar": "حوّل جدول Excel إلى PDF.",
+      "fr": "Convertis mon fichier Excel en PDF."
+    }
+  },
+  {
+    "id": "pdf-to-jpg",
+    "tier": "free",
+    "icon": "image",
+    "name": {
+      "en": "PDF to JPG",
+      "ar": "تحويل PDF إلى JPG",
+      "fr": "PDF en JPG"
+    },
+    "description": {
+      "en": "Your pages, as images",
+      "ar": "حوّل صفحات PDF إلى صور.",
+      "fr": "Exportez les pages en images."
+    },
+    "prompt": {
+      "en": "Convert my PDF pages to JPG images.",
+      "ar": "حوّل صفحات PDF إلى صور JPG.",
+      "fr": "Convertis les pages de mon PDF en images JPG."
+    }
+  },
+  {
+    "id": "jpg-to-pdf",
+    "tier": "free",
+    "icon": "images",
+    "name": {
+      "en": "JPG to PDF",
+      "ar": "تحويل JPG إلى PDF",
+      "fr": "JPG en PDF"
+    },
+    "description": {
+      "en": "Your images, in one PDF",
+      "ar": "اجمع الصور في ملف PDF.",
+      "fr": "Rassemblez vos images dans un PDF."
+    },
+    "prompt": {
+      "en": "Turn my JPG images into a PDF.",
+      "ar": "حوّل صور JPG إلى ملف PDF.",
+      "fr": "Transforme mes images JPG en PDF."
+    }
+  },
+  {
+    "id": "delete-pages",
+    "tier": "free",
+    "icon": "trash",
+    "name": {
+      "en": "Delete pages",
+      "ar": "حذف صفحات",
+      "fr": "Supprimer des pages"
+    },
+    "description": {
+      "en": "Keep only what matters",
+      "ar": "احذف الصفحات غير المطلوبة.",
+      "fr": "Retirez les pages inutiles."
+    },
+    "prompt": {
+      "en": "Help me remove pages from my PDF. Ask which pages to delete.",
+      "ar": "ساعدني على حذف صفحات من PDF، واسألني عن الصفحات المطلوبة.",
+      "fr": "Aide-moi à supprimer des pages de mon PDF. Demande lesquelles."
+    }
+  },
+  {
+    "id": "rotate",
+    "tier": "free",
+    "icon": "rotate",
+    "name": {
+      "en": "Rotate pages",
+      "ar": "تدوير صفحات",
+      "fr": "Pivoter des pages"
+    },
+    "description": {
+      "en": "Get the right orientation",
+      "ar": "اضبط اتجاه الصفحات.",
+      "fr": "Orientez vos pages correctement."
+    },
+    "prompt": {
+      "en": "Help me rotate pages in my PDF.",
+      "ar": "ساعدني على تدوير صفحات ملف PDF.",
+      "fr": "Aide-moi à faire pivoter les pages de mon PDF."
+    }
+  },
+  {
+    "id": "reorder",
+    "tier": "free",
+    "icon": "order",
+    "name": {
+      "en": "Reorder pages",
+      "ar": "ترتيب صفحات",
+      "fr": "Réorganiser les pages"
+    },
+    "description": {
+      "en": "Put every page in place",
+      "ar": "رتّب الصفحات حسب طلبك.",
+      "fr": "Classez les pages dans l’ordre souhaité."
+    },
+    "prompt": {
+      "en": "Help me rearrange the pages in my PDF.",
+      "ar": "ساعدني على إعادة ترتيب صفحات PDF.",
+      "fr": "Aide-moi à réorganiser les pages de mon PDF."
+    }
+  },
+  {
+    "id": "watermark",
+    "tier": "free",
+    "icon": "droplet",
+    "name": {
+      "en": "Add watermark",
+      "ar": "إضافة علامة مائية",
+      "fr": "Ajouter un filigrane"
+    },
+    "description": {
+      "en": "Make your mark",
+      "ar": "أضف علامة مائية نصية أو صورة.",
+      "fr": "Ajoutez un filigrane texte ou image."
+    },
+    "prompt": {
+      "en": "Add a watermark to my PDF. Ask me for the text and position.",
+      "ar": "أضف علامة مائية إلى PDF واسألني عن النص وموضعه.",
+      "fr": "Ajoute un filigrane à mon PDF. Demande le texte et la position."
+    }
+  },
+  {
+    "id": "page-numbers",
+    "tier": "free",
+    "icon": "hash",
+    "name": {
+      "en": "Page numbers",
+      "ar": "إضافة ترقيم الصفحات",
+      "fr": "Numéroter les pages"
+    },
+    "description": {
+      "en": "Give each page its number",
+      "ar": "أضف أرقامًا لصفحات الوثيقة.",
+      "fr": "Ajoutez des numéros de page."
+    },
+    "prompt": {
+      "en": "Add page numbers to my PDF.",
+      "ar": "أضف ترقيم الصفحات إلى PDF.",
+      "fr": "Ajoute des numéros de page à mon PDF."
+    }
+  },
+  {
+    "id": "protect",
+    "tier": "free",
+    "icon": "lock",
+    "name": {
+      "en": "Protect PDF",
+      "ar": "حماية بكلمة سر",
+      "fr": "Protéger un PDF"
+    },
+    "description": {
+      "en": "Add password protection",
+      "ar": "احمِ الوصول إلى PDF بكلمة سر.",
+      "fr": "Protégez l’accès avec un mot de passe."
+    },
+    "prompt": {
+      "en": "Help me password-protect my PDF. Do not ask for passwords in chat.",
+      "ar": "ساعدني على حماية PDF بكلمة سر، دون طلب كلمة السر في الدردشة.",
+      "fr": "Aide-moi à protéger mon PDF sans demander de mot de passe dans le chat."
+    }
+  },
+  {
+    "id": "unlock",
+    "tier": "free",
+    "icon": "unlock",
+    "name": {
+      "en": "Unlock PDF",
+      "ar": "إلغاء الحماية",
+      "fr": "Déverrouiller un PDF"
+    },
+    "description": {
+      "en": "With the right permission",
+      "ar": "أزل الحماية عندما تملك الصلاحية اللازمة.",
+      "fr": "Retirez une protection avec autorisation."
+    },
+    "prompt": {
+      "en": "Help me unlock a PDF I am authorized to access.",
+      "ar": "ساعدني على إلغاء حماية ملف أملك صلاحية الوصول إليه.",
+      "fr": "Aide-moi à déverrouiller un PDF auquel j’ai le droit d’accéder."
+    }
+  },
+  {
+    "id": "sign",
+    "tier": "free",
+    "icon": "pen",
+    "name": {
+      "en": "Sign PDF",
+      "ar": "توقيع PDF",
+      "fr": "Signer un PDF"
+    },
+    "description": {
+      "en": "Add a visible signature",
+      "ar": "اطلب إضافة توقيع مرئي إلى PDF.",
+      "fr": "Demandez une signature visible."
+    },
+    "prompt": {
+      "en": "Help me add a visible signature to my PDF.",
+      "ar": "ساعدني على إضافة توقيع مرئي إلى PDF.",
+      "fr": "Aide-moi à ajouter une signature visible à mon PDF."
+    }
+  },
+  {
+    "id": "edit-text",
+    "tier": "free",
+    "icon": "text",
+    "name": {
+      "en": "Edit PDF text",
+      "ar": "تعديل نص داخل PDF",
+      "fr": "Modifier le texte PDF"
+    },
+    "description": {
+      "en": "Describe your text changes",
+      "ar": "صف النص الذي تريد تغييره.",
+      "fr": "Décrivez le texte à modifier."
+    },
+    "prompt": {
+      "en": "Help me replace text in my PDF while preserving its layout where possible.",
+      "ar": "ساعدني على تغيير نص في PDF مع الحفاظ على التصميم قدر الإمكان.",
+      "fr": "Aide-moi à remplacer du texte en préservant la mise en page si possible."
+    }
+  },
+  {
+    "id": "repair",
+    "tier": "free",
+    "icon": "wrench",
+    "name": {
+      "en": "Repair PDF",
+      "ar": "إصلاح PDF تالف",
+      "fr": "Réparer un PDF"
+    },
+    "description": {
+      "en": "Attempt document recovery",
+      "ar": "حاول استعادة ملف PDF تالف.",
+      "fr": "Tentez de récupérer un PDF endommagé."
+    },
+    "prompt": {
+      "en": "Check whether my damaged PDF can be repaired.",
+      "ar": "تحقّق مما إذا كان يمكن إصلاح ملف PDF التالف.",
+      "fr": "Vérifie si mon PDF endommagé peut être réparé."
+    }
+  },
+  {
+    "id": "ocr",
+    "tier": "free",
+    "icon": "scan-text",
+    "name": {
+      "en": "Extract text / OCR",
+      "ar": "استخراج النص · OCR",
+      "fr": "Extraire le texte / OCR"
+    },
+    "description": {
+      "en": "Read digital or scanned text",
+      "ar": "استخرج النص الرقمي ونص الصفحات الممسوحة.",
+      "fr": "Lisez le texte et les pages numérisées."
+    },
+    "prompt": {
+      "en": "Extract the text from my PDF, using OCR for scanned pages.",
+      "ar": "استخرج النص من PDF واستخدم OCR للصفحات الممسوحة.",
+      "fr": "Extrais le texte de mon PDF avec OCR pour les pages numérisées."
+    }
+  },
+  {
+    "id": "chat-pdf",
+    "tier": "pro",
+    "icon": "messages",
+    "name": {
+      "en": "Chat with your PDF",
+      "ar": "فهم الوثيقة بالمحادثة",
+      "fr": "Discuter avec un PDF"
+    },
+    "description": {
+      "en": "Ask a question. Find the answer in your document.",
+      "ar": "اسأل عن وثيقتك وافهمها بلغة بسيطة.",
+      "fr": "Posez vos questions sur votre document."
+    },
+    "prompt": {
+      "en": "Help me understand this document and cite the relevant passages.",
+      "ar": "ساعدني على فهم الوثيقة مع الإشارة إلى المقاطع ذات الصلة.",
+      "fr": "Aide-moi à comprendre ce document en citant les passages pertinents."
+    }
+  },
+  {
+    "id": "summarize-contract",
+    "tier": "pro",
+    "icon": "align",
+    "name": {
+      "en": "A contract in 3 lines",
+      "ar": "تلخيص عقد في 3 أسطر",
+      "fr": "Un contrat en 3 lignes"
+    },
+    "description": {
+      "en": "The essentials, without the information overload.",
+      "ar": "احصل على أهم ما في العقد باختصار.",
+      "fr": "L’essentiel, sans surcharge d’information."
+    },
+    "prompt": {
+      "en": "Summarize this contract in three clear lines.",
+      "ar": "لخّص هذا العقد في ثلاثة أسطر واضحة.",
+      "fr": "Résume ce contrat en trois lignes claires."
+    }
+  },
+  {
+    "id": "contract-risks",
+    "tier": "pro",
+    "icon": "shield-alert",
+    "name": {
+      "en": "Spot risky clauses",
+      "ar": "كشف البنود الخطيرة في العقود",
+      "fr": "Repérer les clauses à risque"
+    },
+    "description": {
+      "en": "Flag terms worth a closer look. Not legal advice.",
+      "ar": "حدّد البنود التي تحتاج مراجعة؛ ليست استشارة قانونية.",
+      "fr": "Repérez les points à examiner. Pas un avis juridique."
+    },
+    "prompt": {
+      "en": "Flag potentially risky clauses in this contract, with references and uncertainty.",
+      "ar": "حدّد البنود المحتمل خطورتها مع المراجع وحدود الثقة.",
+      "fr": "Signale les clauses potentiellement risquées, avec références et limites."
+    }
+  },
+  {
+    "id": "forgery-signals",
+    "tier": "pro",
+    "icon": "scan",
+    "name": {
+      "en": "Check for tampering",
+      "ar": "فحص مؤشرات التزوير",
+      "fr": "Détecter des indices d’altération"
+    },
+    "description": {
+      "en": "Look for editing signals in stamps and signatures. Not proof of authenticity.",
+      "ar": "افحص مؤشرات تركيب الأختام والتوقيعات؛ ليست إثباتًا قطعيًا.",
+      "fr": "Examinez les cachets et signatures. Pas une preuve d’authenticité."
+    },
+    "prompt": {
+      "en": "Check for possible manipulation of stamps or signatures, explaining the limitations.",
+      "ar": "افحص مؤشرات التلاعب في الأختام والتوقيعات مع توضيح حدود الفحص.",
+      "fr": "Examine les indices de manipulation des cachets et signatures, avec les limites."
+    }
+  },
+  {
+    "id": "compare-contracts",
+    "tier": "pro",
+    "icon": "files",
+    "name": {
+      "en": "Compare two contracts",
+      "ar": "مقارنة عقدين وما تغيّر بينهما",
+      "fr": "Comparer deux contrats"
+    },
+    "description": {
+      "en": "See what changed, and where it matters.",
+      "ar": "اكتشف التغييرات بين نسختين من العقد.",
+      "fr": "Identifiez les modifications importantes."
+    },
+    "prompt": {
+      "en": "Compare these two contracts and explain what changed.",
+      "ar": "قارن هذين العقدين ووضّح ما تغيّر بينهما.",
+      "fr": "Compare ces deux contrats et explique les différences."
+    }
+  },
+  {
+    "id": "invoice-excel",
+    "tier": "pro",
+    "icon": "receipt",
+    "name": {
+      "en": "Invoices to Excel",
+      "ar": "استخراج الفواتير إلى Excel تلقائيًا",
+      "fr": "Factures vers Excel"
+    },
+    "description": {
+      "en": "Turn invoice details into structured rows.",
+      "ar": "حوّل بيانات الفواتير إلى جدول منظم.",
+      "fr": "Transformez les factures en lignes structurées."
+    },
+    "prompt": {
+      "en": "Extract my invoices into an Excel spreadsheet and flag uncertain values.",
+      "ar": "استخرج بيانات الفواتير إلى Excel وحدّد القيم غير المؤكدة.",
+      "fr": "Extrais mes factures vers Excel et signale les valeurs incertaines."
+    }
+  },
+  {
+    "id": "fill-form",
+    "tier": "pro",
+    "icon": "clipboard",
+    "name": {
+      "en": "Fill forms by chatting",
+      "ar": "تعبئة استمارة PDF بالمحادثة",
+      "fr": "Remplir un formulaire par chat"
+    },
+    "description": {
+      "en": "Tell Lexi the details. Let it find the fields.",
+      "ar": "قدّم المعلومات ودع Lexi يحدّد الحقول.",
+      "fr": "Donnez les informations, Lexi repère les champs."
+    },
+    "prompt": {
+      "en": "Help me fill in this PDF form. Ask only for the missing information.",
+      "ar": "ساعدني على تعبئة استمارة PDF واسأل عن المعلومات الناقصة فقط.",
+      "fr": "Aide-moi à remplir ce formulaire. Demande seulement les informations manquantes."
+    }
+  },
+  {
+    "id": "translate-layout",
+    "tier": "pro",
+    "icon": "languages",
+    "name": {
+      "en": "Translate, keep the layout",
+      "ar": "ترجمة PDF مع الحفاظ على التصميم",
+      "fr": "Traduire et conserver la mise en page"
+    },
+    "description": {
+      "en": "A new language. A familiar document layout, where possible.",
+      "ar": "ترجم الوثيقة مع الحفاظ على تنسيقها قدر الإمكان.",
+      "fr": "Changez de langue en préservant au mieux la mise en page."
+    },
+    "prompt": {
+      "en": "Translate my PDF, preserving the layout where possible. Ask for the target language.",
+      "ar": "ترجم PDF مع الحفاظ على التصميم قدر الإمكان واسأل عن اللغة المطلوبة.",
+      "fr": "Traduis mon PDF en préservant au mieux la mise en page. Demande la langue cible."
+    }
+  },
+  {
+    "id": "tailor-cv",
+    "tier": "pro",
+    "icon": "briefcase",
+    "name": {
+      "en": "A CV that fits the role",
+      "ar": "تكييف CV حسب عرض العمل",
+      "fr": "Un CV adapté au poste"
+    },
+    "description": {
+      "en": "Tailor your experience. Never invent it.",
+      "ar": "كيّف سيرتك مع الوظيفة دون اختلاق خبرات.",
+      "fr": "Adaptez votre expérience sans l’inventer."
+    },
+    "prompt": {
+      "en": "Tailor my CV to this job description without inventing experience or qualifications.",
+      "ar": "كيّف سيرتي مع عرض العمل دون اختلاق خبرات أو مؤهلات.",
+      "fr": "Adapte mon CV à cette offre sans inventer d’expérience ni de qualifications."
+    }
+  },
+  {
+    "id": "batch-stamp",
+    "tier": "pro",
+    "icon": "stamp",
+    "name": {
+      "en": "Stamp up to 100 documents",
+      "ar": "ختم وتصديق جماعي حتى 100 وثيقة",
+      "fr": "Tamponner jusqu’à 100 documents"
+    },
+    "description": {
+      "en": "Batch stamping. Legal certification requires an authorized provider.",
+      "ar": "ختم جماعي؛ التصديق القانوني يحتاج جهة مخوّلة.",
+      "fr": "Traitement par lot. Certification légale via un prestataire habilité."
+    },
+    "prompt": {
+      "en": "Help me batch-stamp up to 100 documents. Clarify whether legal certification is required.",
+      "ar": "ساعدني على ختم حتى 100 وثيقة وحدّد إن كان التصديق القانوني مطلوبًا.",
+      "fr": "Aide-moi à tamponner jusqu’à 100 documents. Clarifie le besoin de certification légale."
+    }
+  }
+]
