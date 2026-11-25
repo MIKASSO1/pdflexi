@@ -32,15 +32,16 @@ const faqs = [
   { q: "Do I need to install anything?", a: "No. PDFlexi works directly in your browser on computer and mobile. No install, no Acrobat, no account needed to try." },
 ];
 const freeTools = [
-  { id: 1, en: "Merge PDF", icon: "🔗" }, { id: 2, en: "Split PDF", icon: "✂" }, { id: 3, en: "Compress PDF", icon: "🗜" }, { id: 4, en: "PDF to Word", icon: "📄" }, { id: 5, en: "Word to PDF", icon: "📝" },
-  { id: 6, en: "PDF to Excel", icon: "📊" }, { id: 7, en: "Excel to PDF", icon: "📈" }, { id: 8, en: "PDF to JPG", icon: "🖼" }, { id: 9, en: "JPG to PDF", icon: "🖌" }, { id: 10, en: "Delete Pages", icon: "🗑" },
-  { id: 11, en: "Rotate Pages", icon: "🔄" }, { id: 12, en: "Reorder Pages", icon: "↕" }, { id: 13, en: "Watermark", icon: "💧" }, { id: 14, en: "Page Numbers", icon: "🔢" }, { id: 15, en: "Protect PDF", icon: "🛡" },
-  { id: 16, en: "Unlock PDF", icon: "🔑" }, { id: 17, en: "Sign PDF", icon: "✍" }, { id: 18, en: "Edit PDF", icon: "✏" }, { id: 19, en: "Repair PDF", icon: "🛠" }, { id: 20, en: "OCR - Extract Text", icon: "👁" },
+  { id: 1, en: "Merge PDF", icon: "🔗" }, { id: 2, en: "Split PDF", icon: "✂️" }, { id: 3, en: "Compress PDF", icon: "🗜️" }, { id: 4, en: "PDF to Word", icon: "📄" }, { id: 5, en: "Word to PDF", icon: "📝" },
+  { id: 6, en: "PDF to Excel", icon: "📊" }, { id: 7, en: "Excel to PDF", icon: "📈" }, { id: 8, en: "PDF to JPG", icon: "🖼️" }, { id: 9, en: "JPG to PDF", icon: "🖌️" }, { id: 10, en: "Delete Pages", icon: "🗑️" },
+  { id: 11, en: "Rotate Pages", icon: "🔄" }, { id: 12, en: "Reorder Pages", icon: "↕️" }, { id: 13, en: "Watermark", icon: "💧" }, { id: 14, en: "Page Numbers", icon: "🔢" }, { id: 15, en: "Protect PDF", icon: "🛡️" },
+  { id: 16, en: "Unlock PDF", icon: "🔑" }, { id: 17, en: "Sign PDF", icon: "✍️" }, { id: 18, en: "Edit PDF", icon: "✏️" }, { id: 19, en: "Repair PDF", icon: "🛠️" }, { id: 20, en: "OCR - Extract Text", icon: "👁️" },
 ];
 const proTools = [
-  { id: 21, en: "Chat with PDF", icon: "💬" }, { id: 22, en: "Summarize Contract in 3 Lines", icon: "⚡" }, { id: 23, en: "Detect Risky Clauses", icon: "⚠" }, { id: 24, en: "Detect Forgery", icon: "🕵" }, { id: 25, en: "Compare Two Contracts", icon: "⚖" },
+  { id: 21, en: "Chat with PDF", icon: "💬" }, { id: 22, en: "Summarize Contract in 3 Lines", icon: "⚡" }, { id: 23, en: "Detect Risky Clauses", icon: "⚠️" }, { id: 24, en: "Detect Forgery", icon: "🕵️" }, { id: 25, en: "Compare Two Contracts", icon: "⚖️" },
   { id: 26, en: "Extract Invoices to Excel", icon: "🧾" }, { id: 27, en: "Fill Form by Chat", icon: "📋" }, { id: 28, en: "Translate PDF - Keep Design", icon: "🌍" }, { id: 29, en: "Smart CV from Job Offer", icon: "🚀" }, { id: 30, en: "Bulk Stamp 100 Docs", icon: "📦" },
 ];
+const wsIconColor: Record<number,string> = {1:"#7C3AED",2:"#2563EB",3:"#D97706",4:"#2563EB",5:"#059669",6:"#059669",7:"#059669",8:"#DB2777",9:"#DB2777",10:"#DC2626",11:"#4F46E5",12:"#4F46E5",13:"#0891B2",14:"#7C3AED",15:"#D97706",16:"#D97706",17:"#7C3AED",18:"#2563EB",19:"#DC2626",20:"#4F46E5",21:"#7C3AED",22:"#D97706",23:"#DC2626",24:"#4F46E5",25:"#2563EB",26:"#059669",27:"#0891B2",28:"#059669",29:"#DB2777",30:"#D97706"};
 const recentFiles = [
   { name: "Contract-Tangier-2024.pdf", time: "2h ago", color: "#8B5CF6" },
   { name: "Invoice_Client-A.pdf", time: "Yesterday", color: "#06B6D4" },
@@ -59,7 +60,26 @@ const getFileInfo = (name: string) => {
   return { label: "FILE", color: "#6B7280", meta: "Document" };
 };
 
-const GUTTER_CSS = `*{box-sizing:border-box} html{scrollbar-gutter:stable;overflow-y:scroll} body{margin:0} ::-webkit-scrollbar{width:2px;height:2px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.35);border-radius:999px} ::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarScroll{scrollbar-width:thin;scrollbar-color:rgba(124,58,237,0.65) transparent;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch} .leftSidebarScroll::-webkit-scrollbar{width:6px} .leftSidebarScroll::-webkit-scrollbar-track{background:transparent} .leftSidebarScroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.55);border-radius:999px;transform:scaleY(0.3);transform-origin:top} .leftSidebarScroll::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarContent{min-height:max-content} .leftSidebarContent [style*='cursor: pointer']{transition:background-color .18s ease,color .18s ease,transform .18s ease} .leftSidebarContent [style*='cursor: pointer']:hover{background-color:rgba(124,58,237,0.10)!important;transform:translateX(2px)} .leftSidebarContent button:hover{background-color:rgba(124,58,237,0.10)!important} .hideMob{display:flex} .hamburgerBtn{display:none!important} .mobileOnlyBtn{display:none!important} .mobileCircleWrap{display:none!important} .rightBar{display:flex} .headerFixed{left:280px!important;right:56px!important} @media(max-width:1100px){.hideMob{display:none!important} .hamburgerBtn{display:grid!important;place-items:center} .mobileOnlyBtn{display:block!important} .mobileCircleWrap{display:block!important} .hideOnSmall{display:none!important} .rightBar{display:none!important} .headerFixed{left:0!important;right:0!important}} @media(max-width:700px){.heroGrid{grid-template-columns:1fr!important} .pdfGrid{grid-template-columns:1fr 1fr!important} .bottomGrid{grid-template-columns:1fr!important}} @media(max-width:1100px){.mainResponsive{margin-left:0!important;margin-right:0!important} .threeColGrid{grid-template-columns:1fr 1fr!important} .pagePad{padding:32px 20px!important}} @media(max-width:700px){.threeColGrid{grid-template-columns:1fr!important} .twoColGrid{grid-template-columns:1fr!important} .compareGrid{grid-template-columns:1fr!important;gap:6px!important} .splitGrid{grid-template-columns:1fr!important} .heroTitle{font-size:28px!important;line-height:1.2!important} .pageTitle{font-size:26px!important;line-height:1.25!important} .pagePad{padding:24px 16px!important} .heroGlow{width:320px!important;height:240px!important} .heroPad{padding:24px 16px 20px!important} .adBanner{flex-wrap:wrap!important} .headerFixed{padding:0 12px!important}} @media(max-width:480px){.pdfGrid{grid-template-columns:1fr!important} .heroTitle{font-size:24px!important} .pageTitle{font-size:24px!important} .heroGlow{width:260px!important;height:200px!important} .headerFixed{padding:0 10px!important;gap:8px!important}} .plansGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px;text-align:left} @media(max-width:1100px){.plansGrid{grid-template-columns:1fr 1fr!important}} @media(max-width:700px){.plansGrid{grid-template-columns:1fr!important}} .plansGrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px auto 0;max-width:840px;text-align:left} @media(max-width:700px){.plansGrid2{grid-template-columns:1fr!important}}`;
+const GUTTER_CSS = `
+/* EDIT 1 - Workspace dropdowns (Sign PDF / Advanced Tools) - desktop exactly as screenshot, mobile reformatted only */
+.wsToolsDropdown{position:fixed!important;background:#fff;color:#111;border-radius:14px;boxShadow:0 16px 40px rgba(0,0,0,0.35);border:1px solid #E5E7EB;z-index:9999!important;padding:6px 10px 8px;overflow:visible;max-height:none}
+.wsToolsDropdownHead{padding:4px 8px 6px;font-size:12px;font-weight:700;color:#111;border-bottom:1px solid #F3F4F6}
+.wsToolsIcon{width:22px;min-width:22px;display:grid;place-items:center;font-size:18px;line-height:1;flex-shrink:0;background:transparent!important;border:none;filter:saturate(1.9) contrast(1.15) brightness(1.05);-webkit-filter:saturate(1.9) contrast(1.15) brightness(1.05)}
+.wsToolsGrid{display:grid;gap:2px 10px}
+.wsToolsItem{width:100%;text-align:left;background:#fff;border:none;padding:5px 8px;font-size:12.5px;cursor:pointer;display:flex;gap:8px;align-items:center;border-radius:8px;white-space:nowrap;overflow:hidden;min-height:32px}
+.wsToolsItem:hover{background:#F9FAFB}
+@media (min-width:900px){
+.wsToolsDropdown{width:600px;overflow:visible;max-height:none;padding:10px 12px 12px}
+.wsToolsGrid{grid-template-columns:1fr 1fr;gap:4px 12px}
+.wsToolsDropdownHead{font-size:12px;padding:6px 8px 10px}
+.wsToolsItem{padding:9px 10px;font-size:13px;min-height:40px;gap:10px;white-space:normal;overflow:visible;align-items:center}
+.wsToolsItem span:nth-child(2){flex:1;min-width:0;line-height:1.35;white-space:normal}
+.wsToolsIcon{width:20px;min-width:20px;font-size:16px}
+.wsToolsItem span:last-child{flex-shrink:0;margin-left:8px!important;font-size:10px!important;letter-spacing:.04em;white-space:nowrap}
+.wsToolsIcon{filter:saturate(1.4) contrast(1.05);-webkit-filter:saturate(1.4) contrast(1.05)}
+}
+@media (max-width:899px){.wsToolsDropdown{width:calc(100vw - 32px);max-width:360px;max-height:70vh;overflow-y:auto}.wsToolsGrid{grid-template-columns:1fr}}
+*{box-sizing:border-box} html{scrollbar-gutter:stable;overflow-y:scroll} body{margin:0} ::-webkit-scrollbar{width:2px;height:2px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.35);border-radius:999px} ::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarScroll{scrollbar-width:thin;scrollbar-color:rgba(124,58,237,0.65) transparent;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch} .leftSidebarScroll::-webkit-scrollbar{width:6px} .leftSidebarScroll::-webkit-scrollbar-track{background:transparent} .leftSidebarScroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.55);border-radius:999px;transform:scaleY(0.3);transform-origin:top} .leftSidebarScroll::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarContent{min-height:max-content} .leftSidebarContent [style*='cursor: pointer']{transition:background-color .18s ease,color .18s ease,transform .18s ease} .leftSidebarContent [style*='cursor: pointer']:hover{background-color:rgba(124,58,237,0.10)!important;transform:translateX(2px)} .leftSidebarContent button:hover{background-color:rgba(124,58,237,0.10)!important} .hideMob{display:flex} .hamburgerBtn{display:none!important} .mobileOnlyBtn{display:none!important} .mobileCircleWrap{display:none!important} .rightBar{display:flex} .headerFixed{left:280px!important;right:56px!important} @media(max-width:1100px){.hideMob{display:none!important} .hamburgerBtn{display:grid!important;place-items:center} .mobileOnlyBtn{display:block!important} .mobileCircleWrap{display:block!important} .hideOnSmall{display:none!important} .rightBar{display:none!important} .headerFixed{left:0!important;right:0!important}} @media(max-width:700px){.heroGrid{grid-template-columns:1fr!important} .pdfGrid{grid-template-columns:1fr 1fr!important} .bottomGrid{grid-template-columns:1fr!important}} @media(max-width:1100px){.mainResponsive{margin-left:0!important;margin-right:0!important} .threeColGrid{grid-template-columns:1fr 1fr!important} .pagePad{padding:32px 20px!important}} @media(max-width:700px){.threeColGrid{grid-template-columns:1fr!important} .twoColGrid{grid-template-columns:1fr!important} .compareGrid{grid-template-columns:1fr!important;gap:6px!important} .splitGrid{grid-template-columns:1fr!important} .heroTitle{font-size:28px!important;line-height:1.2!important} .pageTitle{font-size:26px!important;line-height:1.25!important} .pagePad{padding:24px 16px!important} .heroGlow{width:320px!important;height:240px!important} .heroPad{padding:24px 16px 20px!important} .adBanner{flex-wrap:wrap!important} .headerFixed{padding:0 12px!important}} @media(max-width:480px){.pdfGrid{grid-template-columns:1fr!important} .heroTitle{font-size:24px!important} .pageTitle{font-size:24px!important} .heroGlow{width:260px!important;height:200px!important} .headerFixed{padding:0 10px!important;gap:8px!important}} .plansGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px;text-align:left} @media(max-width:1100px){.plansGrid{grid-template-columns:1fr 1fr!important}} @media(max-width:700px){.plansGrid{grid-template-columns:1fr!important}} .plansGrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px auto 0;max-width:840px;text-align:left} @media(max-width:700px){.plansGrid2{grid-template-columns:1fr!important}}`;
 
 // FIX-V12-SHARP: mobile-only VECTOR page. The blur was NEVER about pixels:
 // a bitmap (PNG/canvas) always blurs when CSS zoom shrinks it.
@@ -68,15 +88,35 @@ const GUTTER_CSS = `*{box-sizing:border-box} html{scrollbar-gutter:stable;overfl
 // the lines stay sharp and comfortable for the eye, never blurry.
 function SharpPdfCanvas({ pdfFile, pageIndex, zoomFactor, opacity }: { pdfFile: any; pageIndex: number; zoomFactor: number; opacity?: number }) {
   const boxRef = useRef<HTMLDivElement>(null);
+  const drawRef = useRef<HTMLDivElement>(null);
+  const [hasDrawn, setHasDrawn] = useState(false);
+  // MOBILE-ONLY FIX: old code rendered ALL 120 pages at once, each re-parsing the whole PDF.
+  // Now: render only when the page is actually on screen (+800px around it), else keep a light placeholder.
+  const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    if (typeof (window as any).IntersectionObserver === "undefined") { setIsVisible(true); return; }
+    const io = new (window as any).IntersectionObserver((entries: any[]) => {
+      if (entries[0] && entries[0].isIntersecting) { setIsVisible(true); io.disconnect(); }
+    }, { rootMargin: "800px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!isVisible) return;
     let cancelled = false;
     const draw = async () => {
       try {
         const w: any = window as any;
         if (!w.pdfjsLib) return;
+        // MOBILE-ONLY: cache the file bytes ONCE — old code called arrayBuffer() per page (120 full copies = freeze).
+        if (!(pdfFile as any).__cachedBuf) { (pdfFile as any).__cachedBuf = await pdfFile.arrayBuffer(); }
+        const cachedBuf: ArrayBuffer = (pdfFile as any).__cachedBuf;
+        const freshBuf = () => cachedBuf.slice(0);
         // FALLBACK: very old browsers without SVGGraphics -> canvas at exact display size, never a blank page.
         if (!w.pdfjsLib.SVGGraphics) {
-          const pdf2 = await w.pdfjsLib.getDocument({ data: await pdfFile.arrayBuffer() }).promise;
+          const pdf2 = await w.pdfjsLib.getDocument({ data: freshBuf() }).promise;
           const pg = await pdf2.getPage(pageIndex + 1);
           const base = pg.getViewport({ scale: 1 });
           const dpr = Math.min(3, window.devicePixelRatio || 1);
@@ -85,11 +125,11 @@ function SharpPdfCanvas({ pdfFile, pageIndex, zoomFactor, opacity }: { pdfFile: 
           cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
           cv.style.width = "100%"; cv.style.height = "auto"; cv.style.display = "block";
           const cx = cv.getContext("2d"); if (cx) { await pg.render({ canvasContext: cx, viewport: vp }).promise; }
-          const box2 = boxRef.current; if (box2 && !cancelled) { box2.innerHTML = ""; box2.appendChild(cv); }
+          const box2 = drawRef.current; if (box2 && !cancelled) { box2.innerHTML = ""; box2.appendChild(cv); setHasDrawn(true); }
           return;
         }
         const pdfjsLib = w.pdfjsLib;
-        const buf = await pdfFile.arrayBuffer();
+        const buf = freshBuf();
         if (cancelled) return;
         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
         const page = await pdf.getPage(pageIndex + 1);
@@ -107,16 +147,20 @@ function SharpPdfCanvas({ pdfFile, pageIndex, zoomFactor, opacity }: { pdfFile: 
         svg.style.borderRadius = "6px";
         svg.style.border = "1px solid #F3F4F6";
         svg.style.background = "white";
-        const box = boxRef.current;
+        const box = drawRef.current;
         if (!box) return;
         box.innerHTML = "";
         box.appendChild(svg);
+        setHasDrawn(true);
       } catch (e) { /* keep previous frame — never blank the page */ }
     };
     const id = setTimeout(draw, 60);
     return () => { cancelled = true; clearTimeout(id); };
-  }, [pdfFile, pageIndex, zoomFactor]);
-  return (<div ref={boxRef} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", opacity: opacity ?? 1 }} />);
+  }, [pdfFile, pageIndex, zoomFactor, isVisible]);
+  return (<div ref={boxRef} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", opacity: opacity ?? 1 }}>
+    {!hasDrawn && (<div style={{ width: "100%", aspectRatio: "1 / 1.414" as any, background: "white", border: "1px solid #F3F4F6", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#9CA3AF" }}>Loading page {pageIndex + 1}…</div>)}
+    <div ref={drawRef} style={{ width: "100%", display: hasDrawn ? "block" : "none" }} />
+  </div>);
 }
 
 export default function App() {
@@ -134,7 +178,8 @@ export default function App() {
   const [wsMsgs, setWsMsgs] = useState<{ role: "user" | "lexi", text: string }[]>([]);
   const [wsInput, setWsInput] = useState("");
   const [wsTool, setWsTool] = useState("Sign");
-  const [wsToolsMenu, setWsToolsMenu] = useState<'free' | 'pro' | null>(null); // WORKSPACE ONLY — which tools dropdown is open (Free / Advanced). One state for desktop + mobile rows, only one row is visible at a time.
+  const [wsToolsMenu, setWsToolsMenu] = useState<'free' | 'pro' | null>(null);
+  const [wsToolsAnchor, setWsToolsAnchor] = useState<{ left: number, top: number } | null>(null); // FIX-DROPDOWN-ABOVE-DOC: fixed position from button rect, escapes overflow:hidden + doc stacking // WORKSPACE ONLY — which tools dropdown is open (Free / Advanced). One state for desktop + mobile rows, only one row is visible at a time.
   const wsFullToShort: Record<string, string> = { "Edit PDF": "Edit", "Merge PDF": "Merge", "Split PDF": "Split", "Compress PDF": "Compress", "Sign PDF": "Sign" }; // keep Sign/Compress preview checks (wsTool === 'Sign' / 'Compress') working
   const wsShortToFull: Record<string, string> = { Edit: "Edit PDF", Merge: "Merge PDF", Split: "Split PDF", Compress: "Compress PDF", Sign: "Sign PDF" };
   const wsFreeMatch = freeTools.find((f: any) => f.en === wsTool || wsShortToFull[wsTool] === f.en); // active free tool, legacy short names included
@@ -196,7 +241,7 @@ export default function App() {
   const [pdfPages, setPdfPages] = useState<string[]>([]);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState("");
-  // Real PDF rendering — pdf.js reads the ACTUAL uploaded PDF and renders EVERY page (9 pages = 9 cards), not 3 demo pages.
+  // Real PDF rendering — progressive: first 5 pages instantly, rest in background chunks (fixes 120-page 60s freeze).
   useEffect(() => {
     if (!pdfFile) return;
     let cancelled = false;
@@ -216,19 +261,57 @@ export default function App() {
         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         const buf = await pdfFile.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        const urls: string[] = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          if (cancelled) return;
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: window.innerWidth < 900 ? 2 : 4 }); /* FIX-V10-SHARP: phone renders at 2x (desktop stays 4x). 5x was WRONG: downscaling 3000px -> 350px forces heavy browser smoothing = blur. 2x downscales little, so letters stay sharp at 50% */
+        // FIX-MOBILE-ONLY: phones NEVER use these JPEGs — they display SharpPdfCanvas (vector) instead.
+        // Old code still rendered 120 JPEGs on phones (wasted) + 120 vector pages (heavy) = 1 min + freeze.
+        // Now on phones: only count pages, show placeholders instantly, vector renders only visible pages.
+        if (window.innerWidth < 900) {
+          const totalMobile = pdf.numPages;
+          setPdfPages(Array.from({ length: totalMobile }, () => "MOBILE_VECTOR"));
+          setPdfLoading(false);
+          return;
+        }
+        // FIX-PERF-120PAGES: old code rendered ALL pages at 4x to PNG, THEN showed anything.
+        // 120 pages x 4x = ~120 huge canvases + huge PNG strings = ~60s freeze. New: progressive.
+        // 1) First 5 pages fast (scale 2 desktop / 1.5 phone, JPEG 0.85 = ~5x lighter than PNG), show them at once.
+        // 2) Rest in background, 5 pages per chunk, yielding to UI between chunks, appended as they finish.
+        const renderScale = window.innerWidth < 900 ? 1.5 : 2;
+        const renderOne = async (pageNum: number) => {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: renderScale });
           const canvas = document.createElement("canvas");
           canvas.width = viewport.width; canvas.height = viewport.height;
           const ctx = canvas.getContext("2d");
-          if (!ctx) continue;
+          if (!ctx) return "";
           await page.render({ canvasContext: ctx, viewport }).promise;
-          urls.push(canvas.toDataURL("image/png"));
+          const url = canvas.toDataURL("image/jpeg", 0.85);
+          canvas.width = 0; canvas.height = 0; // free canvas memory at once
+          return url;
+        };
+        const yieldUI = () => new Promise<void>(r => setTimeout(r, 0));
+        const total = pdf.numPages;
+        const firstBatch = Math.min(5, total);
+        const firstUrls: string[] = [];
+        for (let i = 1; i <= firstBatch; i++) {
+          if (cancelled) return;
+          const u = await renderOne(i);
+          if (u) firstUrls.push(u);
         }
-        if (!cancelled) setPdfPages(urls);
+        if (cancelled) return;
+        setPdfPages(firstUrls);
+        setPdfLoading(false); // user can already edit page 1-5, no more full-screen wait
+        // Background: remaining pages, 5 at a time
+        for (let start = firstBatch + 1; start <= total; start += 5) {
+          if (cancelled) return;
+          const chunk: string[] = [];
+          for (let i = start; i < Math.min(start + 5, total + 1); i++) {
+            if (cancelled) return;
+            const u = await renderOne(i);
+            if (u) chunk.push(u);
+          }
+          if (cancelled) return;
+          if (chunk.length) setPdfPages(prev => [...prev, ...chunk]);
+          await yieldUI();
+        }
       } catch (e: any) {
         if (!cancelled) setPdfError("Could not render this PDF in this preview. The real file still opens correctly on export.");
       } finally { if (!cancelled) setPdfLoading(false); }
@@ -963,12 +1046,12 @@ export default function App() {
         {(wsNarrow && wsMobileTab === "lexi") && (<div style={{ flex: 1, minHeight: 0, height: wsNarrow ? "calc(100dvh - 62px)" as any : "calc(100dvh - 118px)" as any, display: "flex", flexDirection: "column" as any, background: "#0F0F14", overflow: "hidden" as any }}>
             <div style={{ padding: "12px", display: "flex", gap: "6px", flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free')} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
-                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 49 }} /><div style={{ position: "absolute", left: 0, top: "38px", width: "240px", maxHeight: "320px", overflowY: "auto", background: "white", color: "#111", borderRadius: "12px", boxShadow: "0 12px 32px rgba(0,0,0,0.35)", border: "1px solid #E5E7EB", zIndex: 50 }}><div style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 700, color: "#6B7280", borderBottom: "1px solid #F3F4F6" }}>Free Tools • 20 • 0 credits</div>{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} style={{ width: "100%", textAlign: "left", background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", border: "none", borderBottom: "1px solid #F9FAFB", padding: "9px 12px", fontSize: "12px", cursor: "pointer", display: "flex", gap: "8px", alignItems: "center", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></>)}
+                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
+                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Free Tools • 20 • 0 credits</div><div className="wsToolsGrid">{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></div></>)}
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro')} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
-                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 49 }} /><div style={{ position: "absolute", left: 0, top: "38px", width: "240px", maxHeight: "320px", overflowY: "auto", background: "white", color: "#111", borderRadius: "12px", boxShadow: "0 12px 32px rgba(0,0,0,0.35)", border: "1px solid #E5E7EB", zIndex: 50 }}><div style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 700, color: "#6B7280", borderBottom: "1px solid #F3F4F6" }}>Advanced Tools • 10 • PRO</div>{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} style={{ width: "100%", textAlign: "left", background: "white", border: "none", borderBottom: "1px solid #F9FAFB", padding: "9px 12px", fontSize: "12px", cursor: "pointer", display: "flex", gap: "8px", alignItems: "center", fontWeight: 400 }}><span>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></>)}
+                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
+                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Advanced Tools • 10 • PRO</div><div className="wsToolsGrid">{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: "white", fontWeight: 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></div></>)}
               </div>
             </div>
             <div ref={wsChatScrollRefMobile} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: "10px" }}>{wsMsgs.length === 0 ? (<div style={{ marginTop: "16px", textAlign: "center" }}><div style={{ width: "48px", height: "48px", borderRadius: "999px", background: "rgba(124,58,237,0.15)", display: "grid", placeItems: "center", fontSize: "20px", margin: "0 auto" }}>✦</div><div style={{ fontSize: "13px", fontWeight: 700, marginTop: "12px" }}>Ask Lexi to edit this file</div><div style={{ fontSize: "12px", color: "rgba(255,255,255,0.55)", marginTop: "6px", lineHeight: 1.5 }}>Write what you want in plain words.<br />Lexi edits it here, you see it live on the right.</div></div>) : wsMsgs.map((m, i) => <div key={i} style={{ background: m.role === "user" ? "#334155" : "#18181E", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "10px 12px", fontSize: "12px", lineHeight: 1.5, alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "90%" }}>{m.text}</div>)}</div>
@@ -978,12 +1061,12 @@ export default function App() {
           <div className="ws-left" style={{ width: wsNarrow ? "100%" : `${leftWidth}%`, height: (wsNarrow && wsMobileTab === "lexi") ? "calc(100dvh - 118px)" as any : (wsNarrow ? "100%" as any : "100%"), flex: (wsNarrow && wsMobileTab === "lexi") ? "none" as any : (wsNarrow ? "1" as any : "none" as any), maxHeight: wsNarrow ? "none" as any : "none" as any, display: wsNarrow && wsMobileTab !== "lexi" ? "none" as any : "flex" as any, minHeight: 0, background: "#0F0F14", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}>
             <div style={{ padding: "12px", display: "flex", gap: "6px", flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free')} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
-                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 49 }} /><div style={{ position: "absolute", left: 0, top: "38px", width: "240px", maxHeight: "320px", overflowY: "auto", background: "white", color: "#111", borderRadius: "12px", boxShadow: "0 12px 32px rgba(0,0,0,0.35)", border: "1px solid #E5E7EB", zIndex: 50 }}><div style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 700, color: "#6B7280", borderBottom: "1px solid #F3F4F6" }}>Free Tools • 20 • 0 credits</div>{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} style={{ width: "100%", textAlign: "left", background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", border: "none", borderBottom: "1px solid #F9FAFB", padding: "9px 12px", fontSize: "12px", cursor: "pointer", display: "flex", gap: "8px", alignItems: "center", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></>)}
+                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
+                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Free Tools • 20 • 0 credits</div><div className="wsToolsGrid">{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></div></>)}
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro')} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
-                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 49 }} /><div style={{ position: "absolute", left: 0, top: "38px", width: "240px", maxHeight: "320px", overflowY: "auto", background: "white", color: "#111", borderRadius: "12px", boxShadow: "0 12px 32px rgba(0,0,0,0.35)", border: "1px solid #E5E7EB", zIndex: 50 }}><div style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 700, color: "#6B7280", borderBottom: "1px solid #F3F4F6" }}>Advanced Tools • 10 • PRO</div>{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} style={{ width: "100%", textAlign: "left", background: "white", border: "none", borderBottom: "1px solid #F9FAFB", padding: "9px 12px", fontSize: "12px", cursor: "pointer", display: "flex", gap: "8px", alignItems: "center", fontWeight: 400 }}><span>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></>)}
+                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
+                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Advanced Tools • 10 • PRO</div><div className="wsToolsGrid">{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: "white", fontWeight: 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></div></>)}
               </div>
             </div>
             <div ref={wsChatScrollRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -1028,14 +1111,6 @@ export default function App() {
                   <input type="file" ref={docUploadRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf,.json,.csv" onChange={e => { const f = e.target.files?.[0]; if (f) { loadFileForEdit(f); setWsMsgs(prev => [...prev, { role: "lexi", text: `File ${f.name} loaded - Ready to edit.` }]); } e.target.value = ""; }} />
                 </div>
               )}
-              {/* CANVA Stage 2 — Click page: small floating page toolbar, not stacked rows */}
-              {!wsNarrow && selectedPage !== null && !overlayDraft && !textSelected && (
-                <div style={{ padding: "6px 12px", display: "flex", gap: "8px", alignItems: "center", justifyContent: "center", background: "#F9FAFB", borderBottom: "1px solid #F3F4F6", flexShrink: 0, fontSize: "11px", whiteSpace: "nowrap", overflowX: "auto" }}>
-                  <span style={{ fontWeight: 700, padding: "0 6px" }}>الصفحة {(selectedPage ?? 0) + 1}</span>
-                  {/* WORKSPACE ONLY - duplicated icons removed from THIS floating toolbar only */}
-                  <span style={{ color: "#6B7280", padding: "0 6px" }}>Click a word to edit it</span>
-                </div>
-              )}
               {/* CANVA Stage 3 — Click word / line: FULL text toolbar like Canva top bar — DejaVu Sans / 9.8 / B I U S / aA / Align / Color */}
               {(manualOpen && (overlayDraft || textSelected) && selectedPage !== null) && (
                 <div style={{ padding: "6px 12px", display: "flex", gap: "6px", alignItems: "center", background: "white", borderBottom: "1px solid #F3F4F6", flexShrink: 0, overflowX: "auto", whiteSpace: "nowrap" }}>
@@ -1074,8 +1149,8 @@ export default function App() {
                       </span>
                     </div>
                     <div style={{ background: "white", border: selectedPage === i ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: wsNarrow ? "0px" as any : "10px", padding: "16px", boxSizing: "border-box", boxShadow: wsNarrow ? "none" as any : (selectedPage === i ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)") }}>
-                    <div style={{ position: "relative" }}>{(url === "BLANK_PAGE" ? (<div style={{ width: "100%", aspectRatio: "1 / 1.414" as any, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", border: "1px solid #F3F4F6", background: "white", fontSize: "13px", color: "#9CA3AF", textAlign: "center", padding: "40px 0" }}>New blank page — ask Lexi what to put here.</div>) : (wsNarrow && pdfFile ? (<SharpPdfCanvas pdfFile={pdfFile} pageIndex={i} zoomFactor={autoFit * (docZoom / 50)} opacity={hiddenPages.includes(i) ? 0.25 : 1} />) : (<img src={url} alt={`Page ${i + 1}`} draggable={false} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", border: "1px solid #F3F4F6", opacity: hiddenPages.includes(i) ? 0.25 : 1, imageRendering: "auto", WebkitFontSmoothing: "antialiased", textRendering: "optimizeLegibility" as any }} />)))}){overlays.filter(o => o.page === i).map(o => (<div key={o.id} onClick={e => { e.stopPropagation(); }} style={{ position: "absolute", left: `${o.x}%`, top: `${o.y}%`, background: o.highlight === "transparent" ? "rgba(255,255,255,0.95)" : o.highlight, border: "1px dashed #7C3AED", borderRadius: "4px", padding: "4px 8px", fontSize: `${o.size}px`, fontFamily: o.font, fontWeight: o.bold ? 800 : 400, fontStyle: o.italic ? "italic" : "normal", textDecoration: o.underline ? "underline" : "none", color: o.color, textAlign: o.align as any, cursor: "text", maxWidth: "70%", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>{o.text}<button onClick={e => { e.stopPropagation(); setOverlays(prev => prev.filter(x => x.id !== o.id)); }} style={{ marginLeft: "8px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", width: "18px", height: "18px", fontSize: "10px", cursor: "pointer" }}>✕</button></div>))}
-                {manualOpen && overlayDraft && selectedPage === i && (<><div style={{ position: "absolute", left: `${overlayDraft.x}%`, top: `${overlayDraft.y}%`, width: "120px", height: "28px", transform: "translate(-50%, -50%)", border: "2px dashed #7C3AED", borderRadius: "6px", background: "transparent", pointerEvents: "none" as any, zIndex: 4 }} /><div onClick={e => e.stopPropagation()} style={{ margin: "4px 0 8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "6px", display: "flex", gap: "6px", alignItems: "center", width: "100%", boxSizing: "border-box", direction: "ltr" }}><input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="عدّل هاد السطر هنا…" style={{ flex: 1, minWidth: "120px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111" }} /><button onClick={() => { if (!overlayText.trim()) return; let txt = overlayText.trim(); if (textCase === "upper") txt = txt.toUpperCase(); if (textCase === "lower") txt = txt.toLowerCase(); setOverlays(prev => [...prev, { id: Date.now(), page: i, text: txt, bold: overlayBold, italic: overlayItalic, underline: overlayUnderline, size: overlaySize, color: overlayColor, x: overlayDraft.x, y: overlayDraft.y, font: overlayFont, align: overlayAlign, highlight: overlayHighlight }]); setOverlayText(""); setOverlayDraft(null); setTextSelected(false); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>Place ✓</button><button onClick={() => { setOverlayDraft(null); setTextSelected(false); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "6px 8px", fontSize: "11px", cursor: "pointer" }}>✕</button></div></>)}</div>
+                    <div style={{ position: "relative" }}>{(url === "BLANK_PAGE" ? (<div style={{ width: "100%", aspectRatio: "1 / 1.414" as any, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", border: "1px solid #F3F4F6", background: "white", fontSize: "13px", color: "#9CA3AF", textAlign: "center", padding: "40px 0" }}>New blank page — ask Lexi what to put here.</div>) : (wsNarrow && pdfFile ? (<SharpPdfCanvas pdfFile={pdfFile} pageIndex={i} zoomFactor={autoFit * (docZoom / 50)} opacity={hiddenPages.includes(i) ? 0.25 : 1} />) : (<img src={url} alt={`Page ${i + 1}`} draggable={false} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", border: "1px solid #F3F4F6", opacity: hiddenPages.includes(i) ? 0.25 : 1, imageRendering: "auto", WebkitFontSmoothing: "antialiased", textRendering: "optimizeLegibility" as any }} />)))}{overlays.filter(o => o.page === i).map(o => (<div key={o.id} onClick={e => { e.stopPropagation(); }} style={{ position: "absolute", left: `${o.x}%`, top: `${o.y}%`, background: o.highlight === "transparent" ? "rgba(255,255,255,0.95)" : o.highlight, border: "1px dashed #7C3AED", borderRadius: "4px", padding: "4px 8px", fontSize: `${o.size}px`, fontFamily: o.font, fontWeight: o.bold ? 800 : 400, fontStyle: o.italic ? "italic" : "normal", textDecoration: o.underline ? "underline" : "none", color: o.color, textAlign: o.align as any, cursor: "text", maxWidth: "70%", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>{o.text}<button onClick={e => { e.stopPropagation(); setOverlays(prev => prev.filter(x => x.id !== o.id)); }} style={{ marginLeft: "8px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", width: "18px", height: "18px", fontSize: "10px", cursor: "pointer" }}>✕</button></div>))}
+                {manualOpen && overlayDraft && selectedPage === i && (<><div style={{ position: "absolute", left: `${overlayDraft.x}%`, top: `${overlayDraft.y}%`, width: "120px", height: "28px", transform: "translate(-50%, -50%)", border: "2px dashed #7C3AED", borderRadius: "6px", background: "#F5F3FF", opacity: 0.7, pointerEvents: "none" as any, zIndex: 4 }} /><div onClick={e => e.stopPropagation()} style={{ margin: "4px 0 8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "6px", display: "flex", gap: "6px", alignItems: "center", width: "100%", boxSizing: "border-box", direction: "ltr" }}><input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="عدّل هاد السطر هنا…" style={{ flex: 1, minWidth: "120px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111", fontFamily: "inherit", textAlign: isArabicFile ? "right" : "left" }} /><button onClick={() => { if (!overlayText.trim()) return; let txt = overlayText.trim(); if (textCase === "upper") txt = txt.toUpperCase(); if (textCase === "lower") txt = txt.toLowerCase(); setOverlays(prev => [...prev, { id: Date.now(), page: i, text: txt, bold: overlayBold, italic: overlayItalic, underline: overlayUnderline, size: overlaySize, color: overlayColor, x: overlayDraft.x, y: overlayDraft.y, font: overlayFont, align: overlayAlign, highlight: overlayHighlight }]); setOverlayText(""); setOverlayDraft(null); setTextSelected(false); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Place ✓</button><button onClick={() => { setOverlayDraft(null); setTextSelected(false); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button></div></>)}</div>
                   </div>
                   </div>
                 ))}
@@ -1088,8 +1163,9 @@ export default function App() {
                       const chunk = lines.slice(pageIdx * perPage, (pageIdx + 1) * perPage).join("\n");
                       if (!chunk && pageIdx > 0) return null;
                       return (
-                        <div key={pageIdx} onClick={() => { setSelectedPage(pageIdx); setSelectedPara(pageIdx); setTextSelected(false); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === pageIdx ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === pageIdx ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", transition: "transform 0.2s", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: selectedPage === pageIdx ? "#7C3AED" : "#6B7280" }}>Page {pageIdx + 1} • {fileName}</span>{selectedPage === pageIdx && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
+                        <div key={pageIdx} onClick={() => { setSelectedPage(pageIdx); setSelectedPara(pageIdx); setTextSelected(false); }} style={{ width: "580px", minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "transparent", display: "block", boxSizing: "border-box" as any, border: "none", borderRadius: "0px", padding: "0px", boxShadow: "none", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit, cursor: "pointer", position: "relative" }}>
+                    <div dir="ltr" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", padding: "4px 6px 10px 6px", direction: "ltr", unicodeBidi: "isolate" as any, cursor: "default" }}><span dir="ltr" onClick={(e) => e.stopPropagation()} style={{ fontSize: "18px", fontWeight: 700, color: "#111", whiteSpace: "nowrap", cursor: "default", userSelect: "none" as any }}>Page {pageIdx + 1}</span><span dir="ltr" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "16px", fontSize: "28px", lineHeight: 1, color: "#111", whiteSpace: "nowrap", direction: "ltr" }}><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; const b = (pageIdx + 1) * pp; if (b >= ls.length) return prev; const c1 = ls.slice(a, b); const c2 = ls.slice(b, b + pp); return [...ls.slice(0, a), ...c2, ...c1, ...ls.slice(b + pp)].join("\n"); }); }} title="Move page down" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˅</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; if (a === 0) return prev; const c0 = ls.slice(a - pp, a); const c1 = ls.slice(a, a + pp); return [...ls.slice(0, a - pp), ...c1, ...c0, ...ls.slice(a + pp)].join("\n"); }); }} title="Move page up" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˄</span><span onClick={(e) => { e.stopPropagation(); setHiddenPages(prev => prev.includes(pageIdx) ? prev.filter(x => x !== pageIdx) : [...prev, pageIdx]); }} title={hiddenPages.includes(pageIdx) ? "Show page" : "Hide page"} style={{ cursor: "pointer", opacity: hiddenPages.includes(pageIdx) ? 0.3 : 1, fontSize: "34px" }}>👁</span><span onClick={(e) => { e.stopPropagation(); setLockedPages(prev => prev.includes(pageIdx) ? prev.filter(x => x !== pageIdx) : [...prev, pageIdx]); }} title={lockedPages.includes(pageIdx) ? "Unlock page" : "Lock page"} style={{ cursor: "pointer", fontSize: "30px" }}>{lockedPages.includes(pageIdx) ? "🔒" : "🔓"}</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; const chunk = ls.slice(a, a + pp); return [...ls.slice(0, a + pp), ...chunk, ...ls.slice(a + pp)].join("\n"); }); }} title="Duplicate page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 800 }}>⧉</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; return [...ls.slice(0, a), ...ls.slice(a + pp)].join("\n"); }); }} title="Delete page" style={{ cursor: "pointer", fontSize: "32px", width: "38px", height: "38px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#FEE2E2", color: "#DC2626", border: "2px solid #DC2626", borderRadius: "50%", lineHeight: 1 }}>🗑</span><span onClick={(e) => { e.stopPropagation(); setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = (pageIdx + 1) * pp; const blank = Array(pp).fill(""); return [...ls.slice(0, a), ...blank, ...ls.slice(a)].join("\n"); }); setSelectedPage(pageIdx + 1); }} title="Add page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 900, width: "34px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid #111", borderRadius: "50%", lineHeight: 1 }}>+</span></span></div>
+                    <div style={{ background: "white", border: selectedPage === pageIdx ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === pageIdx ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)" }}>
                           <div style={{ fontSize: "13px", lineHeight: 1.8, color: "#1F2937", fontFamily: isCodeFile ? "monospace" : "'Segoe UI', sans-serif", whiteSpace: "pre-wrap", wordBreak: "break-word", textAlign: isArabicFile ? "right" : "left", direction: isArabicFile ? "rtl" : "ltr" }}>
                             {chunk.split("\n").map((line, li) => {
                               const globalIdx = pageIdx * perPage + li;
@@ -1111,6 +1187,7 @@ export default function App() {
                           </div>
                           <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "8px" }}>{textSelected && selectedPage === pageIdx ? "✏️ Text selected — type the new word here ↓" : "Click this text to select it — text tools appear on top like Canva"}</div>
                           {textSelected && selectedPage === pageIdx && editingLine === null && (<div onClick={e => e.stopPropagation()} style={{ marginTop: "8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "8px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", width: "100%", boxSizing: "border-box" }}><input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="Type the new word / sentence…" style={{ flex: 1, background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111" }} /><button onClick={() => { if (!overlayText.trim()) return; let txt = overlayText.trim(); if (textCase === "upper") txt = txt.toUpperCase(); if (textCase === "lower") txt = txt.toLowerCase(); setOverlays(prev => [...prev, { id: Date.now(), page: pageIdx, text: txt, bold: overlayBold, italic: overlayItalic, underline: overlayUnderline, size: overlaySize, color: overlayColor, x: 18, y: 22, font: overlayFont, align: overlayAlign, highlight: overlayHighlight }]); setOverlayText(""); setTextSelected(false); setOverlayDraft(null); setWsMsgs(prev => [...prev, { role: "lexi", text: `✓ Manual text placed on Page ${pageIdx + 1}: “${txt}”` }]); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>Place ✓</button><button onClick={() => { setTextSelected(false); setOverlayDraft(null); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button></div>)}
+                        </div>
                         </div>
                       );
                     })}
