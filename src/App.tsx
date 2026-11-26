@@ -1,246 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-GlobalWorkerOptions.workerSrc = workerUrl;
-import { pdfs, quickPills, chatPlaceholders, faqs, freeTools, proTools, wsIconColor, recentFiles, getFileInfo } from "./data/showcase";
+import Workspace from "./components/Workspace";
+import Header, { UserMenu } from "./components/Header";
+import Sidebar from "./components/Sidebar";
+import { GUTTER_CSS } from "./data/tools";
+import { pdfs, quickPills, chatPlaceholders, faqs, getFileInfo } from "./data/showcase";
 
-const GUTTER_CSS = `
-/* EDIT 1 - Workspace dropdowns (Sign PDF / Advanced Tools) - desktop exactly as screenshot, mobile reformatted only */
-.wsToolsDropdown{position:fixed!important;background:#fff;color:#111;border-radius:14px;boxShadow:0 16px 40px rgba(0,0,0,0.35);border:1px solid #E5E7EB;z-index:9999!important;padding:6px 10px 8px;overflow:visible;max-height:none}
-.wsToolsDropdownHead{padding:4px 8px 6px;font-size:12px;font-weight:700;color:#111;border-bottom:1px solid #F3F4F6}
-.wsToolsIcon{width:22px;min-width:22px;display:grid;place-items:center;font-size:18px;line-height:1;flex-shrink:0;background:transparent!important;border:none;filter:saturate(1.9) contrast(1.15) brightness(1.05);-webkit-filter:saturate(1.9) contrast(1.15) brightness(1.05)}
-.wsToolsGrid{display:grid;gap:2px 10px}
-.wsToolsItem{width:100%;text-align:left;background:#fff;border:none;padding:5px 8px;font-size:12.5px;cursor:pointer;display:flex;gap:8px;align-items:center;border-radius:8px;white-space:nowrap;overflow:hidden;min-height:32px}
-.wsToolsItem:hover{background:#F9FAFB}
-@media (min-width:900px){
-.wsToolsDropdown{width:600px;overflow:visible;max-height:none;padding:10px 12px 12px}
-.wsToolsGrid{grid-template-columns:1fr 1fr;gap:4px 12px}
-.wsToolsDropdownHead{font-size:12px;padding:6px 8px 10px}
-.wsToolsItem{padding:9px 10px;font-size:13px;min-height:40px;gap:10px;white-space:normal;overflow:visible;align-items:center}
-.wsToolsItem span:nth-child(2){flex:1;min-width:0;line-height:1.35;white-space:normal}
-.wsToolsIcon{width:20px;min-width:20px;font-size:16px}
-.wsToolsItem span:last-child{flex-shrink:0;margin-left:8px!important;font-size:10px!important;letter-spacing:.04em;white-space:nowrap}
-.wsToolsIcon{filter:saturate(1.4) contrast(1.05);-webkit-filter:saturate(1.4) contrast(1.05)}
-}
-@media (max-width:899px){.wsToolsDropdown{width:calc(100vw - 32px);max-width:360px;max-height:70vh;overflow-y:auto}.wsToolsGrid{grid-template-columns:1fr}}
-*{box-sizing:border-box} html{scrollbar-gutter:stable;overflow-y:scroll} body{margin:0} ::-webkit-scrollbar{width:2px;height:2px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.35);border-radius:999px} ::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarScroll{scrollbar-width:thin;scrollbar-color:rgba(124,58,237,0.65) transparent;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch} .leftSidebarScroll::-webkit-scrollbar{width:6px} .leftSidebarScroll::-webkit-scrollbar-track{background:transparent} .leftSidebarScroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.55);border-radius:999px;transform:scaleY(0.3);transform-origin:top} .leftSidebarScroll::-webkit-scrollbar-thumb:hover{background:#7C3AED} .leftSidebarContent{min-height:max-content} .leftSidebarContent [style*='cursor: pointer']{transition:background-color .18s ease,color .18s ease,transform .18s ease} .leftSidebarContent [style*='cursor: pointer']:hover{background-color:rgba(124,58,237,0.10)!important;transform:translateX(2px)} .leftSidebarContent button:hover{background-color:rgba(124,58,237,0.10)!important} .hideMob{display:flex} .hamburgerBtn{display:none!important} .mobileOnlyBtn{display:none!important} .mobileCircleWrap{display:none!important} .rightBar{display:flex} .headerFixed{left:280px!important;right:56px!important} @media(max-width:1100px){.hideMob{display:none!important} .hamburgerBtn{display:grid!important;place-items:center} .mobileOnlyBtn{display:block!important} .mobileCircleWrap{display:block!important} .hideOnSmall{display:none!important} .rightBar{display:none!important} .headerFixed{left:0!important;right:0!important}} @media(max-width:700px){.heroGrid{grid-template-columns:1fr!important} .pdfGrid{grid-template-columns:1fr 1fr!important} .bottomGrid{grid-template-columns:1fr!important}} @media(max-width:1100px){.mainResponsive{margin-left:0!important;margin-right:0!important} .threeColGrid{grid-template-columns:1fr 1fr!important} .pagePad{padding:32px 20px!important}} @media(max-width:700px){.threeColGrid{grid-template-columns:1fr!important} .twoColGrid{grid-template-columns:1fr!important} .compareGrid{grid-template-columns:1fr!important;gap:6px!important} .splitGrid{grid-template-columns:1fr!important} .heroTitle{font-size:28px!important;line-height:1.2!important} .pageTitle{font-size:26px!important;line-height:1.25!important} .pagePad{padding:24px 16px!important} .heroGlow{width:320px!important;height:240px!important} .heroPad{padding:24px 16px 20px!important} .adBanner{flex-wrap:wrap!important} .headerFixed{padding:0 12px!important}} @media(max-width:480px){.pdfGrid{grid-template-columns:1fr!important} .heroTitle{font-size:24px!important} .pageTitle{font-size:24px!important} .heroGlow{width:260px!important;height:200px!important} .headerFixed{padding:0 10px!important;gap:8px!important}} .plansGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px;text-align:left} @media(max-width:1100px){.plansGrid{grid-template-columns:1fr 1fr!important}} @media(max-width:700px){.plansGrid{grid-template-columns:1fr!important}} .plansGrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px auto 0;max-width:840px;text-align:left} @media(max-width:700px){.plansGrid2{grid-template-columns:1fr!important}}`;
 
 // FIX-V12-SHARP: mobile-only VECTOR page. The blur was NEVER about pixels:
 // a bitmap (PNG/canvas) always blurs when CSS zoom shrinks it.
 // This renders the REAL PDF page as SVG vector text (SVGGraphics) — the browser draws
 // the letters fresh at the exact display size, so at 50% with the WHOLE page visible,
 // the lines stay sharp and comfortable for the eye, never blurry.
-function SharpPdfCanvas({ pdfFile, pageIndex, zoomFactor, opacity }: { pdfFile: any; pageIndex: number; zoomFactor: number; opacity?: number }) {
-  const boxRef = useRef<HTMLDivElement>(null);
-  const drawRef = useRef<HTMLDivElement>(null);
-  const [hasDrawn, setHasDrawn] = useState(false);
-  // MOBILE-ONLY FIX: old code rendered ALL 120 pages at once, each re-parsing the whole PDF.
-  // Now: render only when the page is actually on screen (+800px around it), else keep a light placeholder.
-  const [isVisible, setIsVisible] = useState(false);
-  useEffect(() => {
-    const el = boxRef.current;
-    if (!el) return;
-    if (typeof (window as any).IntersectionObserver === "undefined") { setIsVisible(true); return; }
-    const io = new (window as any).IntersectionObserver((entries: any[]) => {
-      if (entries[0] && entries[0].isIntersecting) { setIsVisible(true); io.disconnect(); }
-    }, { rootMargin: "800px 0px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  useEffect(() => {
-    if (!isVisible) return;
-    let cancelled = false;
-    const draw = async () => {
-      try {
-        // MOBILE-ONLY: cache the file bytes ONCE — old code called arrayBuffer() per page (120 full copies = freeze).
-        if (!(pdfFile as any).__cachedBuf) { (pdfFile as any).__cachedBuf = await pdfFile.arrayBuffer(); }
-        const cachedBuf: ArrayBuffer = (pdfFile as any).__cachedBuf;
-        const freshBuf = () => cachedBuf.slice(0);
-        // FALLBACK: no SVGGraphics in pdf.js v5 -> canvas at exact display size, never a blank page.
-        const pdf2 = await getDocument({ data: freshBuf() }).promise;
-        const pg = await pdf2.getPage(pageIndex + 1);
-        const base = pg.getViewport({ scale: 1 });
-        const dpr = Math.min(3, window.devicePixelRatio || 1);
-        const vp = pg.getViewport({ scale: Math.max(0.4, Math.min(4, (580 * zoomFactor * dpr) / base.width)) });
-        const cv = document.createElement("canvas");
-        cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
-        cv.style.width = "100%"; cv.style.height = "auto"; cv.style.display = "block";
-        const cx = cv.getContext("2d"); if (cx) { await pg.render({ canvas: cv, canvasContext: cx, viewport: vp }).promise; }
-        const box2 = drawRef.current; if (box2 && !cancelled) { box2.innerHTML = ""; box2.appendChild(cv); setHasDrawn(true); }
-        return;
-      } catch (e) { /* keep previous frame — never blank the page */ }
-    };
-    const id = setTimeout(draw, 60);
-    return () => { cancelled = true; clearTimeout(id); };
-  }, [pdfFile, pageIndex, zoomFactor, isVisible]);
-  return (<div ref={boxRef} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", opacity: opacity ?? 1 }}>
-    {!hasDrawn && (<div style={{ width: "100%", aspectRatio: "1 / 1.414" as any, background: "white", border: "1px solid #F3F4F6", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#9CA3AF" }}>Loading page {pageIndex + 1}…</div>)}
-    <div ref={drawRef} style={{ width: "100%", display: hasDrawn ? "block" : "none" }} />
-  </div>);
-}
-
 export default function App() {
   const [view, setView] = useState<'homepage' | 'workspace' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private'>('homepage');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [chat, setChat] = useState("");
+  const wsRef = useRef<import("./components/Workspace").WorkspaceHandle>(null);
+  const [pendingFile, setPendingFile] = useState<any | null>(null);
+  const [pendingMsg, setPendingMsg] = useState<string | undefined>(undefined);
   const [fileName, setFileName] = useState("No file selected yet");
   const [dragOver, setDragOver] = useState(false);
   const [homePickerLoading, setHomePickerLoading] = useState(false); // HOMEPAGE ONLY — upload card: instant feedback while the native file picker opens.
-  const [queuePickerLoading, setQueuePickerLoading] = useState(false); // QUEUE ONLY
   const [activeTool, setActiveTool] = useState("AI Tools");
   const [faqOpen, setFaqOpen] = useState(0);
-  const [leftWidth, setLeftWidth] = useState(40);
-  const [isDragging, setIsDragging] = useState(false);
-  const [wsMsgs, setWsMsgs] = useState<{ role: "user" | "lexi", text: string }[]>([]);
-  const [wsInput, setWsInput] = useState("");
-  const [wsTool, setWsTool] = useState("Sign");
-  const [wsToolsMenu, setWsToolsMenu] = useState<'free' | 'pro' | null>(null);
-  const [wsToolsAnchor, setWsToolsAnchor] = useState<{ left: number, top: number } | null>(null); // FIX-DROPDOWN-ABOVE-DOC: fixed position from button rect, escapes overflow:hidden + doc stacking // WORKSPACE ONLY — which tools dropdown is open (Free / Advanced). One state for desktop + mobile rows, only one row is visible at a time.
-  const wsFullToShort: Record<string, string> = { "Edit PDF": "Edit", "Merge PDF": "Merge", "Split PDF": "Split", "Compress PDF": "Compress", "Sign PDF": "Sign" }; // keep Sign/Compress preview checks (wsTool === 'Sign' / 'Compress') working
-  const wsShortToFull: Record<string, string> = { Edit: "Edit PDF", Merge: "Merge PDF", Split: "Split PDF", Compress: "Compress PDF", Sign: "Sign PDF" };
-  const wsFreeMatch = freeTools.find((f: any) => f.en === wsTool || wsShortToFull[wsTool] === f.en); // active free tool, legacy short names included
-  const wsFreeIsActive = !!wsFreeMatch;
-  const wsFreeLabel = wsFreeMatch ? `${wsFreeMatch.en} ▾` : "Free Tools ▾";
-  // WORKSPACE ONLY — document viewer state (zoom / page / live preview). Workspace only, no other page.
-  const [docZoom, setDocZoom] = useState(30); // WORKSPACE ONLY - EDIT 1: first appearance = 30% (small), user zooms in if they want
-  const [autoFit, setAutoFit] = useState(1); // desktop 1, phone/tablet <1 — scales page visually, never reflows text
-  const [docLive, setDocLive] = useState(true);
-  const [, setDocPage] = useState(1);
-  const [goToPageInput, setGoToPageInput] = useState<string | null>(null);
-  const [hiddenPages, setHiddenPages] = useState<number[]>([]);
-  const [lockedPages, setLockedPages] = useState<number[]>([]); // WORKSPACE ONLY - EDIT 2: go-to-page input value (empty = show current page)
-  // WORKSPACE ONLY - EDIT 2: jump directly to page N (1-based). Clamps to 1..total, scrolls that page into view.
-  const goToPage = (n: number) => {
-    const total = pdfPages.length > 0 ? pdfPages.length : 3 + extraPages;
-    const clamped = Math.min(Math.max(1, Math.floor(n) || 1), total);
-    setSelectedPage(clamped - 1); setDocPage(clamped); setGoToPageInput("");
-    setTimeout(() => {
-      const container: any = (docScrollRef as any)?.current;
-      if (!container) return;
-      const el = container.querySelector(`[data-doc-page="${clamped - 1}"]`) as any;
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  };
-  const [docRotate] = useState(0);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [docText, setDocText] = useState("");
-  const [selectedPara, setSelectedPara] = useState<number | null>(null);
-  const [redoMsgs, setRedoMsgs] = useState<{ role: "user" | "lexi", text: string }[]>([]);
-  const [selectedPage, setSelectedPage] = useState<number | null>(null);
-  const [extraPages, setExtraPages] = useState<number>(0);
-  const [pdfFile, setPdfFile] = useState<any | null>(null);
-  const [queueFiles, setQueueFiles] = useState<string[]>(["Contract.pdf"]);
-  const [queueFileObjs, setQueueFileObjs] = useState<Record<string, any>>({});
-  const [queueMenuOpen, setQueueMenuOpen] = useState<any>(null);
-  const [wsNarrow, setWsNarrow] = useState(false); // workspace only: <900px => one panel at a time, document 100%
-  const [wsMobileTab, setWsMobileTab] = useState<'doc' | 'lexi' | 'queue'>('doc'); // phone only: which panel is visible
-  const [panMode, setPanMode] = useState(false);
-  const [overlays, setOverlays] = useState<{ id: number, page: number, text: string, bold: boolean, italic: boolean, underline: boolean, size: number, color: string, x: number, y: number, font: string, align: string, highlight: string }[]>([]);
-  const [overlayText, setOverlayText] = useState("");
-  const [overlayBold, setOverlayBold] = useState(false);
-  const [overlayItalic, setOverlayItalic] = useState(false);
-  const [overlayUnderline, setOverlayUnderline] = useState(false);
-  const [overlaySize, setOverlaySize] = useState(14);
-  const [overlayColor, setOverlayColor] = useState("#111111");
-  const [manualOpen, setManualOpen] = useState(false);
-  const [overlayFont, setOverlayFont] = useState("Inter, sans-serif");
-  const [overlayAlign, setOverlayAlign] = useState("left" as "left" | "center" | "right");
-  const [overlayHighlight, setOverlayHighlight] = useState("transparent");
-  const [textStrike, setTextStrike] = useState(false);
-  const [textCase, setTextCase] = useState("normal" as "normal" | "upper" | "lower");
-  const [textSelected, setTextSelected] = useState(false);
-  const [editingLine, setEditingLine] = useState<number | null>(null);
-  const [overlayDraft, setOverlayDraft] = useState<{ x: number, y: number } | null>(null);
-  const [pdfPages, setPdfPages] = useState<string[]>([]);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfError, setPdfError] = useState("");
-  // Real PDF rendering — progressive: first 5 pages instantly, rest in background chunks (fixes 120-page 60s freeze).
-  useEffect(() => {
-    if (!pdfFile) return;
-    let cancelled = false;
-    setPdfLoading(true); setPdfError("");
-    const renderPdf = async () => {
-      try {
-        const pdfjsLib = { getDocument, GlobalWorkerOptions };
-        const buf = await pdfFile.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        // FIX-MOBILE-ONLY: phones NEVER use these JPEGs — they display SharpPdfCanvas (vector) instead.
-        // Old code still rendered 120 JPEGs on phones (wasted) + 120 vector pages (heavy) = 1 min + freeze.
-        // Now on phones: only count pages, show placeholders instantly, vector renders only visible pages.
-        if (window.innerWidth < 900) {
-          const totalMobile = pdf.numPages;
-          setPdfPages(Array.from({ length: totalMobile }, () => "MOBILE_VECTOR"));
-          setPdfLoading(false);
-          return;
-        }
-        // FIX-PERF-120PAGES: old code rendered ALL pages at 4x to PNG, THEN showed anything.
-        // 120 pages x 4x = ~120 huge canvases + huge PNG strings = ~60s freeze. New: progressive.
-        // 1) First 5 pages fast (scale 2 desktop / 1.5 phone, JPEG 0.85 = ~5x lighter than PNG), show them at once.
-        // 2) Rest in background, 5 pages per chunk, yielding to UI between chunks, appended as they finish.
-        const renderScale = window.innerWidth < 900 ? 1.5 : 2;
-        const renderOne = async (pageNum: number) => {
-          const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: renderScale });
-          const canvas = document.createElement("canvas");
-          canvas.width = viewport.width; canvas.height = viewport.height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return "";
-          await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-          const url = canvas.toDataURL("image/jpeg", 0.85);
-          canvas.width = 0; canvas.height = 0; // free canvas memory at once
-          return url;
-        };
-        const yieldUI = () => new Promise<void>(r => setTimeout(r, 0));
-        const total = pdf.numPages;
-        const firstBatch = Math.min(5, total);
-        const firstUrls: string[] = [];
-        for (let i = 1; i <= firstBatch; i++) {
-          if (cancelled) return;
-          const u = await renderOne(i);
-          if (u) firstUrls.push(u);
-        }
-        if (cancelled) return;
-        setPdfPages(firstUrls);
-        setPdfLoading(false); // user can already edit page 1-5, no more full-screen wait
-        // Background: remaining pages, 5 at a time
-        for (let start = firstBatch + 1; start <= total; start += 5) {
-          if (cancelled) return;
-          const chunk: string[] = [];
-          for (let i = start; i < Math.min(start + 5, total + 1); i++) {
-            if (cancelled) return;
-            const u = await renderOne(i);
-            if (u) chunk.push(u);
-          }
-          if (cancelled) return;
-          if (chunk.length) setPdfPages(prev => [...prev, ...chunk]);
-          await yieldUI();
-        }
-      } catch (e: any) {
-        if (!cancelled) setPdfError("Could not render this PDF in this preview. The real file still opens correctly on export.");
-      } finally { if (!cancelled) setPdfLoading(false); }
-    };
-    renderPdf();
-    return () => { cancelled = true; };
-  }, [pdfFile]);
-  const docScrollRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = docScrollRef.current;
-    if (!el) return;
-    const update = () => {
-      // Workspace only: desktop => 1 (zoom is exactly docZoom, stable). Phone => fit to window, never reflow.
-      const ww = el.clientWidth || window.innerWidth;
-      const s = ww > 900 ? 1 : Math.min(1, Math.max(0.35, (ww - 32) / 580));
-      setAutoFit(s);
-      // Workspace narrow detection: container width < 900 => stacked layout (document 100%, queue below, never squeezed)
-      const cw = (containerRef.current as any)?.clientWidth || ww;
-      setWsNarrow(cw < 900);
-    };
-    update();
-    const ro = (window as any).ResizeObserver ? new (window as any).ResizeObserver(update) : null;
-    if (ro) { ro.observe(el); if (containerRef.current) ro.observe(containerRef.current); }
-    window.addEventListener("resize", update);
-    return () => { if (ro) ro.disconnect(); window.removeEventListener("resize", update); };
-  }, [view]);
   const [freeOpen, setFreeOpen] = useState(false);
   const [proOpen, setProOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false); // مغلوق عند فتح الموقع - يفتحه المستخدم بيده
@@ -266,18 +48,11 @@ export default function App() {
   const [settingsLang, setSettingsLang] = useState("English");
   const [settingsNotifications, setSettingsNotifications] = useState(true);
   const [chatAttached, setChatAttached] = useState<string | null>(null);
-  const [wsAttached, setWsAttached] = useState<string | null>(null);
   const [rightActive, setRightActive] = useState<string | null>(null);
   const [rightHover, setRightHover] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const chatFileRef = useRef<HTMLInputElement>(null);
-  const wsFileRef = useRef<HTMLInputElement>(null);
-  const queueFileRef = useRef<HTMLInputElement>(null);
-  const docUploadRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const wsChatScrollRef = useRef<HTMLDivElement>(null);
-  const wsChatScrollRefMobile = useRef<HTMLDivElement>(null);
 
   const isLight = theme === 'light';
   const isSun = !isLight;
@@ -300,37 +75,29 @@ export default function App() {
   const hasFiles = fileName !== "No file selected yet";
   const fileInfo = getFileInfo(fileName);
 
+  // FIX-SPLIT-UPLOAD: Workspace mounts only when view === 'workspace', so the ref is
+  // null while the homepage is visible. Hand the file to Workspace via props it
+  // consumes on mount, instead of the (previously dropped) imperative ref call.
+  // ORIGINAL BEHAVIOR: picking a file on the homepage only stages it (name + viewer
+  // state) and does NOT navigate; the first chat message or tool click routes.
   const loadFileForEdit = (f: any) => {
-    const name = f.name || "";
-    setFileName(name);
-    setSelectedPage(0); setSelectedPara(0); setTextSelected(false); setEditingLine(null); setOverlayDraft(null);
-    if (name.toLowerCase().endsWith(".pdf")) {
-      setPdfFile(f); setPdfPages([]); setPdfError(""); setDocText("");
-    } else if (name.toLowerCase().endsWith(".txt") || name.toLowerCase().endsWith(".rtf") || name.toLowerCase().endsWith(".md") || name.toLowerCase().endsWith(".json") || name.toLowerCase().endsWith(".csv")) {
-      setPdfFile(null); setPdfPages([]);
-      const r = new FileReader(); r.onload = () => setDocText(String(r.result || "")); r.readAsText(f);
-    } else {
-      setPdfFile(null); setPdfPages([]); setDocText("");
-    }
+    setFileName(f.name || "");
+    setPendingFile(f);
+    setPendingMsg(undefined);
   };
   const goWorkspace = (name: string, msg?: string) => {
     setFileName(name);
-    setWsMsgs([
-      { role: "lexi", text: `File ${name} loaded - Ready to edit.` },
-      { role: "lexi", text: `Ready to edit — ask me to sign, compress, merge or split this file.` },
-      ...(msg ? [{ role: "user" as const, text: msg }] : []),
-    ]);
+    setPendingMsg(msg);
     setView('workspace'); setMobileMenuOpen(false);
   };
-  const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) { if (f.name.toLowerCase().endsWith(".pdf")) { setPdfFile(f); setPdfPages([]); setPdfError(""); setDocText(""); } else if (f.name.toLowerCase().endsWith(".txt") || f.name.toLowerCase().endsWith(".rtf") || f.name.toLowerCase().endsWith(".md") || f.name.toLowerCase().endsWith(".json") || f.name.toLowerCase().endsWith(".csv")) { setPdfFile(null); setPdfPages([]); const r = new FileReader(); r.onload = () => setDocText(String(r.result || "")); r.readAsText(f); } else { setPdfFile(null); setPdfPages([]); setDocText(""); } setFileName(f.name); } };
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => { setHomePickerLoading(false); const f = e.target.files?.[0]; if (f) { if (f.name.toLowerCase().endsWith(".pdf")) { setPdfFile(f); setPdfPages([]); setPdfError(""); setDocText(""); } else if (f.name.toLowerCase().endsWith(".txt") || f.name.toLowerCase().endsWith(".rtf") || f.name.toLowerCase().endsWith(".md") || f.name.toLowerCase().endsWith(".json") || f.name.toLowerCase().endsWith(".csv")) { setPdfFile(null); setPdfPages([]); const r = new FileReader(); r.onload = () => setDocText(String(r.result || "")); r.readAsText(f); } else { setPdfFile(null); setPdfPages([]); setDocText(""); } setFileName(f.name); } };
+  const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) { if (f.name.toLowerCase().match(/\.(pdf|txt|rtf|md|json|csv)$/)) { loadFileForEdit(f); } else { alert("Unsupported file type. Try PDF, TXT, RTF, MD, JSON or CSV."); } } };
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => { setHomePickerLoading(false); const f = e.target.files?.[0]; if (f) { if (f.name.toLowerCase().match(/\.(pdf|txt|rtf|md|json|csv)$/)) { loadFileForEdit(f); } else { alert("Unsupported file type. Try PDF, TXT, RTF, MD, JSON or CSV."); } } };
   const openHomePicker = () => { setHomePickerLoading(true); const onFocus = () => { window.removeEventListener("focus", onFocus); window.setTimeout(() => setHomePickerLoading(false), 400); }; window.addEventListener("focus", onFocus); fileRef.current?.click(); window.setTimeout(() => { window.removeEventListener("focus", onFocus); setHomePickerLoading(false); }, 60000); }; // HOMEPAGE ONLY
-  const openQueuePicker = () => { setQueuePickerLoading(true); const onFocus = () => { window.removeEventListener("focus", onFocus); window.setTimeout(() => setQueuePickerLoading(false), 400); }; window.addEventListener("focus", onFocus); queueFileRef.current?.click(); window.setTimeout(() => { window.removeEventListener("focus", onFocus); setQueuePickerLoading(false); }, 60000); }; // QUEUE ONLY
-  const handleSend = () => { if (!chat.trim()) return; goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, chat); setWsMobileTab('lexi'); setChat(""); };
+  const handleSend = () => { if (!chat.trim()) return; goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, chat); setChat(""); };
   const handleToolClick = (tool: any) => {
     setActiveTool(tool.en); setMobileMenuOpen(false);
     if (tool.id >= 21) { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); return; }
-    goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, `I want to ${tool.en}`); setWsMobileTab('lexi');
+    goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, `I want to ${tool.en}`);
   };
   const handleUserClick = () => { setUserMenuOpen(!userMenuOpen); setShowSettingsPopup(false); setShowHelpPopup(false); };
   const navTo = (v: 'homepage' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private') => { setView(v); setMobileMenuOpen(false); setUserMenuOpen(false); setShowSettingsPopup(false); setShowHelpPopup(false); window.scrollTo(0,0); };
@@ -350,266 +117,12 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, loopNum]);
 
-  useEffect(() => {
-    const move = (e: MouseEvent) => { if (!isDragging || !containerRef.current) return; const r = containerRef.current.getBoundingClientRect(); setLeftWidth(Math.min(60, Math.max(25, ((e.clientX - r.left) / r.width) * 100))); };
-    const up = () => setIsDragging(false);
-    if (isDragging) { window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); }
-    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
-  }, [isDragging]);
-  useEffect(() => {
-    const scrollBoth = () => {
-      const els = [wsChatScrollRef.current, wsChatScrollRefMobile.current];
-      els.forEach((el) => { if (el) { el.scrollTop = el.scrollHeight; } });
-    };
-    const t1 = requestAnimationFrame(scrollBoth);
-    const t2 = setTimeout(scrollBoth, 50);
-    return () => { cancelAnimationFrame(t1); clearTimeout(t2); };
-  }, [wsMsgs]);
 
-  const userMenu = userMenuOpen ? (
-    <>
-      <div onClick={() => setUserMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 199 }} />
-      <div style={{ position: "fixed", right: "16px", top: "65px", width: "292px", maxHeight: "calc(100vh - 32px)", overflow: "visible", background: isSun ? '#FFFFFF' : '#1A1A24', border: `1px solid ${sideCardBorder}`, borderRadius: "16px", padding: "6px", zIndex: 200, boxShadow: isSun ? "0 20px 40px rgba(0,0,0,0.15)" : "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)" }}>
-        <div style={{ padding: "10px", borderBottom: `1px solid ${sideCardBorder}`, marginBottom: "4px", display: "flex", gap: "10px", alignItems: "center" }}>
-          <div style={{ width: "36px", height: "36px", borderRadius: "999px", background: "#7C3AED", display: "grid", placeItems: "center", color: "white", fontWeight: 700, fontSize: "14px", flexShrink: 0 }}>K</div>
-          <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "13px", fontWeight: 600, color: sideText }}>{accountType === 'company' ? "Kamal • Acme Law" : accountType === 'professional' ? "Kamal • Lawyer" : "Kamal"}</div><div style={{ fontSize: "11px", color: sideMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{accountType === 'company' ? "kamal@acme-law.com • Admin" : "kamal@pdflexi.com"}</div></div>
-          <span style={{ fontSize: "10px", fontWeight: 700, color: accountType === 'company' ? "#111" : accountType === 'professional' ? "#1E40AF" : "#7C3AED", background: accountType === 'company' ? "#F3F4F6" : accountType === 'professional' ? "#EFF6FF" : "rgba(124,58,237,0.1)", padding: "3px 8px", borderRadius: "999px", whiteSpace: "nowrap" }}>{accountType === 'company' ? "Enterprise" : accountType === 'professional' ? "Teams" : "Free plan"}</span>
-        </div>
-        <div style={{ padding: "6px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>MY ACCOUNT</div>
-        <div style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>👤 My Profile</span><span style={{ fontSize: "10px", color: sideMuted }}>Name • Email • Language ▸</span></div>
-        <div style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>⚙ Account Settings</span><span style={{ fontSize: "10px", color: sideMuted }}>Password • Preferences ▸</span></div>
-        <div style={{ padding: "8px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>MY FILES</div>
-        <div style={{ position: "relative" }}>
-          <div onClick={() => { setMenuRecentOpen(!menuRecentOpen); setMenuProjectsOpen(false); }} style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", background: menuRecentOpen ? sideCard : "transparent" }}><span>📁 My Recent Files</span><span style={{ fontSize: "11px", color: sideMuted }}>◂ 3 recent</span></div>
-          {menuRecentOpen && (
-            <div style={{ position: "absolute", right: "100%", top: "-6px", marginRight: "10px", width: "260px", background: isSun ? '#FFFFFF' : '#1A1A24', border: `1px solid ${sideCardBorder}`, borderRadius: "12px", padding: "8px", zIndex: 210, boxShadow: isSun ? "0 20px 40px rgba(0,0,0,0.15)" : "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)" }}>
-              <div style={{ padding: "6px 8px 8px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>MY RECENT FILES</div>
-              {[{ n: "Contract-Tangier-2024.pdf", d: "2h ago" }, { n: "Q3 Invoices.pdf", d: "Yesterday" }, { n: "Report-2024.pdf", d: "3 days ago" }].map(f => (
-                <div key={f.n} onClick={() => { navTo('homepage'); setUserMenuOpen(false); }} style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between" }}><span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "170px" }}>📄 {f.n}</span><span style={{ fontSize: "10px", color: sideMuted, flexShrink: 0 }}>{f.d}</span></div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div style={{ position: "relative", borderBottom: `1px solid ${sideCardBorder}`, paddingBottom: "4px", marginBottom: "4px" }}>
-          <div onClick={() => { setMenuProjectsOpen(!menuProjectsOpen); setMenuRecentOpen(false); }} style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", background: menuProjectsOpen ? sideCard : "transparent" }}><span>📁 Projects (2)</span><span style={{ fontSize: "11px", color: sideMuted }}>◂</span></div>
-          {menuProjectsOpen && (
-            <div style={{ position: "absolute", right: "100%", top: "-6px", marginRight: "10px", width: "260px", background: isSun ? '#FFFFFF' : '#1A1A24', border: `1px solid ${sideCardBorder}`, borderRadius: "12px", padding: "8px", zIndex: 210, boxShadow: isSun ? "0 20px 40px rgba(0,0,0,0.15)" : "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)" }}>
-              <div style={{ padding: "6px 8px 8px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>PROJECTS (2)</div>
-              {[["Q3 Reports", "4 files"], ["Invoices 2024", "6 files"]].map(p => (
-                <div key={p[0]} style={{ padding: "8px 10px", fontSize: "12px", color: sideMuted, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between" }}><span>📁 {p[0]}</span><span style={{ fontSize: "10px", color: sideMuted }}>{p[1]}</span></div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div style={{ padding: "8px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>CREDITS & PLAN</div>
-        <div style={{ margin: "2px 6px 6px", background: sideCard, border: `1px solid ${sideCardBorder}`, borderRadius: "10px", padding: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "12px", fontWeight: 600, color: sideText }}>⚡ Credits</span><span style={{ fontSize: "11px", color: sideMuted }}>12 / 20</span></div>
-          <div style={{ marginTop: "8px", height: "6px", background: isSun ? "#E5E7EB" : "rgba(255,255,255,0.1)", borderRadius: "999px", overflow: "hidden" }}><div style={{ width: "60%", height: "100%", background: "#7C3AED", borderRadius: "999px" }} /></div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", fontSize: "10px", color: sideMuted }}><span>Used: 8</span><span>Remaining: 12</span><span>Resets: Monthly</span></div>
-          <div style={{ fontSize: "10px", color: sideMuted, marginTop: "6px", lineHeight: 1.5 }}>AI tools only • Local tools are free, no credits needed • Demo data</div>
-          <button onClick={() => navTo('plans')} style={{ marginTop: "8px", width: "100%", background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Upgrade to Pro • $12 / month</button>
-        </div>
-        <div onClick={() => navTo('plans')} style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>💳 Billing & Plans</span><span style={{ fontSize: "10px", color: sideMuted }}>Free plan • Upgrade ▸</span></div>
-        <div style={{ padding: "6px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 600 }}>SETTINGS</div>
-        <div style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px", display: "flex", justifyContent: "space-between" }}>🔔 Notifications <span style={{ fontSize: "10px", background: "#7C3AED", color: "white", padding: "2px 6px", borderRadius: "999px" }}>3</span></div>
-        <div onClick={() => navTo('privacy')} style={{ padding: "8px 10px", fontSize: "12px", color: sideText, cursor: "pointer", borderRadius: "6px" }}>🔒 Privacy & Terms</div>
-        <div style={{ padding: "8px 10px", fontSize: "12px", color: "#F87171", cursor: "pointer", borderTop: `1px solid ${sideCardBorder}`, marginTop: "4px", borderRadius: "6px" }}>🚪 Log out</div>
-      </div>
-    </>
-  ) : null;
+  const userMenu = <UserMenu userMenuOpen={userMenuOpen} setUserMenuOpen={setUserMenuOpen} menuRecentOpen={menuRecentOpen} setMenuRecentOpen={setMenuRecentOpen} menuProjectsOpen={menuProjectsOpen} setMenuProjectsOpen={setMenuProjectsOpen} accountType={accountType} isSun={isSun} sideText={sideText} sideMuted={sideMuted} sideCard={sideCard} sideCardBorder={sideCardBorder} navTo={navTo} />;
 
+  const sidebarContent = <Sidebar isSun={isSun} sideText={sideText} sideMuted={sideMuted} sideFaint={sideFaint} sideCard={sideCard} sideCardBorder={sideCardBorder} setMobileMenuOpen={setMobileMenuOpen} accountType={accountType} setAccountType={setAccountType} setChat={setChat} freeOpen={freeOpen} setFreeOpen={setFreeOpen} proOpen={proOpen} setProOpen={setProOpen} handleToolClick={handleToolClick} goWorkspace={goWorkspace} navTo={navTo} sidebarRecentOpen={sidebarRecentOpen} setSidebarRecentOpen={setSidebarRecentOpen} activeTool={activeTool} />;
 
-  const sidebarContent = (
-    <div className="leftSidebarContent" style={{ padding: "16px 16px 0", display: "flex", flexDirection: "column", height: "auto", minHeight: "max-content" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: isSun ? '#111111' : 'white', display: "grid", placeItems: "center", color: isSun ? 'white' : 'black', fontWeight: 800 }}>P</div>
-        <span style={{ fontWeight: 600, color: sideText }}>PDFlexi.</span>
-        <button onClick={() => setMobileMenuOpen(false)} style={{ marginLeft: "auto", background: "transparent", border: "none", color: sideMuted, fontSize: "18px", cursor: "pointer" }} className="mobileOnlyBtn">✕</button>
-      </div>
-      {/* HIDDEN — Account type preview switcher. Kept in code for future, never shown in sidebar. */}
-      <div style={{ display: "none", background: sideCard, border: `1px solid ${sideCardBorder}`, borderRadius: "10px", padding: "10px", marginBottom: "12px" }}>
-        <div style={{ fontSize: "10px", letterSpacing: "0.08em", color: sideFaint, fontWeight: 700 }}>ACCOUNT PREVIEW • PREPARATION ONLY</div>
-        <div style={{ display: "flex", gap: "4px", marginTop: "8px" }}>
-          <button onClick={() => setAccountType('personal')} style={{ flex: 1, padding: "6px 4px", borderRadius: "8px", border: "none", background: accountType === 'personal' ? "#111" : "transparent", color: accountType === 'personal' ? "white" : sideText, fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Personal</button>
-          <button onClick={() => setAccountType('professional')} style={{ flex: 1, padding: "6px 4px", borderRadius: "8px", border: "none", background: accountType === 'professional' ? "#2563EB" : "transparent", color: accountType === 'professional' ? "white" : sideText, fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Professional</button>
-          <button onClick={() => setAccountType('company')} style={{ flex: 1, padding: "6px 4px", borderRadius: "8px", border: "none", background: accountType === 'company' ? "#111" : "transparent", color: accountType === 'company' ? "white" : sideText, fontSize: "11px", fontWeight: 600, cursor: "pointer" }}>Company</button>
-        </div>
-        <div style={{ fontSize: "10px", color: sideMuted, marginTop: "6px", lineHeight: 1.5 }}>{accountType === 'personal' ? "Free / Pro • 1 person • My files" : accountType === 'professional' ? "Teams • 1 professional • Client folders • 2,500 credits" : "Enterprise • Company • Shared pool • 20,000 credits"}</div>
-        {accountType !== 'personal' && (<div style={{ marginTop: "8px", background: isSun ? "#EFF6FF" : "rgba(37,99,235,0.15)", borderRadius: "8px", padding: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "11px", fontWeight: 700, color: sideText }}>{accountType === 'professional' ? "🪙 2,500 credits" : "🪙 20,000 credits — shared"}</span><span style={{ fontSize: "10px", color: sideMuted }}>{accountType === 'professional' ? "Teams" : "Enterprise"}</span></div>)}
-      </div>
-      <div onClick={() => { setChat("Hi Lexi, help me with my PDF"); navTo('homepage'); }} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "10px 12px", borderRadius: "10px", background: "#334155", border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer" }}>
-        <span style={{ display: "grid", placeItems: "center", flexShrink: 0 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" strokeWidth="1.5" strokeLinejoin="round"><path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8L4.3 10.7l5.8-1.9L12 3z" /></svg></span>
-        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "13px", fontWeight: 600, color: "white" }}>Ask <span style={{ color: "#C4B5FD" }}>Lexi</span></div><div style={{ fontSize: "11px", color: "rgba(255,255,255,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Chat with your PDFs</div></div>
-        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "white", flexShrink: 0 }}><span style={{ width: "6px", height: "6px", borderRadius: "999px", background: "#22C55E" }} />Online</span>
-      </div>
-      <button onClick={() => navTo('homepage')} style={{ width: "100%", marginTop: "10px", background: sideCard, border: `1px solid ${sideCardBorder}`, borderRadius: "10px", padding: "10px 12px", color: sideText, fontSize: "13px", cursor: "pointer" }}>New PDF Task +</button>
-      <div style={{ marginTop: "20px" }}>
-        <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: sideFaint, fontWeight: isSun ? 700 : 400, marginBottom: "10px", paddingLeft: "4px" }}>TOOLS</div>
-        <div onClick={() => setFreeOpen(!freeOpen)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 4px", cursor: "pointer", color: sideText, fontSize: "13px", fontWeight: 500 }}><span>Free Tools (20)</span><span style={{ fontSize: "13px", color: sideText, fontWeight: 700, background: sideCard, padding: "2px 7px", borderRadius: "6px" }}>{freeOpen ? "▾" : "▸"}</span></div>
-        {freeOpen && (<div style={{ display: "flex", flexDirection: "column", marginBottom: "14px" }}>{freeTools.map(t => (<div key={t.id} onClick={() => handleToolClick(t)} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "7px 4px 7px 16px", cursor: "pointer", color: activeTool === t.en ? sideText : sideMuted, fontSize: "12px", background: activeTool === t.en ? sideCard : "transparent", borderRadius: "6px" }}><span>{t.icon}</span><span>{t.en}</span></div>))}</div>)}
-        <div onClick={() => setProOpen(!proOpen)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 4px", cursor: "pointer", color: sideText, fontSize: "13px", fontWeight: 500 }}><span style={{ display: "flex", alignItems: "center", gap: "6px" }}>Advanced Tools (10) <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg></span><span style={{ fontSize: "13px", color: sideText, fontWeight: 700, background: sideCard, padding: "2px 7px", borderRadius: "6px" }}>{proOpen ? "▾" : "▸"}</span></div>
-        {proOpen && (<div style={{ display: "flex", flexDirection: "column" }}>{proTools.map(t => (<div key={t.id} onClick={() => handleToolClick(t)} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "7px 4px 7px 16px", cursor: "pointer", color: activeTool === t.en ? sideText : sideMuted, fontSize: "12px", background: activeTool === t.en ? sideCard : "transparent", borderRadius: "6px" }}><span>{t.icon}</span><span>{t.en}</span><span style={{ marginLeft: "auto", fontSize: "10px", color: "#A78BFA" }}>PRO</span></div>))}</div>)}
-      </div>
-      {accountType === 'professional' && (
-        <div style={{ marginTop: "16px", background: sideCard, border: `1px solid ${sideCardBorder}`, borderRadius: "10px", padding: "10px" }}>
-          <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: sideFaint, fontWeight: 700 }}>CLIENT PROJECTS • PREVIEW</div>
-          <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px", background: isSun ? "#FFFFFF" : "#1E1E2A", borderRadius: "8px" }}><span style={{ fontSize: "12px", color: sideText }}>📁 Client A — Contract</span><span style={{ fontSize: "10px", color: sideMuted }}>Private</span></div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px", background: isSun ? "#FFFFFF" : "#1E1E2A", borderRadius: "8px" }}><span style={{ fontSize: "12px", color: sideText }}>📁 Client B — Invoices</span><span style={{ fontSize: "10px", color: sideMuted }}>Private</span></div>
-            <div style={{ fontSize: "10px", color: sideMuted, padding: "4px 4px 0" }}>Each client = separate folder. Files never mix.</div>
-          </div>
-        </div>
-      )}
-      {accountType === 'company' && (
-        <div style={{ marginTop: "16px", background: sideCard, border: `1px solid ${sideCardBorder}`, borderRadius: "10px", padding: "10px" }}>
-          <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: sideFaint, fontWeight: 700 }}>COMPANY WORKSPACE • PREVIEW</div>
-          <div style={{ marginTop: "8px", fontSize: "12px", fontWeight: 700, color: sideText }}>🏢 Acme Law — Shared pool</div>
-          <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px", background: isSun ? "#FFFFFF" : "#1E1E2A", borderRadius: "8px" }}><span style={{ fontSize: "12px", color: sideText }}>👤 Ahmed — Admin</span><span style={{ fontSize: "10px", color: "#15803D" }}>● Online</span></div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px", background: isSun ? "#FFFFFF" : "#1E1E2A", borderRadius: "8px" }}><span style={{ fontSize: "12px", color: sideText }}>👤 Sara — Member</span><span style={{ fontSize: "10px", color: sideMuted }}>Used 120 credits</span></div>
-            <div style={{ fontSize: "10px", color: sideMuted, padding: "4px 4px 0", lineHeight: 1.5 }}>Activity log (preview): Sara • Summarize • 10:00 • 1 credit</div>
-          </div>
-        </div>
-      )}
-      <div style={{ marginTop: "16px" }}>
-        <div onClick={() => setSidebarRecentOpen(!sidebarRecentOpen)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 4px", cursor: "pointer", color: sideText, fontSize: "13px", fontWeight: 500 }}><span>{accountType === 'company' ? "COMPANY FILES (3)" : accountType === 'professional' ? "CLIENT FILES (3)" : "RECENT FILES (3)"}</span><span style={{ fontSize: "13px", color: sideText, fontWeight: 700, background: sideCard, padding: "2px 7px", borderRadius: "6px" }}>{sidebarRecentOpen ? "▾" : "▸"}</span></div>
-        {sidebarRecentOpen && (
-          <div style={{ display: "flex", flexDirection: "column", marginBottom: "4px" }}>
-            {recentFiles.map(f => (
-              <div key={f.name} onClick={() => goWorkspace(f.name)} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "7px 4px 7px 16px", cursor: "pointer", borderRadius: "6px" }}>
-                <div style={{ width: "28px", height: "32px", borderRadius: "5px", background: isSun ? '#FFFFFF' : '#1E1E2A', border: `1px solid ${sideCardBorder}`, borderTop: `3px solid ${f.color}`, display: "grid", placeItems: "center", flexShrink: 0 }}><span style={{ fontSize: "9px", fontWeight: 700, color: f.color }}>PDF</span></div>
-                <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "11px", color: sideText, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{f.name}</div><div style={{ fontSize: "10px", color: sideMuted }}>{f.time}</div></div>
-              </div>
-            ))}
-            <div style={{ padding: "4px 10px 2px 16px", fontSize: "10px", color: sideMuted }}>Free: 3 recent • Pro: All recent</div>
-          </div>
-        )}
-      </div>
-      <div style={{ marginTop: "14px", background: "white", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-        <div style={{ padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: "9px", color: "#6B7280", border: "1px solid #E5E7EB", padding: "2px 5px", borderRadius: "4px" }}>Ad</span>
-          <span style={{ fontSize: "12px", color: "#E5E7EB" }}>⋮</span>
-        </div>
-        <div style={{ padding: "0 12px 12px", textAlign: "left" }}>
-          <div style={{ width: "100%", height: "110px", background: "linear-gradient(135deg,#EFF6FF,#DBEAFE)", borderRadius: "8px", position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}><span style={{ position: "absolute", top: "6px", right: "6px", fontSize: "8px", fontWeight: 800, background: "#22C55E", color: "white", padding: "2px 6px", borderRadius: "999px" }}>FREE</span><div style={{ width: "46px", height: "58px", background: "white", borderRadius: "5px", border: "1px solid #E5E7EB", boxShadow: "0 4px 10px rgba(0,0,0,0.08)", overflow: "hidden", flexShrink: 0 }}><div style={{ background: "#DC2626", color: "white", fontSize: "8px", fontWeight: 800, textAlign: "center", padding: "3px 0" }}>PDF</div><div style={{ padding: "6px", display: "flex", flexDirection: "column", gap: "4px" }}><div style={{ height: "4px", background: "#E5E7EB", borderRadius: "999px" }} /><div style={{ height: "4px", background: "#E5E7EB", borderRadius: "999px", width: "80%" }} /><div style={{ height: "4px", background: "#E5E7EB", borderRadius: "999px", width: "60%" }} /></div></div><div style={{ width: "26px", height: "26px", borderRadius: "999px", background: "#2563EB", color: "white", display: "grid", placeItems: "center", fontSize: "12px", fontWeight: 700, flexShrink: 0 }}>→</div><div style={{ width: "46px", height: "58px", background: "white", borderRadius: "5px", border: "1px solid #E5E7EB", boxShadow: "0 4px 10px rgba(0,0,0,0.08)", overflow: "hidden", flexShrink: 0 }}><div style={{ background: "#2563EB", color: "white", fontSize: "8px", fontWeight: 800, textAlign: "center", padding: "3px 0" }}>DOC</div><div style={{ padding: "6px", display: "flex", flexDirection: "column", gap: "4px" }}><div style={{ height: "4px", background: "#DBEAFE", borderRadius: "999px" }} /><div style={{ height: "4px", background: "#DBEAFE", borderRadius: "999px", width: "85%" }} /><div style={{ height: "4px", background: "#DBEAFE", borderRadius: "999px", width: "70%" }} /></div></div><span style={{ position: "absolute", bottom: "6px", left: "8px", fontSize: "8px", fontWeight: 700, color: "#2563EB", background: "white", padding: "2px 6px", borderRadius: "999px", border: "1px solid #DBEAFE" }}>In 2 Seconds</span></div>
-          <div style={{ fontSize: "13px", fontWeight: 700, color: "#111", marginTop: "10px", lineHeight: 1.3 }}>PDF to Word in 2 Seconds - Free Online</div>
-          <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "4px", lineHeight: 1.4 }}>Convert your PDFs without losing layout. No sign-up needed.</div>
-          <div style={{ fontSize: "10px", color: "#2563EB", marginTop: "6px" }}>pdfconverter-pro.com</div>
-          <button style={{ marginTop: "10px", width: "100%", background: "#2563EB", color: "white", border: "none", borderRadius: "999px", padding: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>Try Free →</button>
-        </div>
-      </div>
-      <div style={{ marginTop: "16px", background: isSun ? '#F0FDF4' : 'rgba(34,197,94,0.08)', border: isSun ? '1px solid #BBF7D0' : '1px solid rgba(34,197,94,0.2)', borderRadius: "12px", padding: "12px" }}>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}><span style={{ display: "grid", placeItems: "center" }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg></span><span style={{ fontSize: "12px", fontWeight: 600, color: sideText }}>100% Private</span><span style={{ marginLeft: "auto", fontSize: "9px", background: "#22C55E", color: "white", padding: "2px 6px", borderRadius: "999px", fontWeight: 600 }}>LOCAL</span><span onClick={() => navTo('why-private')} title="Learn more about privacy" style={{ fontSize: "14px", fontWeight: 700, color: sideText, cursor: "pointer", marginLeft: "6px", flexShrink: 0 }}>→</span></div>
-        <div style={{ fontSize: "11px", color: sideMuted, lineHeight: 1.5, marginTop: "6px" }}>All tools run in your browser. Your files never leave your device, never uploaded to our servers.</div>
-      </div>
-      <div style={{ marginTop: "14px", borderRadius: "16px", background: "linear-gradient(135deg,#7C3AED,#EC4899)", padding: "14px", color: "white" }}>
-        <div style={{ fontSize: "13px", fontWeight: 700 }}>Upgrade</div>
-        <div style={{ fontSize: "11px", opacity: 0.85, marginTop: "5px", lineHeight: 1.5 }}>Choose the plan that fits you — more tasks, more AI tools, more power, no ads.</div>
-        <button onClick={() => navTo('plans')} title="Choose the plan that fits you" style={{ marginTop: "10px", background: "white", color: "black", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, border: "none", cursor: "pointer" }}>See Plans</button>
-      </div>
-    </div>
-  );
-
-
-  const headerText = isSun ? '#FFFFFF' : '#2563EB';
-  const headerSubText = isSun ? 'rgba(255,255,255,0.7)' : '#3B82F6';
-  const [bellOpen, setBellOpen] = useState(false);
-  const [notifications, setNotifications] = useState<{ id: number; title: string; time: string; read: boolean }[]>([]);
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const header = (
-    <div className="headerFixed" style={{ height: "57px", boxSizing: "border-box", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", padding: "0 16px", background: headerBg, borderBottom: `1px solid ${headerBorder}`, position: "fixed", top: 0, left: "280px", right: "56px", zIndex: 100, fontFamily: "'Inter',sans-serif", letterSpacing: "-0.01em" }}>
-      <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-        <button onClick={() => setMobileMenuOpen(true)} aria-label="Menu" style={{ width: "36px", height: "36px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "grid", placeItems: "center" }} className="hamburgerBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={headerText} strokeWidth="1.5" strokeLinecap="round"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></svg>
-        </button>
-      </div>
-      <div style={{ display: "flex", gap: "28px", alignItems: "center", whiteSpace: "nowrap", flexShrink: 0, margin: "0 auto" }}>
-        <span onClick={() => navTo('homepage')} style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "13.5px", fontWeight: 600, color: headerText, cursor: "pointer", padding: "6px 0", borderBottom: view === 'homepage' || view === 'workspace' ? `2px solid ${headerText}` : "2px solid transparent" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
-          Workspace
-        </span>
-        <span onClick={() => navTo('how')} style={{ fontSize: "13.5px", fontWeight: 500, color: headerText, cursor: "pointer", padding: "6px 0", borderBottom: view === 'how' ? `2px solid ${headerText}` : "2px solid transparent" }} className="hideOnSmall">How it works</span>
-        <span onClick={() => navTo('plans')} style={{ fontSize: "13.5px", fontWeight: 500, color: headerText, cursor: "pointer", padding: "6px 0", borderBottom: view === 'plans' ? `2px solid ${headerText}` : "2px solid transparent" }} className="hideOnSmall">Plans</span>
-      </div>
-      <div style={{ display: "flex", gap: "20px", alignItems: "center", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer", whiteSpace: "nowrap" }} className="hideOnSmall">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={headerText} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
-          <span style={{ fontSize: "13.5px", fontWeight: 600, color: headerText }}>English</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={headerText} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-        </div>
-        {isLoggedIn ? (
-          <>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <button onClick={() => { setBellOpen((v) => !v); }} aria-label="Notifications" title="Notifications" style={{ width: "32px", height: "32px", borderRadius: "999px", background: "transparent", border: `1px solid ${headerBorder}`, cursor: "pointer", display: "grid", placeItems: "center", position: "relative" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={headerText} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
-                {unreadCount > 0 && (<span style={{ position: "absolute", top: "2px", right: "2px", width: "8px", height: "8px", borderRadius: "999px", background: "#EF4444", border: "2px solid white" }} />)}
-              </button>
-              {bellOpen && (
-                <div style={{ position: "absolute", top: "40px", right: 0, width: "300px", background: "white", border: `1px solid ${headerBorder}`, borderRadius: "12px", padding: "8px", zIndex: 210, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px" }}>
-                    <span style={{ fontSize: "13px", fontWeight: 700, color: headerText }}>Notifications</span>
-                    {unreadCount > 0 && (<span onClick={() => setNotifications((list) => list.map((n) => ({ ...n, read: true })))} style={{ fontSize: "11px", fontWeight: 600, color: "#2563EB", cursor: "pointer" }}>Mark all read</span>)}
-                  </div>
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: "18px 8px", fontSize: "12px", color: headerSubText, textAlign: "center" }}>No notifications yet</div>
-                  ) : (
-                    notifications.map((n) => (
-                      <div key={n.id} style={{ padding: "8px", fontSize: "12px", color: headerText, borderRadius: "8px", background: n.read ? "transparent" : "rgba(37,99,235,0.08)" }}>
-                        <div style={{ fontWeight: 600 }}>{n.title}</div>
-                        <div style={{ fontSize: "11px", color: headerSubText, marginTop: "2px" }}>{n.time}</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-            <div onClick={() => { setBellOpen(false); handleUserClick(); }} style={{ display: "flex", alignItems: "center", gap: "9px", cursor: "pointer", whiteSpace: "nowrap" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "999px", background: "#2563EB", display: "grid", placeItems: "center", color: "white", fontWeight: 600, fontSize: "13px", flexShrink: 0 }}>K</div>
-            <div style={{ lineHeight: 1.25 }} className="hideOnSmall">
-              <div style={{ fontSize: "13px", fontWeight: 600, color: headerText }}>kamalhohoud2</div>
-              <div style={{ fontSize: "11px", fontWeight: 500, color: headerSubText }}>Free plan</div>
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={headerText} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hideOnSmall"><path d="m6 9 6 6 6-6" /></svg>
-          </div>
-          </>
-        ) : (
-          <>
-            <span style={{ fontSize: "13.5px", fontWeight: 500, color: headerText, cursor: "pointer", whiteSpace: "nowrap" }}>Sign In</span>
-            <button style={{ background: "#2563EB", color: "white", borderRadius: "999px", padding: "8px 16px", fontSize: "13.5px", fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap", letterSpacing: "-0.01em", boxShadow: "0 4px 12px rgba(37,99,235,0.35)" }}>Get Started</button>
-          </>
-        )}
-        {circleOpen && (<div onClick={() => setCircleOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 190, background: "transparent" }} />)}
-        <div className="mobileCircleWrap" style={{ position: "relative", zIndex: 192, flexShrink: 0 }}>
-          <button onClick={() => setCircleOpen(!circleOpen)} aria-label="Tools" style={{ width: "34px", height: "34px", borderRadius: "999px", background: "#FFFFFF", border: "1.5px solid #2563EB", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2.5px", flexShrink: 0, padding: 0 }}>
-            <span style={{ width: "4px", height: "4px", borderRadius: "999px", background: "#2563EB" }} />
-            <span style={{ width: "4px", height: "4px", borderRadius: "999px", background: "#2563EB" }} />
-            <span style={{ width: "4px", height: "4px", borderRadius: "999px", background: "#2563EB" }} />
-          </button>
-          {circleOpen && (
-            <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 191, width: "180px", background: sideBg, border: `1px solid ${sideBorder}`, borderRadius: "14px", padding: "6px", boxShadow: "0 16px 40px rgba(0,0,0,0.25)", maxHeight: "calc(100vh - 70px)", overflowY: "auto" }}>
-              <div style={{ padding: "2px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 700 }}>NAVIGATION</div>
-              <button onClick={() => { navTo('how'); setCircleOpen(false); }} onMouseEnter={() => setRightHover('how')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('how')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (view === 'how' || rightHover === 'how') ? "#2563EB" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (view === 'how' || rightHover === 'how') ? "#2563EB" + "1A" : "transparent", color: (view === 'how' || rightHover === 'how') ? "#2563EB" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg></span>How it works</button>
-              <button onClick={() => { navTo('plans'); setCircleOpen(false); }} onMouseEnter={() => setRightHover('plans')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('plans')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (view === 'plans' || rightHover === 'plans') ? "#7C3AED" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (view === 'plans' || rightHover === 'plans') ? "#7C3AED" + "1A" : "transparent", color: (view === 'plans' || rightHover === 'plans') ? "#7C3AED" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg></span>Plans</button>
-              <button onClick={() => { setRightActive('help'); setShowHelpPopup(true); setShowSettingsPopup(false); setCircleOpen(false); }} onMouseEnter={() => setRightHover('help')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('help')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (rightActive === 'help' || rightHover === 'help') ? "#06B6D4" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (rightActive === 'help' || rightHover === 'help') ? "#06B6D4" + "1A" : "transparent", color: (rightActive === 'help' || rightHover === 'help') ? "#06B6D4" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg></span>Help</button>
-              <div style={{ height: "1px", background: sideBorder, margin: "6px 10px" }} />
-              <div style={{ padding: "2px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 700 }}>LANGUAGE</div>
-              <button onClick={() => { setRightActive('settings'); setShowSettingsPopup(true); setUserMenuOpen(false); setShowHelpPopup(false); setCircleOpen(false); }} onMouseEnter={() => setRightHover('english')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('english')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (false || rightHover === 'english') ? "#059669" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (false || rightHover === 'english') ? "#059669" + "1A" : "transparent", color: (false || rightHover === 'english') ? "#059669" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></span>English</button>
-              <div style={{ height: "1px", background: sideBorder, margin: "6px 10px" }} />
-              <div style={{ padding: "2px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 700 }}>DISPLAY</div>
-              <button onClick={() => { if (isSun) { setTheme('light'); setRightActive('moon'); } else { setTheme('dark'); setRightActive('sun'); } setCircleOpen(false); }} onMouseEnter={() => setRightHover('theme')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('theme')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: rightHover === 'theme' ? (isSun ? "#6366F11A" : "#F59E0B1A") : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}>{isSun ? (<span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: rightHover === 'theme' ? "#6366F11A" : "transparent", color: rightHover === 'theme' ? "#6366F1" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg></span>) : (<span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: rightHover === 'theme' ? "#F59E0B1A" : "transparent", color: rightHover === 'theme' ? "#F59E0B" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg></span>)}{isSun ? "Moon" : "Sun"}</button>
-              <div style={{ height: "1px", background: sideBorder, margin: "6px 10px" }} />
-              <div style={{ padding: "2px 10px 4px", fontSize: "10px", letterSpacing: "0.08em", color: sideMuted, fontWeight: 700 }}>WORKSPACE</div>
-              <button onClick={() => { setRightActive('private'); navTo('why-private'); setCircleOpen(false); }} onMouseEnter={() => setRightHover('private')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('private')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (rightActive === 'private' || rightHover === 'private') ? "#22C55E" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (rightActive === 'private' || rightHover === 'private') ? "#22C55E" + "1A" : "transparent", color: (rightActive === 'private' || rightHover === 'private') ? "#22C55E" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg></span>Private Mode</button>
-              <button onClick={() => { setRightActive('quick'); setCircleOpen(false); }} onMouseEnter={() => setRightHover('quick')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('quick')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (rightActive === 'quick' || rightHover === 'quick') ? "#F59E0B" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (rightActive === 'quick' || rightHover === 'quick') ? "#F59E0B" + "1A" : "transparent", color: (rightActive === 'quick' || rightHover === 'quick') ? "#F59E0B" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg></span>Quick Mode</button>
-              <button onClick={() => { setRightActive('invite'); setCircleOpen(false); }} onMouseEnter={() => setRightHover('invite')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('invite')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (rightActive === 'invite' || rightHover === 'invite') ? "#7C3AED" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (rightActive === 'invite' || rightHover === 'invite') ? "#7C3AED" + "1A" : "transparent", color: (rightActive === 'invite' || rightHover === 'invite') ? "#7C3AED" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6" /><path d="M22 11h-6" /></svg></span>Invite</button>
-              <button onClick={() => { setRightActive('settings'); setShowSettingsPopup(true); setUserMenuOpen(false); setShowHelpPopup(false); setCircleOpen(false); }} onMouseEnter={() => setRightHover('settings')} onMouseLeave={() => setRightHover(null)} onTouchStart={() => setRightHover('settings')} onTouchEnd={() => setRightHover(null)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "10px", border: "none", background: (rightActive === 'settings' || rightHover === 'settings') ? "#2563EB" + "1A" : "transparent", color: sideText, fontSize: "13px", fontWeight: 600, cursor: "pointer", textAlign: "left" }}><span style={{ display: "grid", placeItems: "center", width: "28px", height: "28px", borderRadius: "8px", background: (rightActive === 'settings' || rightHover === 'settings') ? "#2563EB" + "1A" : "transparent", color: (rightActive === 'settings' || rightHover === 'settings') ? "#2563EB" : isSun ? "#64748B" : "#94A3B8", flexShrink: 0 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg></span>Settings</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  const header = <Header isSun={isSun} setTheme={setTheme} headerBg={headerBg} headerBorder={headerBorder} sideBg={sideBg} sideBorder={sideBorder} sideText={sideText} sideMuted={sideMuted} isLoggedIn={isLoggedIn} view={view} handleUserClick={handleUserClick} navTo={navTo} setUserMenuOpen={setUserMenuOpen} setMobileMenuOpen={setMobileMenuOpen} circleOpen={circleOpen} setCircleOpen={setCircleOpen} rightActive={rightActive} setRightActive={setRightActive} rightHover={rightHover} setRightHover={setRightHover} setShowHelpPopup={setShowHelpPopup} setShowSettingsPopup={setShowSettingsPopup} />;
 
   const footer = (
     <div style={{ textAlign: "center", padding: "0 0 16px", fontSize: "11px", color: middleMuted }}>
@@ -758,6 +271,12 @@ export default function App() {
     )}
     </>
   );
+
+  if (view === 'workspace') {
+    return (
+      <Workspace ref={wsRef} activeTool={activeTool} fileName={fileName} setFileName={setFileName} setView={setView as (v: string) => void} initialFile={pendingFile} initialMsg={pendingMsg} onConsumed={() => setPendingMsg(undefined)} />
+    );
+  }
 
   if (view === 'why-private') {
     return (
@@ -928,305 +447,6 @@ export default function App() {
         </main>
         {rightBar}
         {userMenu}
-      </div>
-    );
-  }
-
-  if (view === 'workspace') {
-    const isArabicFile = /[\u0600-\u06FF]/.test(fileName);
-    const isCodeFile = fileName.toLowerCase().includes("app.py") || fileName.toLowerCase().endsWith(".py") || fileName.toLowerCase().endsWith(".js") || fileName.toLowerCase().endsWith(".ts") || fileName.toLowerCase().endsWith(".json") || fileName.toLowerCase().endsWith(".csv");
-    const cleanTitle = fileName.replace(/\.(rtf|pdf|txt|docx?)$/i, "");
-    const handleUndo = () => { if (wsMsgs.length > 0) { const last = wsMsgs[wsMsgs.length - 1]; setWsMsgs(prev => prev.slice(0, -1)); setRedoMsgs(prev => [last, ...prev]); } };
-    const handleRedo = () => { if (redoMsgs.length > 0) { const first = redoMsgs[0]; setWsMsgs(prev => [...prev, first]); setRedoMsgs(prev => prev.slice(1)); } };
-    return (
-      <div ref={containerRef} style={{ height: "100dvh" as any, maxHeight: "100dvh" as any, minHeight: 0 as any, overflow: "hidden", background: "#0A0A12", color: "white", display: "flex", flexDirection: "column" }}>
-        <style>{GUTTER_CSS}</style>
-        <div style={{ height: "56px", flexShrink: 0, width: "100%", boxSizing: "border-box", background: "#0F0F14", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 16px", gap: wsNarrow ? "14px" as any : "0px" as any }}>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", minWidth: 0 }}><div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "white", display: "grid", placeItems: "center", color: "black", fontWeight: 800, flexShrink: 0 }}>P</div><div style={{ fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: wsNarrow ? "110px" as any : "none" as any }}>{wsNarrow ? fileName : `Workspace • ${wsTool}`}</div></div>{wsNarrow && (<div style={{ display: "flex", gap: "4px", alignItems: "center", flexShrink: 0 }}><button onClick={() => setManualOpen(!manualOpen)} title="Manual — edit a word / sentence only" style={{ background: manualOpen ? "#7C3AED" : "rgba(255,255,255,0.08)", color: "white", border: "none", borderRadius: "999px", padding: "6px 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>✏️ Manual</button></div>)}
-          <div style={{ display: "flex", gap: wsNarrow ? "12px" as any : "8px", flexShrink: 0, alignItems: "center" }}><span style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", display: wsNarrow ? "none" as any : "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}><span style={{ color: "#22C55E" }}>✓</span> Auto-saved • Version 1 • Just now</span><button onClick={handleUndo} title="Undo last action" style={{ width: "32px", height: "32px", borderRadius: "999px", background: wsMsgs.length ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)", color: wsMsgs.length ? "white" : "rgba(255,255,255,0.3)", cursor: wsMsgs.length ? "pointer" : "default", border: "none", fontSize: "14px" }}>↩</button><button onClick={handleRedo} title="Redo" style={{ width: "32px", height: "32px", borderRadius: "999px", background: redoMsgs.length ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)", color: redoMsgs.length ? "white" : "rgba(255,255,255,0.3)", cursor: redoMsgs.length ? "pointer" : "default", border: "none", fontSize: "14px" }}>↪</button><div style={{ position: "relative" }}><button onClick={() => setShowExportMenu(!showExportMenu)} style={{ background: "white", color: "black", borderRadius: "999px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer" }}>Export ▾</button>{showExportMenu && (() => { const origLabel = getFileInfo(fileName).label; const svc = activeTool; const ws = wsTool; let svcLabel = svc; let targetKey = "PDF"; if (svc === "PDF to Word") { svcLabel = "PDF to Word"; targetKey = "Word"; } else if (svc === "Word to PDF") { svcLabel = "Word to PDF"; targetKey = "PDF"; } else if (svc === "PDF to Excel" || svc === "Extract Invoices to Excel") { svcLabel = svc; targetKey = "Excel"; } else if (svc === "Excel to PDF") { svcLabel = "Excel to PDF"; targetKey = "PDF"; } else if (svc === "PDF to JPG") { svcLabel = "PDF to JPG"; targetKey = "Image"; } else if (svc === "JPG to PDF") { svcLabel = "JPG to PDF"; targetKey = "PDF"; } else if (svc === "OCR - Extract Text") { svcLabel = "OCR - Extract Text"; targetKey = "TXT"; } else if (svc === "Chat with PDF" || svc === "Summarize Contract in 3 Lines" || svc === "Detect Risky Clauses" || svc === "Detect Forgery" || svc === "Compare Two Contracts") { svcLabel = svc; targetKey = "PDF"; } else if (svc === "Fill Form by Chat" || svc === "Translate PDF - Keep Design") { svcLabel = svc; targetKey = "PDF"; } else if (svc === "Smart CV from Job Offer") { svcLabel = "Smart CV"; targetKey = "PDF"; } else if (svc === "Bulk Stamp 100 Docs") { svcLabel = "Bulk Stamp"; targetKey = "PDF"; } else if (svc === "Split PDF") { svcLabel = "Split PDF"; targetKey = "PDF"; } else if (svc === "Merge PDF" || svc === "Compress PDF" || svc === "Delete Pages" || svc === "Rotate Pages" || svc === "Reorder Pages" || svc === "Watermark" || svc === "Page Numbers" || svc === "Protect PDF" || svc === "Unlock PDF" || svc === "Sign PDF" || svc === "Edit PDF" || svc === "Repair PDF") { svcLabel = svc; targetKey = "PDF"; } else { if (ws === "Split") { svcLabel = "Split PDF"; targetKey = "PDF"; } else if (ws === "Merge") { svcLabel = "Merge PDF"; targetKey = "PDF"; } else if (ws === "Compress") { svcLabel = "Compress PDF"; targetKey = "PDF"; } else if (ws === "Sign") { svcLabel = "Sign PDF"; targetKey = "PDF"; } else { svcLabel = "Edit PDF"; targetKey = "PDF"; } } const allFormats: any[] = [{ key: "PDF", icon: "📄", label: "Export as PDF", ext: "PDF" }, { key: "Word", icon: "📝", label: "Export as Word", ext: ".docx" }, { key: "Excel", icon: "📊", label: "Export as Excel", ext: ".xlsx" }, { key: "Image", icon: "🖼", label: "Export as Image", ext: ".png" }, { key: "TXT", icon: "📃", label: "Export as Text", ext: ".txt" }, { key: "CSV", icon: "📑", label: "Export as CSV", ext: ".csv" }, { key: "ZIP", icon: "📦", label: "Export as ZIP", ext: ".zip" }]; const target = allFormats.find((f: any) => f.key === targetKey) || allFormats[0]; const rest = allFormats.filter((f: any) => f.key !== targetKey); const opts = [target, ...rest]; return (<div style={{ position: "absolute", right: 0, top: "40px", width: "270px", background: "white", color: "#111", borderRadius: "12px", boxShadow: "0 12px 32px rgba(0,0,0,0.25)", border: "1px solid #E5E7EB", overflow: "hidden", zIndex: 50 }}><div style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 700, color: "#6B7280", borderBottom: "1px solid #F3F4F6" }}>Export • {svcLabel} • Original: {origLabel}</div>{opts.map((o: any, i: number) => (<button key={i} onClick={() => setShowExportMenu(false)} style={{ width: "100%", textAlign: "left", background: i === 0 ? "#F5F3FF" : "white", border: "none", borderBottom: "1px solid #F9FAFB", padding: "10px 12px", fontSize: "12px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: i === 0 ? 700 : 400 }}><span>{o.icon} {o.label}{i === 0 ? " • Best for this service" : ""}</span><span style={{ color: "#6B7280", fontSize: "11px" }}>{o.ext}</span></button>))}<button onClick={() => setShowExportMenu(false)} style={{ width: "100%", textAlign: "left", background: "#F0FDF4", border: "none", padding: "10px 12px", fontSize: "12px", cursor: "pointer", display: "flex", justifyContent: "space-between", fontWeight: 700 }}><span>📃 Export as {origLabel} • Original</span><span style={{ color: "#15803D" }}>✓</span></button><div style={{ padding: "8px 12px", fontSize: "11px", color: "#6B7280", borderTop: "1px solid #F3F4F6" }}>🔒 Local • Your file never leaves your device</div></div>); })()}</div><button onClick={() => setView("homepage")} style={{ width: "32px", height: "32px", borderRadius: "999px", background: "rgba(255,255,255,0.06)", color: "white", cursor: "pointer", border: "none" }}>✕</button></div>
-        </div>
-        {(wsNarrow && wsMobileTab === "lexi") && (<div style={{ flex: 1, minHeight: 0, height: wsNarrow ? "calc(100dvh - 62px)" as any : "calc(100dvh - 118px)" as any, display: "flex", flexDirection: "column" as any, background: "#0F0F14", overflow: "hidden" as any }}>
-            <div style={{ padding: "12px", display: "flex", gap: "6px", flexWrap: "wrap", flexShrink: 0 }}>
-              <div style={{ position: "relative" }}>
-                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
-                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Free Tools • 20 • 0 credits</div><div className="wsToolsGrid">{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></div></>)}
-              </div>
-              <div style={{ position: "relative" }}>
-                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
-                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Advanced Tools • 10 • PRO</div><div className="wsToolsGrid">{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: "white", fontWeight: 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></div></>)}
-              </div>
-            </div>
-            <div ref={wsChatScrollRefMobile} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: "10px" }}>{wsMsgs.length === 0 ? (<div style={{ marginTop: "16px", textAlign: "center" }}><div style={{ width: "48px", height: "48px", borderRadius: "999px", background: "rgba(124,58,237,0.15)", display: "grid", placeItems: "center", fontSize: "20px", margin: "0 auto" }}>✦</div><div style={{ fontSize: "13px", fontWeight: 700, marginTop: "12px" }}>Ask Lexi to edit this file</div><div style={{ fontSize: "12px", color: "rgba(255,255,255,0.55)", marginTop: "6px", lineHeight: 1.5 }}>Write what you want in plain words.<br />Lexi edits it here, you see it live on the right.</div></div>) : wsMsgs.map((m, i) => <div key={i} style={{ background: m.role === "user" ? "#334155" : "#18181E", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "10px 12px", fontSize: "12px", lineHeight: 1.5, alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "90%" }}>{m.text}</div>)}</div>
-            <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: "8px", flexShrink: 0 }}>{wsAttached && (<div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(59,130,246,0.15)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "999px", padding: "6px 10px", fontSize: "12px", color: "white" }}><span>📎</span><span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{wsAttached}</span><button onClick={() => setWsAttached(null)} aria-label="Remove attachment" style={{ border: "none", background: "transparent", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "12px" }}>✕</button></div>)}<input type="file" ref={queueFileRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf,.json,.csv" onChange={e => { setQueuePickerLoading(false); const f = e.target.files?.[0]; if (f) { setQueueFileObjs(prev => ({ ...prev, [f.name]: f })); setQueueFiles(prev => [...prev, f.name]); setWsMsgs(prevM => [...prevM, { role: "lexi", text: `✓ ${f.name} added to the queue — it waits its turn. Click it in the queue to move it to the editing area.` }]); } e.target.value = ""; }} /><input type="file" ref={wsFileRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf" onChange={e => { const f = e.target.files?.[0]; if (f) { setWsAttached(f.name); setQueueFileObjs(prev => ({ ...prev, [f.name]: f })); setQueueFiles(prev => [...prev, f.name]); setWsMsgs(prevM => [...prevM, { role: "lexi", text: `✓ ${f.name} added to the queue — it waits its turn. Click it in the queue to move it to the editing area.` }]); } e.target.value = ""; }} /><div style={{ display: "flex", gap: "8px" }}><button onClick={() => { wsFileRef.current?.click(); }} title="Attach file" style={{ width: "36px", height: "36px", borderRadius: "999px", background: "transparent", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer", display: "grid", placeItems: "center", fontSize: "20px", flexShrink: 0 }}>+</button><textarea value={wsInput} rows={1} onChange={e => { setWsInput(e.target.value); const t = e.target as any; t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && wsInput.trim()) { e.preventDefault(); setWsMsgs(p => [...p, { role: "user", text: wsInput }]); setRedoMsgs([]); setWsInput(""); (e.currentTarget as any).style.height = "40px"; } }} placeholder={`Ask Lexi to ${wsTool.toLowerCase()}...`} style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 4px", fontSize: "13px", color: "white", outline: "none", resize: "none" as any, overflowY: "auto" as any, maxHeight: "120px", minHeight: "40px", lineHeight: 1.5, whiteSpace: "pre-wrap" as any, wordBreak: "break-word" as any, fontFamily: "inherit", boxSizing: "border-box" as any, alignSelf: "flex-end" }} /><button onClick={(e) => { if (!wsInput.trim()) return; setWsMsgs(p => [...p, { role: "user", text: wsInput }]); setRedoMsgs([]); setWsInput(""); const ta = (e.currentTarget as any).parentElement?.querySelector("textarea"); if (ta) ta.style.height = "40px"; }} style={{ width: "36px", height: "36px", borderRadius: "999px", background: wsInput.trim() ? "white" : "rgba(255,255,255,0.15)", color: wsInput.trim() ? "black" : "rgba(255,255,255,0.4)", border: "none", cursor: wsInput.trim() ? "pointer" : "default", flexShrink: 0 }}>▶</button></div></div>
-          </div>)}
-        <div className="ws-main-row" style={{ flex: 1, minHeight: 0, height: wsNarrow ? "calc(100dvh - 62px)" as any : "calc(100vh - 56px)", display: (wsNarrow && wsMobileTab === "lexi") ? "none" as any : "flex" as any, flexDirection: wsNarrow ? "column" as any : "row" as any, overflow: "hidden" as any }}>
-          <div className="ws-left" style={{ width: wsNarrow ? "100%" : `${leftWidth}%`, height: (wsNarrow && wsMobileTab === "lexi") ? "calc(100dvh - 118px)" as any : (wsNarrow ? "100%" as any : "100%"), flex: (wsNarrow && wsMobileTab === "lexi") ? "none" as any : (wsNarrow ? "1" as any : "none" as any), maxHeight: wsNarrow ? "none" as any : "none" as any, display: wsNarrow && wsMobileTab !== "lexi" ? "none" as any : "flex" as any, minHeight: 0, background: "#0F0F14", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}>
-            <div style={{ padding: "12px", display: "flex", gap: "6px", flexWrap: "wrap", flexShrink: 0 }}>
-              <div style={{ position: "relative" }}>
-                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'free' ? null : 'free'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: wsFreeIsActive ? "#7C3AED" : "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: wsFreeIsActive ? 700 : 400 }}>{wsFreeLabel}</button>
-                {wsToolsMenu === 'free' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Free Tools • 20 • 0 credits</div><div className="wsToolsGrid">{freeTools.map((tool: any) => (<button key={tool.id} onClick={() => { setWsTool(wsFullToShort[tool.en] || tool.en); setWsMsgs(prev => [...prev, { role: "user", text: `I want to ${tool.en}` }]); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: wsFreeMatch && wsFreeMatch.id === tool.id ? "#F5F3FF" : "white", fontWeight: wsFreeMatch && wsFreeMatch.id === tool.id ? 700 : 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span>{wsFreeMatch && wsFreeMatch.id === tool.id && (<span style={{ marginLeft: "auto", color: "#7C3AED" }}>✓</span>)}</button>))}</div></div></>)}
-              </div>
-              <div style={{ position: "relative" }}>
-                <button onClick={(e) => { const r = (e.currentTarget as any).getBoundingClientRect(); const w = window.innerWidth >= 900 ? 600 : 360; setWsToolsAnchor({ left: Math.max(8, Math.min(r.left, window.innerWidth - w - 8)), top: r.bottom + 6 }); setWsToolsMenu(wsToolsMenu === 'pro' ? null : 'pro'); }} style={{ fontSize: "11px", padding: "7px 12px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "white", cursor: "pointer", fontWeight: 400 }}>Advanced Tools 🔒 ▾</button>
-                {wsToolsMenu === 'pro' && (<><div onClick={() => setWsToolsMenu(null)} style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 9998 }} /><div className="wsToolsDropdown" style={{ position: "fixed", left: wsToolsAnchor ? wsToolsAnchor.left : 8, top: wsToolsAnchor ? wsToolsAnchor.top : 100, zIndex: 9999, maxHeight: wsToolsAnchor ? `calc(100vh - ${wsToolsAnchor.top + 16}px)` : "none", overflowY: "auto" }}><div className="wsToolsDropdownHead">Advanced Tools • 10 • PRO</div><div className="wsToolsGrid">{proTools.map((tool: any) => (<button key={tool.id} onClick={() => { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); setWsToolsMenu(null); }} className="wsToolsItem" style={{ background: "white", fontWeight: 400 }}><span className="wsToolsIcon" style={{ color: wsIconColor[tool.id] || "#7C3AED" }}>{tool.icon}</span><span>{tool.en}</span><span style={{ marginLeft: "auto", color: "#6B7280", fontSize: "11px" }}>🔒 PRO</span></button>))}</div></div></>)}
-              </div>
-            </div>
-            <div ref={wsChatScrollRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "4px 14px 14px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              {wsMsgs.length === 0 ? (
-                <div style={{ marginTop: "16px", textAlign: "center" }}>
-                  <div style={{ width: "48px", height: "48px", borderRadius: "999px", background: "rgba(124,58,237,0.15)", display: "grid", placeItems: "center", fontSize: "20px", margin: "0 auto" }}>✦</div>
-                  <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "12px" }}>Ask Lexi to edit this file</div>
-                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.55)", marginTop: "6px", lineHeight: 1.5 }}>Write what you want in plain words.<br />Lexi edits it here, you see it live on the right.</div>
-                  <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap", marginTop: "14px" }}>
-                    <button onClick={() => setWsInput("Add my signature at the bottom")} style={{ background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "999px", padding: "6px 10px", fontSize: "11px", cursor: "pointer" }}>✍️ Add signature</button>
-                    <button onClick={() => setWsInput("Compress this file under 2MB")} style={{ background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "999px", padding: "6px 10px", fontSize: "11px", cursor: "pointer" }}>Compress file</button>
-                  </div>
-                </div>
-              ) : wsMsgs.map((m, i) => <div key={i} style={{ background: m.role === "user" ? "#334155" : "#18181E", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "10px 12px", fontSize: "12px", lineHeight: 1.5, alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "90%" }}>{m.text}</div>)}
-              {/* REMOVED: Your-file card — removed per user request, never shown again */}
-            </div>
-            <div style={{ padding: "12px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: "8px", flexShrink: 0 }}>{wsAttached && (<div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(59,130,246,0.15)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "999px", padding: "6px 10px", fontSize: "12px", color: "white" }}><span>📎</span><span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{wsAttached}</span><button onClick={() => setWsAttached(null)} aria-label="Remove attachment" style={{ border: "none", background: "transparent", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "12px" }}>✕</button></div>)}<input type="file" ref={queueFileRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf,.json,.csv" onChange={e => { setQueuePickerLoading(false); const f = e.target.files?.[0]; if (f) { setQueueFileObjs(prev => ({ ...prev, [f.name]: f })); setQueueFiles(prev => [...prev, f.name]); setWsMsgs(prevM => [...prevM, { role: "lexi", text: `✓ ${f.name} added to the queue — it waits its turn. Click it in the queue to move it to the editing area.` }]); } e.target.value = ""; }} />
-            <input type="file" ref={wsFileRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf" onChange={e => { const f = e.target.files?.[0]; if (f) { setWsAttached(f.name); setQueueFileObjs(prev => ({ ...prev, [f.name]: f })); setQueueFiles(prev => [...prev, f.name]); setWsMsgs(prevM => [...prevM, { role: "lexi", text: `✓ ${f.name} added to the queue — it waits its turn. Click it in the queue to move it to the editing area.` }]); } e.target.value = ""; }} /><div style={{ display: "flex", gap: "8px" }}><button onClick={() => { wsFileRef.current?.click(); }} title="Attach file" style={{ width: "36px", height: "36px", borderRadius: "999px", background: "transparent", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer", display: "grid", placeItems: "center", fontSize: "20px", flexShrink: 0 }}>+</button><textarea value={wsInput} rows={1} onChange={e => { setWsInput(e.target.value); const t = e.target as any; t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && wsInput.trim()) { e.preventDefault(); setWsMsgs(p => [...p, { role: "user", text: wsInput }]); setRedoMsgs([]); setWsInput(""); (e.currentTarget as any).style.height = "40px"; } }} placeholder={`Ask Lexi to ${wsTool.toLowerCase()}...`} style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "10px 4px", fontSize: "13px", color: "white", outline: "none", resize: "none" as any, overflowY: "auto" as any, maxHeight: "120px", minHeight: "40px", lineHeight: 1.5, whiteSpace: "pre-wrap" as any, wordBreak: "break-word" as any, fontFamily: "inherit", boxSizing: "border-box" as any, alignSelf: "flex-end" }} /><button onClick={(e) => { if (!wsInput.trim()) return; setWsMsgs(p => [...p, { role: "user", text: wsInput }]); setRedoMsgs([]); setWsInput(""); const ta = (e.currentTarget as any).parentElement?.querySelector("textarea"); if (ta) ta.style.height = "40px"; }} style={{ width: "36px", height: "36px", borderRadius: "999px", background: wsInput.trim() ? "white" : "rgba(255,255,255,0.15)", color: wsInput.trim() ? "black" : "rgba(255,255,255,0.4)", border: "none", cursor: wsInput.trim() ? "pointer" : "default", flexShrink: 0 }}>▶</button></div></div>
-          </div>
-          <div onMouseDown={() => setIsDragging(true)} style={{ width: "8px", background: isDragging ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.04)", cursor: "col-resize", display: (wsNarrow && wsMobileTab === "lexi") ? "none" as any : "flex" as any, alignItems: "center", justifyContent: "center", flexShrink: 0 }}><div style={{ width: "3px", height: "24px", background: isDragging ? "#7C3AED" : "rgba(255,255,255,0.2)", borderRadius: "999px" }} /></div>
-          <div className="ws-right-wrap" style={{ width: wsNarrow ? "100%" : `${100 - leftWidth}%`, height: wsNarrow ? "auto" as any : "100%", flex: wsNarrow ? "1" as any : "none" as any, minHeight: 0, background: "#14141C", padding: wsNarrow ? "0px" as any : "12px", display: wsNarrow && wsMobileTab === "lexi" ? "none" as any : "flex" as any, flexDirection: wsNarrow ? "column" as any : "row" as any, gap: "12px", overflow: "hidden", flexShrink: 0 }}>
-            <div className="ws-middle" style={{ background: "white", borderRadius: wsNarrow ? "0px" as any : "14px", flex: wsNarrow ? "1" as any : 1, width: wsNarrow ? "100%" : "auto" as any, minHeight: wsNarrow ? "0" as any : 0, display: wsNarrow && wsMobileTab !== "doc" ? "none" as any : "flex" as any, flexDirection: "column", overflow: "hidden", color: "#111", position: "relative" }}>
-              <div style={{ padding: "10px 16px", display: wsNarrow ? "none" as any : "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", borderBottom: "1px solid #F3F4F6", flexShrink: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                  <div style={{ width: "28px", height: "32px", borderRadius: "6px", background: "#ECFEFF", border: "1px solid #A5F3FC", display: "grid", placeItems: "center", fontSize: "10px", fontWeight: 800, color: getFileInfo(fileName).color, flexShrink: 0 }}>{getFileInfo(fileName).label}</div>
-                  <div style={{ fontSize: "13px", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "260px" }}>{fileName}</div>
-                  <span style={{ fontSize: "11px", color: "#6B7280", whiteSpace: "nowrap" }}>• Local</span>
-                </div>
-                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                  <button onClick={() => setDocLive(!docLive)} title="Live preview" style={{ background: docLive ? "#ECFDF5" : "white", color: docLive ? "#065F46" : "#111", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>{docLive ? "● Live" : "○ Live"}</button>
-                  <button onClick={() => setManualOpen(!manualOpen)} title="Manual — edit a word / sentence only" style={{ background: manualOpen ? "#7C3AED" : "white", color: manualOpen ? "white" : "#111", border: "1px solid #DDD6FE", borderRadius: "999px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>{manualOpen ? "✏️ Manual — ON" : "✏️ Manual"}</button>
-                </div>
-              </div>
-              {/* WORKSPACE ONLY — No file yet: upload directly in the document area. Shows only when no file is selected, loads straight into the middle editing area, stays in Workspace. */}
-              {fileName === "No file selected yet" && (
-                <div style={{ padding: "10px 16px", display: "flex", gap: "12px", alignItems: "center", justifyContent: "space-between", background: "#F8FAFC", borderBottom: "1px solid #E5E7EB", flexShrink: 0, flexWrap: "wrap" }}>
-                  <div style={{ flex: 1, minWidth: "180px" }}>
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#111" }}>No file selected yet</div>
-                    <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "2px" }}>Upload a file to edit it here — PDF, Word, Excel • 20 MB</div>
-                  </div>
-                  <button onClick={() => docUploadRef.current?.click()} style={{ background: "#111", color: "white", border: "none", borderRadius: "999px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Upload a file</button>
-                  <input type="file" ref={docUploadRef} style={{ display: "none" }} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp4,.mov,.txt,.rtf,.json,.csv" onChange={e => { const f = e.target.files?.[0]; if (f) { loadFileForEdit(f); setWsMsgs(prev => [...prev, { role: "lexi", text: `File ${f.name} loaded - Ready to edit.` }]); } e.target.value = ""; }} />
-                </div>
-              )}
-              {/* CANVA Stage 3 — Click word / line: FULL text toolbar like Canva top bar — DejaVu Sans / 9.8 / B I U S / aA / Align / Color */}
-              {(manualOpen && (overlayDraft || textSelected) && selectedPage !== null) && (
-                <div style={{ padding: "6px 12px", display: "flex", gap: "6px", alignItems: "center", background: "white", borderBottom: "1px solid #F3F4F6", flexShrink: 0, overflowX: "auto", whiteSpace: "nowrap" }}>
-                  <select value={overlayFont} onChange={e => setOverlayFont(e.target.value)} title="Font — like Canva" style={{ background: "#F3F4F6", border: "1px solid #E5E7EB", borderRadius: "6px", padding: "4px", fontSize: "12px", cursor: "pointer", minWidth: "88px" }}><option value="DejaVu Sans, sans-serif">DejaVu Sans</option><option value="Inter, sans-serif">Inter</option><option value="Georgia, serif">Georgia</option><option value="Arial, sans-serif">Arial</option><option value="monospace">Mono</option></select>
-                  <button onClick={() => setOverlaySize(Math.max(8, overlaySize - 1))} style={{ width: "26px", height: "26px", borderRadius: "6px", background: "#F3F4F6", border: "1px solid #E5E7EB", cursor: "pointer", fontWeight: 700 }}>−</button>
-                  <span style={{ fontSize: "12px", fontWeight: 700, minWidth: "28px", textAlign: "center" }}>{overlaySize}</span>
-                  <button onClick={() => setOverlaySize(Math.min(32, overlaySize + 1))} style={{ width: "26px", height: "26px", borderRadius: "6px", background: "#F3F4F6", border: "1px solid #E5E7EB", cursor: "pointer", fontWeight: 700 }}>+</button>
-                  <input type="color" value={overlayColor} onChange={e => setOverlayColor(e.target.value)} title="Text color — A" style={{ width: "28px", height: "28px", border: "1px solid #E5E7EB", borderRadius: "6px", cursor: "pointer", padding: 0 }} />
-                  <button onClick={() => setOverlayBold(!overlayBold)} title="Bold" style={{ width: "28px", height: "28px", borderRadius: "6px", background: overlayBold ? "#111" : "#F3F4F6", color: overlayBold ? "white" : "#111", border: "1px solid #E5E7EB", fontWeight: 800, cursor: "pointer" }}>B</button>
-                  <button onClick={() => setOverlayItalic(!overlayItalic)} title="Italic" style={{ width: "28px", height: "28px", borderRadius: "6px", background: overlayItalic ? "#111" : "#F3F4F6", color: overlayItalic ? "white" : "#111", border: "1px solid #E5E7EB", fontStyle: "italic", cursor: "pointer" }}>I</button>
-                  <button onClick={() => setOverlayUnderline(!overlayUnderline)} title="Underline" style={{ width: "28px", height: "28px", borderRadius: "6px", background: overlayUnderline ? "#111" : "#F3F4F6", color: overlayUnderline ? "white" : "#111", border: "1px solid #E5E7EB", textDecoration: "underline", cursor: "pointer" }}>U</button>
-                  <button onClick={() => setTextStrike(!textStrike)} title="Strikethrough — S" style={{ width: "28px", height: "28px", borderRadius: "6px", background: textStrike ? "#111" : "#F3F4F6", color: textStrike ? "white" : "#111", border: "1px solid #E5E7EB", textDecoration: "line-through", cursor: "pointer" }}>S</button>
-                  <button onClick={() => setTextCase(textCase === "upper" ? "normal" : "upper")} title="aA — UPPERCASE / lowercase" style={{ width: "32px", height: "28px", borderRadius: "6px", background: textCase !== "normal" ? "#111" : "#F3F4F6", color: textCase !== "normal" ? "white" : "#111", border: "1px solid #E5E7EB", fontWeight: 700, fontSize: "11px", cursor: "pointer" }}>aA</button>
-                  <select value={overlayAlign} onChange={e => setOverlayAlign(e.target.value as any)} title="Align" style={{ background: "#F3F4F6", border: "1px solid #E5E7EB", borderRadius: "6px", padding: "4px", fontSize: "12px", cursor: "pointer" }}><option value="left">≡ Left</option><option value="center">≡ Center</option><option value="right">Right ≡</option></select>
-                  <select value={overlayHighlight} onChange={e => setOverlayHighlight(e.target.value)} title="Highlight" style={{ background: "#F3F4F6", border: "1px solid #E5E7EB", borderRadius: "6px", padding: "4px", fontSize: "12px", cursor: "pointer" }}><option value="transparent">No highlight</option><option value="#FEF08A">Yellow</option><option value="#BBF7D0">Green</option><option value="#FECACA">Red</option></select>
-                  <span style={{ fontSize: "11px", color: "#6B7280", whiteSpace: "nowrap" }}>✏️ Edit in text ↓</span>
-                  <button onClick={() => { setOverlayDraft(null); setTextSelected(false); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "6px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button>
-                </div>
-              )}
-              <div ref={docScrollRef} style={{ flex: 1, minHeight: 0, overflow: "auto", touchAction: (wsNarrow && panMode) ? "none" as any : (wsNarrow ? "pan-x pan-y" as any : "auto" as any), WebkitOverflowScrolling: "touch" as any, background: "#EDEEF2", padding: wsNarrow ? "12px 8px 20px" as any : "24px 16px 20px", boxSizing: "border-box", display: "block", textAlign: "center" as any, minWidth: 0, cursor: (panMode || docZoom > 100) ? "grab" : "default" }} onMouseDown={e => { if (!(panMode || docZoom > 100) || !docScrollRef.current) return; const el = docScrollRef.current; const sx = e.clientX, sy = e.clientY, sl = el.scrollLeft, st = el.scrollTop; const move = (ev: any) => { el.scrollLeft = sl - (ev.clientX - sx); el.scrollTop = st - (ev.clientY - sy); }; const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); }; document.addEventListener("mousemove", move); document.addEventListener("mouseup", up); }} onTouchStart={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; const tt = e.touches[0]; (el as any)._panX = tt.clientX; (el as any)._panY = tt.clientY; (el as any)._panL = el.scrollLeft; (el as any)._panT = el.scrollTop; }} onTouchMove={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; if (!(panMode || docZoom > 30)) return; const tt = e.touches[0]; if ((el as any)._panX === undefined) return; el.scrollLeft = (el as any)._panL - (tt.clientX - (el as any)._panX); el.scrollTop = (el as any)._panT - (tt.clientY - (el as any)._panY); }} onTouchEnd={() => { const el = docScrollRef.current; if (el) { (el as any)._panX = undefined; (el as any)._panY = undefined; } }}>
-                {/* Stacked pages — Canva style: all pages visible, scroll page after page. Click a page to select it and edit it manually if you want. Lexi in the left chat does the main edit. */}
-                {pdfLoading && (<div style={{ width: wsNarrow ? "100%" : "580px", minWidth: wsNarrow ? 0 as any : "580px", maxWidth: wsNarrow ? "580px" as any : "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, borderRadius: "10px", padding: "32px", textAlign: "center", fontSize: "13px", color: "#6B7280" }}>⏳ Rendering your real PDF — reading all pages…</div>)}
-                {pdfError && (<div style={{ width: wsNarrow ? "100%" : "580px", minWidth: wsNarrow ? 0 as any : "580px", maxWidth: wsNarrow ? "580px" as any : "none" as any, flexShrink: 0, margin: "0 auto", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "10px", padding: "16px", textAlign: "center", fontSize: "12px", color: "#991B1B" }}>{pdfError}</div>)}
-                {pdfPages.length > 0 && pdfPages.map((url, i) => (
-                  <div data-doc-page={i} key={"pdf-" + i} onClick={e => { const r = (e.currentTarget as any).getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * 100; const y = ((e.clientY - r.top) / r.height) * 100; setSelectedPage(i); setSelectedPara(i); if (manualOpen) { setOverlayDraft({ x, y }); setTextSelected(true); } }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "transparent", display: "block", boxSizing: "border-box" as any, border: "none", borderRadius: "0px", padding: "0px", boxShadow: "none", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer", position: "relative" }}>
-                    <div dir="ltr" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", padding: "4px 6px 10px 6px" /* FIX-ICONS-POSITION: toolbar = exactly page width like desktop, Page left / icons right, no zoom trick that pushed icons off the page */, direction: "ltr", unicodeBidi: "isolate" as any, cursor: "default" }}>
-                      <span dir="ltr" onClick={(e) => e.stopPropagation()} style={{ fontSize: "18px", fontWeight: 700, color: "#111", whiteSpace: "nowrap", cursor: "default", userSelect: "none" as any }}>Page {i + 1}</span>
-                      <span dir="ltr" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "16px", fontSize: "28px", lineHeight: 1, color: "#111", whiteSpace: "nowrap", direction: "ltr" }}>
-                        <span onClick={(e) => { e.stopPropagation(); goToPage(i + 2); }} title="Move page down" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˅</span>
-                        <span onClick={(e) => { e.stopPropagation(); goToPage(i); }} title="Move page up" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˄</span>
-                        <span onClick={(e) => { e.stopPropagation(); setHiddenPages(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }} title={hiddenPages.includes(i) ? "Show page" : "Hide page"} style={{ cursor: "pointer", opacity: hiddenPages.includes(i) ? 0.3 : 1, fontSize: "34px" }}>👁</span>
-                        <span onClick={(e) => { e.stopPropagation(); setLockedPages(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }} title={lockedPages.includes(i) ? "Unlock page" : "Lock page"} style={{ cursor: "pointer", fontSize: "30px" }}>{lockedPages.includes(i) ? "🔒" : "🔓"}</span>
-                        <span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(i)) return; setPdfPages(prev => { const next = [...prev]; next.splice(i + 1, 0, prev[i]); return next; }); }} title="Duplicate page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 800 }}>⧉</span>
-                        <span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(i)) return; setPdfPages(prev => prev.filter((_, idx) => idx !== i)); }} title="Delete page" style={{ cursor: "pointer", fontSize: "32px", width: "38px", height: "38px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#FEE2E2", color: "#DC2626", border: "2px solid #DC2626", borderRadius: "50%", lineHeight: 1 }}>🗑</span>
-                        <span onClick={(e) => { e.stopPropagation(); setPdfPages(prev => { const next = [...prev]; next.splice(i + 1, 0, "BLANK_PAGE"); return next; }); setSelectedPage(i + 1); }} title="Add page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 900, width: "34px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid #111", borderRadius: "50%", lineHeight: 1 }}>+</span>
-                      </span>
-                    </div>
-                    <div style={{ background: "white", border: selectedPage === i ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: wsNarrow ? "0px" as any : "10px", padding: "16px", boxSizing: "border-box", boxShadow: wsNarrow ? "none" as any : (selectedPage === i ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)") }}>
-                    <div style={{ position: "relative" }}>{(url === "BLANK_PAGE" ? (<div style={{ width: "100%", aspectRatio: "1 / 1.414" as any, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", border: "1px solid #F3F4F6", background: "white", fontSize: "13px", color: "#9CA3AF", textAlign: "center", padding: "40px 0" }}>New blank page — ask Lexi what to put here.</div>) : (wsNarrow && pdfFile ? (<SharpPdfCanvas pdfFile={pdfFile} pageIndex={i} zoomFactor={autoFit * (docZoom / 50)} opacity={hiddenPages.includes(i) ? 0.25 : 1} />) : (<img src={url} alt={`Page ${i + 1}`} draggable={false} style={{ width: "100%", height: "auto", display: "block", borderRadius: "6px", border: "1px solid #F3F4F6", opacity: hiddenPages.includes(i) ? 0.25 : 1, imageRendering: "auto", WebkitFontSmoothing: "antialiased", textRendering: "optimizeLegibility" as any }} />)))}{overlays.filter(o => o.page === i).map(o => (<div key={o.id} onClick={e => { e.stopPropagation(); }} style={{ position: "absolute", left: `${o.x}%`, top: `${o.y}%`, background: o.highlight === "transparent" ? "rgba(255,255,255,0.95)" : o.highlight, border: "1px dashed #7C3AED", borderRadius: "4px", padding: "4px 8px", fontSize: `${o.size}px`, fontFamily: o.font, fontWeight: o.bold ? 800 : 400, fontStyle: o.italic ? "italic" : "normal", textDecoration: o.underline ? "underline" : "none", color: o.color, textAlign: o.align as any, cursor: "text", maxWidth: "70%", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>{o.text}<button onClick={e => { e.stopPropagation(); setOverlays(prev => prev.filter(x => x.id !== o.id)); }} style={{ marginLeft: "8px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", width: "18px", height: "18px", fontSize: "10px", cursor: "pointer" }}>✕</button></div>))}
-                {manualOpen && overlayDraft && selectedPage === i && (<><div style={{ position: "absolute", left: `${overlayDraft.x}%`, top: `${overlayDraft.y}%`, width: "120px", height: "28px", transform: "translate(-50%, -50%)", border: "2px dashed #7C3AED", borderRadius: "6px", background: "#F5F3FF", opacity: 0.7, pointerEvents: "none" as any, zIndex: 4 }} /><div onClick={e => e.stopPropagation()} style={{ margin: "4px 0 8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "6px", display: "flex", gap: "6px", alignItems: "center", width: "100%", boxSizing: "border-box", direction: "ltr" }}><input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="عدّل هاد السطر هنا…" style={{ flex: 1, minWidth: "120px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111", fontFamily: "inherit", textAlign: isArabicFile ? "right" : "left" }} /><button onClick={() => { if (!overlayText.trim()) return; let txt = overlayText.trim(); if (textCase === "upper") txt = txt.toUpperCase(); if (textCase === "lower") txt = txt.toLowerCase(); setOverlays(prev => [...prev, { id: Date.now(), page: i, text: txt, bold: overlayBold, italic: overlayItalic, underline: overlayUnderline, size: overlaySize, color: overlayColor, x: overlayDraft.x, y: overlayDraft.y, font: overlayFont, align: overlayAlign, highlight: overlayHighlight }]); setOverlayText(""); setOverlayDraft(null); setTextSelected(false); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Place ✓</button><button onClick={() => { setOverlayDraft(null); setTextSelected(false); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button></div></>)}</div>
-                  </div>
-                  </div>
-                ))}
-                {pdfPages.length > 0 && (<div style={{ fontSize: "11px", color: "#6B7280" }}>✓ {pdfPages.filter(u => u !== "BLANK_PAGE").length} real pages from your file — scroll to see them all, page after page.</div>)}
-                {docText ? (
-                  <>
-                    {Array.from({ length: Math.max(1, Math.ceil(docText.split("\n").length / 28)) }).map((_, pageIdx) => {
-                      const lines = docText.split("\n");
-                      const perPage = 28; // TXT has no original pagination: 28 lines = 1 page, so a long file shows ALL pages, not just 3
-                      const chunk = lines.slice(pageIdx * perPage, (pageIdx + 1) * perPage).join("\n");
-                      if (!chunk && pageIdx > 0) return null;
-                      return (
-                        <div key={pageIdx} onClick={() => { setSelectedPage(pageIdx); setSelectedPara(pageIdx); setTextSelected(false); }} style={{ width: "580px", minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "transparent", display: "block", boxSizing: "border-box" as any, border: "none", borderRadius: "0px", padding: "0px", boxShadow: "none", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit, cursor: "pointer", position: "relative" }}>
-                    <div dir="ltr" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", padding: "4px 6px 10px 6px", direction: "ltr", unicodeBidi: "isolate" as any, cursor: "default" }}><span dir="ltr" onClick={(e) => e.stopPropagation()} style={{ fontSize: "18px", fontWeight: 700, color: "#111", whiteSpace: "nowrap", cursor: "default", userSelect: "none" as any }}>Page {pageIdx + 1}</span><span dir="ltr" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "16px", fontSize: "28px", lineHeight: 1, color: "#111", whiteSpace: "nowrap", direction: "ltr" }}><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; const b = (pageIdx + 1) * pp; if (b >= ls.length) return prev; const c1 = ls.slice(a, b); const c2 = ls.slice(b, b + pp); return [...ls.slice(0, a), ...c2, ...c1, ...ls.slice(b + pp)].join("\n"); }); }} title="Move page down" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˅</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; if (a === 0) return prev; const c0 = ls.slice(a - pp, a); const c1 = ls.slice(a, a + pp); return [...ls.slice(0, a - pp), ...c1, ...c0, ...ls.slice(a + pp)].join("\n"); }); }} title="Move page up" style={{ cursor: "pointer", fontWeight: 900, fontSize: "34px" }}>˄</span><span onClick={(e) => { e.stopPropagation(); setHiddenPages(prev => prev.includes(pageIdx) ? prev.filter(x => x !== pageIdx) : [...prev, pageIdx]); }} title={hiddenPages.includes(pageIdx) ? "Show page" : "Hide page"} style={{ cursor: "pointer", opacity: hiddenPages.includes(pageIdx) ? 0.3 : 1, fontSize: "34px" }}>👁</span><span onClick={(e) => { e.stopPropagation(); setLockedPages(prev => prev.includes(pageIdx) ? prev.filter(x => x !== pageIdx) : [...prev, pageIdx]); }} title={lockedPages.includes(pageIdx) ? "Unlock page" : "Lock page"} style={{ cursor: "pointer", fontSize: "30px" }}>{lockedPages.includes(pageIdx) ? "🔒" : "🔓"}</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; const chunk = ls.slice(a, a + pp); return [...ls.slice(0, a + pp), ...chunk, ...ls.slice(a + pp)].join("\n"); }); }} title="Duplicate page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 800 }}>⧉</span><span onClick={(e) => { e.stopPropagation(); if (lockedPages.includes(pageIdx)) return; setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = pageIdx * pp; return [...ls.slice(0, a), ...ls.slice(a + pp)].join("\n"); }); }} title="Delete page" style={{ cursor: "pointer", fontSize: "32px", width: "38px", height: "38px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#FEE2E2", color: "#DC2626", border: "2px solid #DC2626", borderRadius: "50%", lineHeight: 1 }}>🗑</span><span onClick={(e) => { e.stopPropagation(); setDocText((prev: string) => { const ls = prev.split("\n"); const pp = 28; const a = (pageIdx + 1) * pp; const blank = Array(pp).fill(""); return [...ls.slice(0, a), ...blank, ...ls.slice(a)].join("\n"); }); setSelectedPage(pageIdx + 1); }} title="Add page" style={{ cursor: "pointer", fontSize: "30px", fontWeight: 900, width: "34px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid #111", borderRadius: "50%", lineHeight: 1 }}>+</span></span></div>
-                    <div style={{ background: "white", border: selectedPage === pageIdx ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === pageIdx ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)" }}>
-                          <div style={{ fontSize: "13px", lineHeight: 1.8, color: "#1F2937", fontFamily: isCodeFile ? "monospace" : "'Segoe UI', sans-serif", whiteSpace: "pre-wrap", wordBreak: "break-word", textAlign: isArabicFile ? "right" : "left", direction: isArabicFile ? "rtl" : "ltr" }}>
-                            {chunk.split("\n").map((line, li) => {
-                              const globalIdx = pageIdx * perPage + li;
-                              const isSel = editingLine === globalIdx;
-                              if (!line.trim()) return (<div key={li} style={{ height: "8px" }} />);
-                              return (
-                                <div key={li}>
-                                  <div onClick={e => { e.stopPropagation(); setSelectedPage(pageIdx); setSelectedPara(pageIdx); setTextSelected(true); setEditingLine(globalIdx); setOverlayText(line); setOverlayDraft({ x: 18, y: 22 }); }} style={{ cursor: "text", padding: "6px 8px", borderRadius: "6px", background: isSel ? "#F5F3FF" : "transparent", outline: isSel ? "2px dashed #7C3AED" : "none" }}>{line || "\u00a0"}</div>
-                                  {isSel && textSelected && (
-                                    <div onClick={e => e.stopPropagation()} style={{ margin: "4px 0 8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "6px", display: "flex", gap: "6px", alignItems: "center", width: "100%", boxSizing: "border-box", direction: "ltr" }}>
-                                      <input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="عدّل هاد السطر هنا…" style={{ flex: 1, minWidth: "120px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111", fontFamily: "inherit", textAlign: isArabicFile ? "right" : "left" }} />
-                                      <button onClick={() => { const idx = editingLine; if (idx === null) return; const all = docText.split("\n"); all[idx] = overlayText; setDocText(all.join("\n")); const done = overlayText; setOverlayText(""); setTextSelected(false); setEditingLine(null); setOverlayDraft(null); setWsMsgs(prev => [...prev, { role: "lexi", text: `✓ تم تعديل السطر ${idx + 1}: “${done.slice(0, 40)}”` }]); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>Place ✓</button>
-                                      <button onClick={() => { setTextSelected(false); setEditingLine(null); setOverlayDraft(null); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "8px" }}>{textSelected && selectedPage === pageIdx ? "✏️ Text selected — type the new word here ↓" : "Click this text to select it — text tools appear on top like Canva"}</div>
-                          {textSelected && selectedPage === pageIdx && editingLine === null && (<div onClick={e => e.stopPropagation()} style={{ marginTop: "8px", background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: "10px", padding: "8px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", width: "100%", boxSizing: "border-box" }}><input autoFocus value={overlayText} onChange={e => setOverlayText(e.target.value)} placeholder="Type the new word / sentence…" style={{ flex: 1, background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 12px", fontSize: "12px", outline: "none", color: "#111" }} /><button onClick={() => { if (!overlayText.trim()) return; let txt = overlayText.trim(); if (textCase === "upper") txt = txt.toUpperCase(); if (textCase === "lower") txt = txt.toLowerCase(); setOverlays(prev => [...prev, { id: Date.now(), page: pageIdx, text: txt, bold: overlayBold, italic: overlayItalic, underline: overlayUnderline, size: overlaySize, color: overlayColor, x: 18, y: 22, font: overlayFont, align: overlayAlign, highlight: overlayHighlight }]); setOverlayText(""); setTextSelected(false); setOverlayDraft(null); setWsMsgs(prev => [...prev, { role: "lexi", text: `✓ Manual text placed on Page ${pageIdx + 1}: “${txt}”` }]); }} style={{ background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "7px 14px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>Place ✓</button><button onClick={() => { setTextSelected(false); setOverlayDraft(null); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "7px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button></div>)}
-                        </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                ) : isArabicFile ? (
-                  <>
-                    <div id="doc-intro" onClick={() => { setSelectedPage(0); setSelectedPara(0); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 0 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 0 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", transition: "transform 0.2s", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer", direction: "rtl" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: selectedPage === 0 ? "#7C3AED" : "#6B7280" }}>Page 1 • {cleanTitle}</span>{selectedPage === 0 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#111", textAlign: "center", lineHeight: 1.6, fontFamily: "'Segoe UI', 'Noto Naskh Arabic', 'Amiri', sans-serif" }}>{cleanTitle}</div>
-                      <p onClick={e => { e.stopPropagation(); setSelectedPage(0); setSelectedPara(0); }} style={{ margin: "16px 0 0", fontSize: "15px", lineHeight: 2.05, color: "#1F2937", textAlign: "right", fontFamily: "'Segoe UI', 'Noto Naskh Arabic', 'Amiri', sans-serif", padding: "8px", borderRadius: "8px", background: selectedPage === 0 && selectedPara === 0 ? "#F5F3FF" : "transparent", outline: selectedPage === 0 && selectedPara === 0 ? "2px dashed #7C3AED" : "none" }}>الذكاء اللغوي الاجتماعي هو القدرة على استعمال الكلمات بدقة، وفهم ما وراء الكلام، وبناء علاقات إنسانية سليمة عن طريق التواصل. ليس هو أن تعرف الكثير من الكلمات، بل أن تعرف أي كلمة تقولها، ومتى تقولها، وكيف تقولها.</p>
-                      <div id="doc-sec1" style={{ fontSize: "16px", fontWeight: 700, color: "#111", margin: "20px 0 8px" }}>1. ما هو الذكاء اللغوي؟</div>
-                      <p onClick={e => { e.stopPropagation(); setSelectedPage(0); setSelectedPara(1); }} style={{ margin: 0, fontSize: "15px", lineHeight: 2.05, color: "#1F2937", textAlign: "right", padding: "8px", borderRadius: "8px", background: selectedPage === 0 && selectedPara === 1 ? "#F5F3FF" : "transparent", outline: selectedPage === 0 && selectedPara === 1 ? "2px dashed #7C3AED" : "none" }}>الذكاء اللغوي لا يعني فقط معرفة قواعد اللغة، بل يعني اختيار الكلمة المناسبة في الوقت المناسب. الشخص الذكي لغويا يعرف كيف يعتذر دون أن يجرح، وكيف يطلب دون أن يفرض، وكيف يختلف دون أن يكسر العلاقة.</p>
-                    </div>
-                    <div id="doc-sec2" onClick={() => { setSelectedPage(1); setSelectedPara(2); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 1 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 1 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", transition: "transform 0.2s", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer", direction: "rtl" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: selectedPage === 1 ? "#7C3AED" : "#6B7280" }}>Page 2 • {cleanTitle}</span>{selectedPage === 1 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#111", margin: "0 0 8px" }}>2. كيف يظهر في حياتنا اليومية؟</div>
-                      <p style={{ margin: 0, fontSize: "15px", lineHeight: 2.05, color: "#1F2937", textAlign: "right", padding: "8px", borderRadius: "8px", background: selectedPage === 1 ? "#F5F3FF" : "transparent", outline: selectedPage === 1 ? "2px dashed #7C3AED" : "none" }}>يظهر عندما نستمع قبل أن نجيب، وعندما نفهم مشاعر الآخر من نبرة صوته قبل كلماته، وعندما نعرف أن الصمت أحيانا أبلغ من الكلام. في العمل، في البيت، وفي الصداقة، الكلمة المناسبة تصنع فرقا كبيرا.</p>
-                    </div>
-                    <div id="doc-sec3" onClick={() => { setSelectedPage(2); setSelectedPara(3); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 2 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 2 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", transition: "transform 0.2s", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer", direction: "rtl" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: selectedPage === 2 ? "#7C3AED" : "#6B7280" }}>Page 3 • {cleanTitle}</span>{selectedPage === 2 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#111", margin: "0 0 8px" }}>3. كيف نطوره؟</div>
-                      <p style={{ margin: 0, fontSize: "15px", lineHeight: 2.05, color: "#1F2937", textAlign: "right", padding: "8px", borderRadius: "8px", background: selectedPage === 2 ? "#F5F3FF" : "transparent", outline: selectedPage === 2 ? "2px dashed #7C3AED" : "none" }}>نطوره بالقراءة اليومية، وبالاستماع الفعال، وبمراجعة كلامنا قبل أن نقوله. كل مرة نفكر فيها: هل هذه الكلمة ستساعد أم ستجرح؟ نكون قد خطونا خطوة نحو ذكاء لغوي اجتماعي أقوى.</p>
-                      {wsTool === 'Sign' && (<div id="doc-sign" style={{ marginTop: "20px", marginLeft: "auto", marginRight: "auto", maxWidth: "340px", border: "2px dashed #7C3AED", background: "#F5F3FF", borderRadius: "10px", padding: "12px", textAlign: "center" }}><div style={{ fontSize: "18px" }}>✍️</div><div style={{ fontSize: "12px", fontWeight: 700, color: "#111", marginTop: "6px" }}>التوقيع هنا • Signature will appear here</div><div style={{ marginTop: "8px", display: "inline-block", background: "#7C3AED", color: "white", fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "999px" }}>Place signature</div></div>)}
-                    </div>
-                  </>
-                ) : isCodeFile ? (
-                  <>
-                    <div onClick={() => setSelectedPage(0)} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 0 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>Page 1 • {fileName}</span>{selectedPage === 0 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ background: "#0F172A", color: "#E2E8F0", borderRadius: "10px", padding: "16px", fontFamily: "monospace", fontSize: "12px", lineHeight: 1.7, direction: "ltr", textAlign: "left" }}>
-                        <div style={{ color: "#94A3B8", fontSize: "11px", marginBottom: "8px" }}># app.py — Python file • Line numbers</div>
-                        <div><span style={{ color: "#64748B" }}>1&nbsp;&nbsp;</span><span style={{ color: "#C084FC" }}>def</span> <span style={{ color: "#60A5FA" }}>main</span>():</div>
-                        <div><span style={{ color: "#64748B" }}>2&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: "#FBBF24" }}>print</span>(<span style={{ color: "#86EFAC" }}>"Hello, PDFlexi"</span>)</div>
-                        <div><span style={{ color: "#64748B" }}>3&nbsp;&nbsp;</span></div>
-                        <div><span style={{ color: "#64748B" }}>4&nbsp;&nbsp;</span><span style={{ color: "#C084FC" }}>if</span> __name__ == <span style={{ color: "#86EFAC" }}>"__main__"</span>:</div>
-                        <div><span style={{ color: "#64748B" }}>5&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;main()</div>
-                      </div>
-                    </div>
-                    <div onClick={() => setSelectedPage(1)} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 1 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>Page 2 • Notes</span>{selectedPage === 1 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "13px", lineHeight: 1.8, color: "#1F2937" }}>Upload a .txt / .py file — Lexi reads the real text and shows it here, page after page. Click a page to select it, then ask Lexi to edit that page, or fix it manually.</div>
-                    </div>
-                  </>
-                ) : pdfPages.length === 0 && !pdfLoading ? (
-                  <>
-                    <div id="doc-intro" onClick={() => { setSelectedPage(0); setSelectedPara(0); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 0 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 0 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>Page 1 • {cleanTitle}</span>{selectedPage === 0 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "20px", fontWeight: 800, color: "#111", textAlign: "center", lineHeight: 1.5 }}>{cleanTitle}</div>
-                      <div style={{ fontSize: "11px", color: "#6B7280", textAlign: "center", marginTop: "6px" }}>Privacy Policy • WORLD-CLASS</div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", margin: "18px 0 8px" }}>1. Introduction</div>
-                      <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.9, color: "#1F2937" }}>This Privacy Policy describes how RifData collects, uses, and protects your personal information when you use our services. We are committed to keeping your data private, local-first, and under your control. Your files never leave your device unless you explicitly ask for an AI feature that needs a specialized external service.</p>
-                    </div>
-                    <div onClick={() => { setSelectedPage(1); setSelectedPara(1); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 1 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 1 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>Page 2 • Data & Rights</span>{selectedPage === 1 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", margin: "0 0 8px" }}>2. Purpose of This Privacy Policy</div>
-                      <p style={{ margin: "0 0 12px", fontSize: "13px", lineHeight: 1.9, color: "#1F2937" }}>This Policy is intended to tell you what we collect, why we collect it, and what choices you have. We collect only what is needed to provide the service you asked for.</p>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", margin: "0 0 8px" }}>3. Data We Collect</div>
-                      <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.9, color: "#1F2937" }}>• Files you upload for editing • Account information you provide • Usage data to improve the service. We do not sell your data.</p>
-                    </div>
-                    <div onClick={() => { setSelectedPage(2); setSelectedPara(2); }} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 2 ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: selectedPage === 2 ? "0 0 0 3px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.08)" : "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}><span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>Page 3 • Signature</span>{selectedPage === 2 && (<span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}></span>)}</div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111", margin: "0 0 8px" }}>4. Your Rights</div>
-                      <p style={{ margin: "0 0 16px", fontSize: "13px", lineHeight: 1.9, color: "#1F2937" }}>You can access, correct, or delete your data at any time. Contact us through the settings in your account. This document is the file you uploaded — ask Lexi in the chat on the left, and the change appears here live, page after page.</p>
-                      {wsTool === 'Sign' && (<div id="doc-sign" style={{ marginLeft: "auto", marginRight: "auto", maxWidth: "340px", border: "2px dashed #7C3AED", background: "#F5F3FF", borderRadius: "10px", padding: "12px", textAlign: "center" }}><div style={{ fontSize: "18px" }}>✍️</div><div style={{ fontSize: "12px", fontWeight: 700, color: "#111", marginTop: "6px" }}>التوقيع هنا • Signature will appear here</div><div style={{ marginTop: "8px", display: "inline-block", background: "#7C3AED", color: "white", fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "999px" }}>Place signature</div></div>)}
-                      {wsTool === 'Compress' && (<div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "10px", padding: "12px", textAlign: "center", fontSize: "12px" }}>Compress preview — Before: 2.4 MB → After: ~1.1 MB</div>)}
-                    </div>
-                  </>
-                ) : null}
-                {Array.from({ length: extraPages }).map((_, i) => (
-                  <div key={"extra-" + i} onClick={() => setSelectedPage(3 + i)} style={{ width: "580px" /* FIX-MOBILE-ONLY: 30% first appearance = 0.6x fit width, 50% -> fit width, 200% -> 4x fit width, creates real horizontal scroll */, minWidth: "580px" as any, maxWidth: "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, border: selectedPage === 3 + i ? "2px solid #7C3AED" : "1px solid #E5E7EB", borderRadius: "10px", padding: "28px 32px", height: "820px", overflow: "hidden" as any, aspectRatio: "1 / 1.414" as any, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", transform: docRotate ? `rotate(${docRotate}deg)` : "none" as any, transformOrigin: "top center", opacity: docLive ? 1 : 0.6, zoom: wsNarrow ? (autoFit * (docZoom / 50)) : (docZoom / 100) * autoFit /* FIX-MOBILE-V6: same zoom logic as desktop — scales page + icons + padding + gaps together, so mobile looks exactly like desktop */, cursor: "pointer" }}>
-                    <div dir="ltr" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", boxSizing: "border-box", padding: "4px 6px 10px 6px" /* FIX-ICONS-POSITION: toolbar = exactly page width like desktop, Page left / icons right, no zoom trick that pushed icons off the page */, direction: "ltr", cursor: "default" }}><span dir="ltr" onClick={(e) => e.stopPropagation()} style={{ fontSize: "14px", fontWeight: 700, color: "#111", whiteSpace: "nowrap", cursor: "default", userSelect: "none" as any }}>Page {4 + i}</span><span dir="ltr" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px", fontSize: "24px", lineHeight: 1, color: "#111", whiteSpace: "nowrap" }}><span onClick={(e) => { e.stopPropagation(); goToPage(4 + i + 1); }} title="Move page down" style={{ cursor: "pointer", fontWeight: 900, fontSize: "30px" }}>˅</span><span onClick={(e) => { e.stopPropagation(); goToPage(4 + i - 1); }} title="Move page up" style={{ cursor: "pointer", fontWeight: 900, fontSize: "30px" }}>˄</span><span onClick={(e) => { e.stopPropagation(); setHiddenPages(prev => prev.includes(3 + i) ? prev.filter(x => x !== 3 + i) : [...prev, 3 + i]); }} title="Hide page" style={{ cursor: "pointer", fontSize: "30px" }}>👁</span><span onClick={(e) => { e.stopPropagation(); setLockedPages(prev => prev.includes(3 + i) ? prev.filter(x => x !== 3 + i) : [...prev, 3 + i]); }} title="Lock / Unlock page" style={{ cursor: "pointer" }}>{lockedPages.includes(3 + i) ? "🔒" : "🔓"}</span><span onClick={(e) => { e.stopPropagation(); setExtraPages(extraPages + 1); }} title="Duplicate page" style={{ cursor: "pointer", fontSize: "26px", fontWeight: 800 }}>⧉</span><span onClick={(e) => { e.stopPropagation(); setExtraPages(Math.max(0, extraPages - 1)); }} title="Delete page" style={{ cursor: "pointer", fontSize: "28px", width: "34px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#FEE2E2", color: "#DC2626", border: "2px solid #DC2626", borderRadius: "50%", lineHeight: 1 }}>🗑</span><span onClick={(e) => { e.stopPropagation(); setExtraPages(extraPages + 1); }} title="Add page" style={{ cursor: "pointer", fontSize: "26px", fontWeight: 900, width: "30px", height: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid #111", borderRadius: "50%", lineHeight: 1 }}>+</span></span></div>
-                    <div style={{ fontSize: "13px", color: "#9CA3AF", textAlign: "center", padding: "40px 0" }}>New blank page — ask Lexi what to put here.</div>
-                  </div>
-                ))}
-                <button onClick={() => setExtraPages(extraPages + 1)} style={{ background: "white", border: "1px dashed #D1D5DB", borderRadius: "999px", padding: "10px 18px", fontSize: "12px", fontWeight: 600, cursor: "pointer", color: "#111", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>+ Add page</button>
-                <div style={{ fontSize: "11px", color: "#6B7280", paddingBottom: "8px" }}>Scroll — all pages are here.</div>
-              </div>
-<div style={{ flexShrink: 0, margin: "6px auto 8px", background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", padding: "3px 8px", display: wsNarrow ? "none" as any : "flex" as any, alignItems: "center", gap: "6px", fontSize: "10px", whiteSpace: "nowrap", maxWidth: "380px", width: "max-content" }}>
-                <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>📄 <input value={goToPageInput ?? String((selectedPage ?? 0) + 1)} onChange={(e) => setGoToPageInput(e.target.value.replace(/[^0-9]/g, ""))} onFocus={(e) => { setGoToPageInput(String((selectedPage ?? 0) + 1)); (e.target as any).select(); }} onBlur={() => { if (goToPageInput !== null && goToPageInput !== "") goToPage(Number(goToPageInput)); setGoToPageInput(null); }} onKeyDown={(e) => { if (e.key === "Enter") { goToPage(Number((e.target as any).value)); setGoToPageInput(null); (e.target as any).blur(); } }} title="Type a page number + Enter to jump" placeholder="Page" style={{ width: "44px", border: "1.5px solid #2563EB", borderRadius: "6px", padding: "3px 6px", fontSize: "11px", fontWeight: 700, textAlign: "center", outline: "none", background: "#EFF6FF", color: "#1E40AF" }} /> / {pdfPages.length > 0 ? pdfPages.length : 3 + extraPages} الصفحات</span>
-                <span style={{ width: "1px", height: "16px", background: "#E5E7EB" }} />
-                <button onClick={() => setDocZoom(() => { const s = [30, 50, 70, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400]; const n = [...s].reverse().find((v) => v < docZoom); return n !== undefined ? n : Math.max(10, docZoom - 20); }) /* FIX-V7-ZOOM: ... -> 140 -> 120 -> 100 -> 70 -> 50 -> 30 */} style={{ background: "white", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>−</button>
-                <span style={{ fontWeight: 700, minWidth: "40px", textAlign: "center" }}>{docZoom}%</span>
-                <button onClick={() => setDocZoom(() => { const s = [30, 50, 70, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400]; const n = s.find((v) => v > docZoom); return n !== undefined ? n : Math.min(400, docZoom + 20); }) /* FIX-V7-ZOOM: 30 -> 50 -> 70 -> 100 -> 120 -> 140 ... */} style={{ background: "white", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>+</button>
-                <button onClick={() => setDocZoom(30)} style={{ background: "#F3F4F6", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "4px 10px", fontSize: "11px", cursor: "pointer" }}>Fit</button>
-                <span style={{ width: "1px", height: "16px", background: "#E5E7EB" }} />
-                <button onClick={() => setPanMode(!panMode)} style={{ background: panMode ? "#7C3AED" : "white", color: panMode ? "white" : "#111", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "4px 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>{panMode ? "✋ Panning" : "✋ Pan"}</button>
-              </div>
-            </div>
-            {/* Queue — Add files: files wait their turn here. Click one to move it to the editing area. */}
-            <div className="ws-queue" style={{ width: wsNarrow ? "100%" : "210px", flexShrink: 0, flex: wsNarrow ? "1" as any : "none" as any, display: wsNarrow && wsMobileTab !== "queue" ? "none" as any : "flex" as any, height: wsNarrow ? "auto" as any : "auto" as any, borderRadius: wsNarrow ? "0px" as any : "14px", background: "#0F0F14", border: "1px solid rgba(255,255,255,0.08)", flexDirection: "column", overflow: "hidden", color: "white" }}>
-              <div style={{ padding: "12px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: "12px", fontWeight: 700 }}>📂 Add files • Queue</div>
-                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", marginTop: "4px", lineHeight: 1.5 }}>Files wait here for their turn. Click one to move it to the editing area.</div>
-              </div>
-              <div style={{ flex: 1, overflowY: "auto", padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ background: "#18181E", border: "1px solid #7C3AED", borderRadius: "10px", padding: "10px", position: "relative" }} >
-                  <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }} >
-                    <div style={{ flex: 1, minWidth: 0 }} >
-                      <div style={{ fontSize: "11px", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fileName}</div>
-                      <div style={{ fontSize: "10px", color: "#A78BFA", marginTop: "4px" }}>Editing now - in the middle</div>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); setQueueMenuOpen(queueMenuOpen === "current" ? null : "current"); }} style={{ background: "transparent", color: "rgba(255,255,255,0.7)", border: "none", cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "0 2px" }}>...</button>
-                  </div>
-                  {queueMenuOpen === "current" && (<div style={{ position: "absolute", right: "8px", top: "34px", width: "160px", background: "white", borderRadius: "10px", boxShadow: "0 10px 24px rgba(0,0,0,0.3)", border: "1px solid #E5E7EB", overflow: "hidden", zIndex: 20 }}><button onClick={(e) => { e.stopPropagation(); setQueueMenuOpen(null); setFileName("No file selected yet"); setDocText(""); setPdfFile(null); }} style={{ width: "100%", textAlign: "left", background: "white", border: "none", padding: "10px 12px", fontSize: "12px", cursor: "pointer", color: "#DC2626" }}>Remove file</button></div>)}
-                </div>
-                {queueFiles.map((qf, qi) => (
-                  <div key={qf + qi} onClick={() => { setQueueMenuOpen(null); const real = queueFileObjs[qf]; if (!real) { setWsMsgs(prevM => [...prevM, { role: "lexi", text: `⚠️ ${qf} is a demo name — no real file behind it. Please re-upload the real ${qf} with "+ Add file to queue" so it opens with ALL its pages.` }]); return; } const prev = fileName; const prevFile = (pdfFile as any) || (docText ? new File([docText], prev, { type: "text/plain" }) as any : null); setQueueFiles(prevQ => { const next = prevQ.filter((_, i) => i !== qi); return prev && prev !== "No file selected yet" ? [...next, prev] : next; }); if (prevFile) setQueueFileObjs(prevO => ({ ...prevO, [prev]: prevFile })); loadFileForEdit(real); setWsMsgs(prevM => [...prevM, { role: "lexi", text: `✓ Moved ${qf} to the editing area — ALL its pages are loading. ${prev} is now waiting in the queue.` }]); }} style={{ background: "#18181E", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "10px", cursor: "pointer", position: "relative" }}>
-                    <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }} >
-                      <div style={{ flex: 1, minWidth: 0 }} >
-                        <div style={{ fontSize: "11px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{qf}</div>
-                        <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", marginTop: "4px" }}>Waiting #{qi + 1} - Click to edit</div>
-                      </div>
-                      <button onClick={(e) => { e.stopPropagation(); setQueueMenuOpen(queueMenuOpen === qi ? null : qi); }} style={{ background: "transparent", color: "rgba(255,255,255,0.7)", border: "none", cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "0 2px" }}>...</button>
-                    </div>
-                    {queueMenuOpen === qi && (<div style={{ position: "absolute", right: "8px", top: "34px", width: "160px", background: "white", borderRadius: "10px", boxShadow: "0 10px 24px rgba(0,0,0,0.3)", border: "1px solid #E5E7EB", overflow: "hidden", zIndex: 20 }}><button onClick={(e) => { e.stopPropagation(); setQueueFiles(prevQ => prevQ.filter((_, i) => i !== qi)); setQueueFileObjs(prevO => { const n = { ...prevO }; delete n[qf]; return n; }); setQueueMenuOpen(null); }} style={{ width: "100%", textAlign: "left", background: "white", border: "none", padding: "10px 12px", fontSize: "12px", cursor: "pointer", color: "#DC2626" }}>Remove from queue</button></div>)}
-                  </div>
-                ))}
-                {queueFiles.length === 0 && (<div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", textAlign: "center", padding: "12px" }}>Queue is empty.<br />Add a file to queue it here.</div>)}
-              </div>
-              <div style={{ padding: "10px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                <button onClick={openQueuePicker} style={{ width: "100%", background: "#7C3AED", color: "white", border: "none", borderRadius: "999px", padding: "9px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>{queuePickerLoading ? (<span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.35)" strokeWidth="3" /><path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg>Opening...</span>) : "+ Add file to queue"}</button>
-                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", textAlign: "center", marginTop: "8px" }}>Click a waiting file → it moves to the middle</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {wsNarrow && wsMobileTab === "doc" && (<div style={{ background: "#EDEEF2", width: "100%", display: "flex", justifyContent: "center", flexShrink: 0 }}><div dir="ltr" style={{ flexShrink: 0, margin: "6px auto 8px", background: "white", color: "#111", border: "1px solid #E5E7EB", borderRadius: "999px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", padding: "3px 8px", display: "flex", alignItems: "center", gap: "6px", fontSize: "10px", whiteSpace: "nowrap", maxWidth: "380px", width: "max-content", direction: "ltr", alignSelf: "center" as any }}>
-                  <span style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>📄 <input value={goToPageInput ?? String((selectedPage ?? 0) + 1)} onChange={(e) => setGoToPageInput(e.target.value.replace(/[^0-9]/g, ""))} onFocus={(e) => { setGoToPageInput(String((selectedPage ?? 0) + 1)); (e.target as any).select(); }} onBlur={() => { if (goToPageInput !== null && goToPageInput !== "") goToPage(Number(goToPageInput)); setGoToPageInput(null); }} onKeyDown={(e) => { if (e.key === "Enter") { goToPage(Number((e.target as any).value)); setGoToPageInput(null); (e.target as any).blur(); } }} title="Type a page number + Enter to jump" placeholder="Page" style={{ width: "44px", border: "1.5px solid #2563EB", borderRadius: "6px", padding: "3px 6px", fontSize: "11px", fontWeight: 700, textAlign: "center", outline: "none", background: "#EFF6FF", color: "#1E40AF" }} /> / {pdfPages.length > 0 ? pdfPages.length : 3 + extraPages} الصفحات</span>
-                  <span style={{ width: "1px", height: "16px", background: "#E5E7EB" }} />
-                  <button onClick={() => setDocZoom(() => { const s = [30, 50, 70, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400]; const n = [...s].reverse().find((v) => v < docZoom); return n !== undefined ? n : Math.max(10, docZoom - 20); }) /* FIX-V7-ZOOM: ... -> 140 -> 120 -> 100 -> 70 -> 50 -> 30 */} style={{ background: "white", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>−</button>
-                  <span style={{ fontWeight: 700, minWidth: "40px", textAlign: "center" }}>{docZoom}%</span>
-                  <button onClick={() => setDocZoom(() => { const s = [30, 50, 70, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400]; const n = s.find((v) => v > docZoom); return n !== undefined ? n : Math.min(400, docZoom + 20); }) /* FIX-V7-ZOOM: 30 -> 50 -> 70 -> 100 -> 120 -> 140 ... */} style={{ background: "white", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>+</button>
-                  <button onClick={() => setDocZoom(30)} style={{ background: "#F3F4F6", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "4px 10px", fontSize: "11px", cursor: "pointer" }}>Fit</button>
-                  <span style={{ width: "1px", height: "16px", background: "#E5E7EB" }} />
-                  <button onClick={() => setPanMode(!panMode)} style={{ background: panMode ? "#7C3AED" : "white", color: panMode ? "white" : "#111", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "4px 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer" }}>{panMode ? "✋ Panning" : "✋ Pan"}</button>
-                </div></div>)}
-                {wsNarrow && (<div style={{ display: "flex", gap: "8px", padding: "10px 12px 12px", background: "#0F0F14", borderTop: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}><button onClick={() => setWsMobileTab("doc")} style={{ flex: 1, padding: "10px", borderRadius: "999px", border: "none", background: wsMobileTab === "doc" ? "#7C3AED" : "rgba(255,255,255,0.08)", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>📄 Document</button><button onClick={() => setWsMobileTab("lexi")} style={{ flex: 1, padding: "10px", borderRadius: "999px", border: "none", background: wsMobileTab === "lexi" ? "#7C3AED" : "rgba(255,255,255,0.08)", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>💬 Lexi</button><button onClick={() => setWsMobileTab("queue")} style={{ flex: 1, padding: "10px", borderRadius: "999px", border: "none", background: wsMobileTab === "queue" ? "#7C3AED" : "rgba(255,255,255,0.08)", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>📁 Queue ({queueFiles.length + 1})</button></div>)}
       </div>
     );
   }
