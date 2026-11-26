@@ -94,6 +94,30 @@ export default function App() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => { setHomePickerLoading(false); const f = e.target.files?.[0]; if (f) { if (f.name.toLowerCase().match(/\.(pdf|txt|rtf|md|json|csv)$/)) { loadFileForEdit(f); } else { alert("Unsupported file type. Try PDF, TXT, RTF, MD, JSON or CSV."); } } };
   const openHomePicker = () => { setHomePickerLoading(true); const onFocus = () => { window.removeEventListener("focus", onFocus); window.setTimeout(() => setHomePickerLoading(false), 400); }; window.addEventListener("focus", onFocus); fileRef.current?.click(); window.setTimeout(() => { window.removeEventListener("focus", onFocus); setHomePickerLoading(false); }, 60000); }; // HOMEPAGE ONLY
   const handleSend = () => { if (!chat.trim()) return; goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, chat); setChat(""); };
+  // MOBILE-UX: arrow controls for the phone card carousels (CSS hides them on desktop).
+  const carouselScroll = (id: string, dir: number) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollBy({ left: dir * (el.clientWidth * 0.85), behavior: "smooth" });
+  };
+  const CarouselArrows = ({ id }: { id: string }) => (
+    <div className="carouselArrows" style={{ gap: "8px", alignItems: "center" }}>
+      <button onClick={() => carouselScroll(id, -1)} aria-label="Previous cards" style={{ width: "30px", height: "30px", borderRadius: "999px", border: `1px solid ${middleCardBorder}`, background: middleCard, color: middleText, cursor: "pointer", fontSize: "14px" }}>←</button>
+      <button onClick={() => carouselScroll(id, 1)} aria-label="Next cards" style={{ width: "30px", height: "30px", borderRadius: "999px", border: `1px solid ${middleCardBorder}`, background: middleCard, color: middleText, cursor: "pointer", fontSize: "14px" }}>→</button>
+    </div>
+  );
+  const mobileAdCard = (
+    <div className="mobileOnlyAd" key="ad-in-tools" style={{ background: "white", borderRadius: "16px", padding: "16px", flexDirection: "column", gap: "10px", border: "1px solid #E5E7EB" }}>
+      <span style={{ fontSize: "9px", color: "#6B7280", border: "1px solid #E5E7EB", padding: "2px 5px", borderRadius: "4px", width: "fit-content" }}>Ad</span>
+      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg,#7C3AED,#EC4899)", borderRadius: "10px", display: "grid", placeItems: "center", fontSize: "22px", flexShrink: 0 }}>📦</div>
+        <div>
+          <div style={{ fontSize: "13px", fontWeight: 700, color: "#111" }}>Merge, Split & Compress PDFs in 1 Click</div>
+          <div style={{ fontSize: "11px", color: "#6B7280" }}>Trusted by 2M+ users • 100% Free to try</div>
+        </div>
+      </div>
+      <button style={{ background: "#2563EB", color: "white", border: "none", borderRadius: "999px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", width: "fit-content" }}>Try Free →</button>
+    </div>
+  );
   const handleToolClick = (tool: any) => {
     setActiveTool(tool.en); setMobileMenuOpen(false);
     if (tool.id >= 21) { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); return; }
@@ -675,6 +699,43 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", width: "100%", background: outerBg, fontFamily: "'Inter',sans-serif", position: "relative" }}>
       <style>{GUTTER_CSS}</style>
+      <style>{`
+        /* MOBILE-UX: horizontal card carousels (phone only) + scrollable pill row */
+        .carouselArrows { display: none; }
+        .mobileOnlyAd { display: none; }
+        .pillFade { display: none; }
+        @media (max-width: 600px) {
+          .hscroll { display: flex !important; flex-direction: row !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; grid-template-columns: none !important; }
+          .hscroll::-webkit-scrollbar { display: none; }
+          .hscroll > div { flex: 0 0 85%; scroll-snap-align: start; }
+          .carouselArrows { display: flex; }
+          .mobileOnlyAd { display: flex; }
+          [data-dup-ad] { display: none !important; }
+          .pillRowWrap { flex-wrap: nowrap !important; overflow-x: auto; justify-content: flex-start !important; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+          .pillRowWrap::-webkit-scrollbar { display: none; }
+          .pillRowWrap > button { flex-shrink: 0; }
+          .pillFade { display: block; }
+          /* HOTFIX: chat section must fit the phone screen */
+          .heroGrid { display: block !important; }
+          .heroGrid > div:first-child { min-width: 0 !important; max-width: 100% !important; width: auto !important; }
+          .heroPad { padding: 20px 16px !important; }
+          .heroGrid textarea { height: 120px !important; padding: 12px 56px 12px 56px !important; }
+          .pagePad, main.mainResponsive { max-width: 100vw !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; overflow-x: hidden !important; }
+          .pillRowWrap { max-width: 100% !important; }
+          .pillRowWrap > button { max-width: 78vw; overflow: hidden; text-overflow: ellipsis; }
+          main, header, aside { max-width: 100vw; overflow-x: hidden; }
+          /* WIDE-PAGE HOTFIX: fill the phone screen like the reference shot */
+          main.mainResponsive { padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important; padding-top: 57px !important; }
+          .hideMob { display: none !important; }
+          main.mainResponsive > div { padding: 0 !important; max-width: 100% !important; }
+          main.mainResponsive > div > div:first-child { max-width: 100% !important; width: 100% !important; margin: 0 !important; border-radius: 24px 24px 0 0 !important; }
+          main.mainResponsive > div, main.mainResponsive > div > div:first-child, .heroGrid textarea, .pillRowWrap { box-sizing: border-box; }
+          .heroGrid textarea { text-align: left !important; }
+          .pillRowWrap { margin-left: 0 !important; margin-right: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
+          .mainResponsive .heroPad { padding: 20px 16px !important; }
+          .mainResponsive .heroGrid { margin-left: 0 !important; margin-right: 0 !important; }
+        }
+      `}</style>
       {header}
       <aside className="hideMob leftSidebarScroll" style={leftSidebarStyle}>{sidebarContent}</aside>
       {mobileMenuOpen && (<><div onClick={() => setMobileMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 120 }} /><div className="leftSidebarScroll" style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: "280px", background: sideBg, zIndex: 130, overflowY: "auto", overflowX: "hidden", overscrollBehaviorY: "contain", WebkitOverflowScrolling: "touch" }}>{sidebarContent}</div></>)}
@@ -697,7 +758,10 @@ export default function App() {
                     </button>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "20px", fontSize: "11px", color: middleMuted }}><span style={{ width: "6px", height: "6px", borderRadius: "999px", background: "#22C55E" }} />Lexi is online - Try an example below</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "16px", justifyContent: "center" }}>{quickPills.map(p => <button key={p} onClick={() => setChat(p)} style={{ fontSize: "11px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", border: `1px solid ${middleCardBorder}`, borderRadius: "999px", padding: "7px 14px", color: isSun ? "#374151" : "rgba(255,255,255,0.5)", cursor: "pointer" }}>{p}</button>)}</div>
+                  <div style={{ position: "relative", marginTop: "16px" }}>
+                    <div className="pillRowWrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>{quickPills.map(p => <button key={p} onClick={() => setChat(p)} style={{ fontSize: "11px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", border: `1px solid ${middleCardBorder}`, borderRadius: "999px", padding: "7px 14px", color: isSun ? "#374151" : "rgba(255,255,255,0.5)", cursor: "pointer", whiteSpace: "nowrap" }}>{p}</button>)}</div>
+                    <div className="pillFade" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "28px", pointerEvents: "none", background: `linear-gradient(to left, ${middleBg}, transparent)` }} />
+                  </div>
                 </div>
                 <div style={{ background: middleCard, border: `1px ${dragOver ? 'dashed' : 'solid'} ${dragOver ? '#7C3AED' : middleCardBorder}`, borderRadius: "16px", padding: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onClick={openHomePicker} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
                   <div style={{ width: "100%", maxWidth: "170px", aspectRatio: "3 / 4", background: "white", borderRadius: "10px 0 10px 10px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", padding: "12px", border: "1.5px solid #CBD5E1", boxShadow: isLight ? "0 8px 24px rgba(0,0,0,0.10)" : "0 12px 30px rgba(0,0,0,0.4)" }}>
@@ -746,7 +810,8 @@ export default function App() {
                 </div>
               ) : (
                 <>
-                  <div className="pdfGrid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "16px" }}>{pdfs.slice(0, 3).map(pdf => (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}><CarouselArrows id="filesCarousel" /></div>
+                  <div className="pdfGrid hscroll" id="filesCarousel" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "8px" }}>{pdfs.slice(0, 3).map(pdf => (
                     <div key={pdf.name} style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "16px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between" }}><div style={{ width: "32px", height: "36px", borderRadius: "6px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", borderTop: `3px solid ${pdf.color}`, display: "grid", placeItems: "center" }}><span style={{ fontSize: "9px", fontWeight: 700, color: pdf.color }}>{pdf.type}</span></div><span style={{ fontSize: "10px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", padding: "3px 8px", borderRadius: "999px", color: middleMuted }}>{pdf.pages}</span></div>
                       <div style={{ marginTop: "14px", fontSize: "12px", fontWeight: 600, color: middleText }}>{pdf.name}</div><div style={{ fontSize: "11px", color: middleMuted }}>{pdf.size} • {pdf.edited}</div>
@@ -779,7 +844,11 @@ export default function App() {
               <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#A78BFA" }}>SECTION 2 • TRY IN ONE CLICK</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>What can Lexi do for you?</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>Click a tool, Lexi opens it for you. No menus, no Acrobat.</div>
-              <div className="pdfGrid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>
+                <div style={{ flex: 1 }} />
+                <CarouselArrows id="toolsCarousel" />
+              </div>
+              <div className="pdfGrid hscroll" id="toolsCarousel" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "8px" }}>
                 {[
                   { id: 1, en: "Merge PDF", icon: "🔗", desc: "Combine many PDFs into one clean file.", tag: "FREE" },
                   { id: 2, en: "Split PDF", icon: "✂", desc: "Split by pages or extract what you need.", tag: "FREE" },
@@ -795,13 +864,14 @@ export default function App() {
                     <div style={{ fontSize: "11px", color: "#A78BFA", marginTop: "10px", fontWeight: 600 }}>Try with Lexi →</div>
                   </div>
                 ))}
+                {mobileAdCard}
               </div>
               <div style={{ marginTop: "16px", background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
                 <div><div style={{ fontSize: "13px", fontWeight: 600, color: middleText }}>Multi-file mode</div><div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px" }}>Drop 2+ PDFs, Lexi will auto-detect: merge, compare, or extract.</div></div>
                 <div style={{ display: "flex", gap: "8px" }}><div style={{ background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 18px", fontSize: "11px", color: middleMuted }}>PDF A</div><div style={{ background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 18px", fontSize: "11px", color: middleMuted }}>PDF B</div></div>
               </div>
             </div>
-            <div className="adBanner" style={{ margin: "48px 24px 0", background: "white", borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px", border: "1px solid #E5E7EB" }}>
+            <div className="adBanner" style={{ margin: "48px 24px 0", background: "white", borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px", border: "1px solid #E5E7EB" }} data-dup-ad>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 <span style={{ fontSize: "9px", color: "#6B7280", border: "1px solid #E5E7EB", padding: "2px 5px", borderRadius: "4px", width: "fit-content" }}>Ad</span>
                 <div style={{ fontSize: "15px", fontWeight: 700, color: "#111" }}>Merge, Split & Compress PDFs in 1 Click</div>
@@ -842,7 +912,8 @@ export default function App() {
               <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#F59E0B" }}>SECTION 4 • USE CASES</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>Made for the documents you work with every day</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>From everyday PDF tasks to more demanding document workflows.</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "20px" }} className="pdfGrid">
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}><CarouselArrows id="useCasesCarousel" /></div>
+              <div className="pdfGrid hscroll" id="useCasesCarousel" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "8px" }}>
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}><div style={{ fontSize: "22px", color: "#334155", filter: isSun ? "brightness(0.25) saturate(1.4)" : "none" }}>⚖</div><div style={{ fontSize: "13px", fontWeight: 700, color: middleText, marginTop: "10px" }}>Legal professionals</div><div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Summarize contracts, compare agreements, and review clauses that may need closer attention.</div></div>
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}><div style={{ fontSize: "22px" }}>🏢</div><div style={{ fontSize: "13px", fontWeight: 700, color: middleText, marginTop: "10px" }}>Businesses & teams</div><div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Organize invoices, extract document data, and handle batches of PDF files.</div></div>
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}><div style={{ fontSize: "22px" }}>🎓</div><div style={{ fontSize: "13px", fontWeight: 700, color: middleText, marginTop: "10px" }}>Students & researchers</div><div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Combine study materials, extract text, compress documents, and ask questions about PDFs.</div></div>
