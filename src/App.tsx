@@ -1,64 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-
-const pdfs = [
-  { name: "Contract-Tangier-2024.pdf", size: "2.4 MB", pages: "12 pages", type: "PDF", color: "#8B5CF6", edited: "edited 2h ago" },
-  { name: "Invoice_Client-A.xlsx", size: "1.1 MB", pages: "3 sheets", type: "XLSX", color: "#16A34A", edited: "edited Yesterday" },
-  { name: "CV_Kamal_Design.docx", size: "890 KB", pages: "2 pages", type: "DOCX", color: "#2563EB", edited: "edited 2 days ago" },
-  { name: "Portfolio_Final.pdf", size: "8.2 MB", pages: "24 pages", type: "PDF", color: "#EC4899", edited: "edited 3 days ago" },
-  { name: "Nda-Agreement.txt", size: "540 KB", pages: "120 lines", type: "TXT", color: "#64748B", edited: "edited 4 days ago" },
-  { name: "Presentation_Pitch.pdf", size: "4.7 MB", pages: "18 pages", type: "PDF", color: "#6366F1", edited: "edited 5 days ago" },
-];
-const quickPills = ["Merge Q3 invoices into one PDF", "Compress report under 2MB", "Split contract by pages", "Add signature to invoice", "Summarize 120-page spec"];
-const chatPlaceholders = [
-  "Ask Lexi to merge, split, compress or edit...",
-  "Merge Q3 invoices into one PDF...",
-  "Compress this report under 2MB...",
-  "Split this contract by pages...",
-  "Add my signature to this invoice...",
-  "Summarize this 120-page contract in 3 lines...",
-  "Translate this PDF to French, keep design...",
-];
-const testimonials = [
-  { name: "Yasmine T.", role: "Architect, Casablanca", text: "Lexi split my 200-page PDF in 10 seconds. Super fast.", avatar: "YT", via: "via Instagram" },
-  { name: "Mehdi L.", role: "Freelancer, Rabat", text: "Finally a PDF tool that understands plain chat. Merged contracts without opening Acrobat.", avatar: "ML", via: "via X" },
-  { name: "Sofia B.", role: "Lawyer, Tangier", text: "Compress + Sign in one chat. Saved me 2 hours every week.", avatar: "SB", via: "via Threads" },
-];
-const faqs = [
-  { q: "What is PDFlexi?", a: "PDFlexi is a PDF platform where you edit your PDFs by chatting with Lexi. Merge, split, compress, sign, summarize and translate - just by typing what you want in plain words." },
-  { q: "How does Lexi work?", a: "Drop your PDF, then ask Lexi in English, French, Darija or 40+ languages. Example: 'Merge these invoices' or 'Compress under 2MB'. Lexi does it for you in your browser." },
-  { q: "Is PDFlexi free?", a: "Yes. Free gives you 20 free tools without daily limits, plus +3 credits per day for advanced tools. Pro gives you +500 credits per month, 10 advanced AI tools, 100 MB upload and no ads for $12 / month (or $9 / month yearly). Free tools cost 0 credits, advanced tools cost credits." },
-  { q: "Is it really 100% private?", a: "Yes. All tools run 100% in your browser (LOCAL). Your files never leave your device, never uploaded to our servers, never stored." },
-  { q: "What languages does Lexi speak?", a: "English, French, Darija and 40+ languages. You can talk to Lexi in the language you are most comfortable with." },
-  { q: "Do I need to install anything?", a: "No. PDFlexi works directly in your browser on computer and mobile. No install, no Acrobat, no account needed to try." },
-];
-const freeTools = [
-  { id: 1, en: "Merge PDF", icon: "🔗" }, { id: 2, en: "Split PDF", icon: "✂️" }, { id: 3, en: "Compress PDF", icon: "🗜️" }, { id: 4, en: "PDF to Word", icon: "📄" }, { id: 5, en: "Word to PDF", icon: "📝" },
-  { id: 6, en: "PDF to Excel", icon: "📊" }, { id: 7, en: "Excel to PDF", icon: "📈" }, { id: 8, en: "PDF to JPG", icon: "🖼️" }, { id: 9, en: "JPG to PDF", icon: "🖌️" }, { id: 10, en: "Delete Pages", icon: "🗑️" },
-  { id: 11, en: "Rotate Pages", icon: "🔄" }, { id: 12, en: "Reorder Pages", icon: "↕️" }, { id: 13, en: "Watermark", icon: "💧" }, { id: 14, en: "Page Numbers", icon: "🔢" }, { id: 15, en: "Protect PDF", icon: "🛡️" },
-  { id: 16, en: "Unlock PDF", icon: "🔑" }, { id: 17, en: "Sign PDF", icon: "✍️" }, { id: 18, en: "Edit PDF", icon: "✏️" }, { id: 19, en: "Repair PDF", icon: "🛠️" }, { id: 20, en: "OCR - Extract Text", icon: "👁️" },
-];
-const proTools = [
-  { id: 21, en: "Chat with PDF", icon: "💬" }, { id: 22, en: "Summarize Contract in 3 Lines", icon: "⚡" }, { id: 23, en: "Detect Risky Clauses", icon: "⚠️" }, { id: 24, en: "Detect Forgery", icon: "🕵️" }, { id: 25, en: "Compare Two Contracts", icon: "⚖️" },
-  { id: 26, en: "Extract Invoices to Excel", icon: "🧾" }, { id: 27, en: "Fill Form by Chat", icon: "📋" }, { id: 28, en: "Translate PDF - Keep Design", icon: "🌍" }, { id: 29, en: "Smart CV from Job Offer", icon: "🚀" }, { id: 30, en: "Bulk Stamp 100 Docs", icon: "📦" },
-];
-const wsIconColor: Record<number,string> = {1:"#7C3AED",2:"#2563EB",3:"#D97706",4:"#2563EB",5:"#059669",6:"#059669",7:"#059669",8:"#DB2777",9:"#DB2777",10:"#DC2626",11:"#4F46E5",12:"#4F46E5",13:"#0891B2",14:"#7C3AED",15:"#D97706",16:"#D97706",17:"#7C3AED",18:"#2563EB",19:"#DC2626",20:"#4F46E5",21:"#7C3AED",22:"#D97706",23:"#DC2626",24:"#4F46E5",25:"#2563EB",26:"#059669",27:"#0891B2",28:"#059669",29:"#DB2777",30:"#D97706"};
-const recentFiles = [
-  { name: "Contract-Tangier-2024.pdf", time: "2h ago", color: "#8B5CF6" },
-  { name: "Invoice_Client-A.pdf", time: "Yesterday", color: "#06B6D4" },
-  { name: "CV_Kamal_Design.pdf", time: "2 days ago", color: "#F59E0B" },
-];
-
-const getFileInfo = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.endsWith(".rtf")) return { label: "RTF", color: "#0E7490", meta: "Text file • RTF" };
-  if (lower.endsWith(".txt")) return { label: "TXT", color: "#0E7490", meta: "Text file • TXT" };
-  if (lower.endsWith(".md")) return { label: "MD", color: "#0E7490", meta: "Text file • Markdown" };
-  if (lower.endsWith(".doc") || lower.endsWith(".docx")) return { label: "DOC", color: "#2563EB", meta: "Word document" };
-  if (lower.endsWith(".xls") || lower.endsWith(".xlsx")) return { label: "XLS", color: "#059669", meta: "Excel sheet" };
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) return { label: "IMG", color: "#7C3AED", meta: "Image file" };
-  if (lower.endsWith(".pdf")) return { label: "PDF", color: "#EF4444", meta: "PDF document" };
-  return { label: "FILE", color: "#6B7280", meta: "Document" };
-};
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+GlobalWorkerOptions.workerSrc = workerUrl;
+import { pdfs, quickPills, chatPlaceholders, faqs, freeTools, proTools, wsIconColor, recentFiles, getFileInfo } from "./data/showcase";
 
 const GUTTER_CSS = `
 /* EDIT 1 - Workspace dropdowns (Sign PDF / Advanced Tools) - desktop exactly as screenshot, mobile reformatted only */
@@ -108,50 +52,22 @@ function SharpPdfCanvas({ pdfFile, pageIndex, zoomFactor, opacity }: { pdfFile: 
     let cancelled = false;
     const draw = async () => {
       try {
-        const w: any = window as any;
-        if (!w.pdfjsLib) return;
         // MOBILE-ONLY: cache the file bytes ONCE — old code called arrayBuffer() per page (120 full copies = freeze).
         if (!(pdfFile as any).__cachedBuf) { (pdfFile as any).__cachedBuf = await pdfFile.arrayBuffer(); }
         const cachedBuf: ArrayBuffer = (pdfFile as any).__cachedBuf;
         const freshBuf = () => cachedBuf.slice(0);
-        // FALLBACK: very old browsers without SVGGraphics -> canvas at exact display size, never a blank page.
-        if (!w.pdfjsLib.SVGGraphics) {
-          const pdf2 = await w.pdfjsLib.getDocument({ data: freshBuf() }).promise;
-          const pg = await pdf2.getPage(pageIndex + 1);
-          const base = pg.getViewport({ scale: 1 });
-          const dpr = Math.min(3, window.devicePixelRatio || 1);
-          const vp = pg.getViewport({ scale: Math.max(0.4, Math.min(4, (580 * zoomFactor * dpr) / base.width)) });
-          const cv = document.createElement("canvas");
-          cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
-          cv.style.width = "100%"; cv.style.height = "auto"; cv.style.display = "block";
-          const cx = cv.getContext("2d"); if (cx) { await pg.render({ canvasContext: cx, viewport: vp }).promise; }
-          const box2 = drawRef.current; if (box2 && !cancelled) { box2.innerHTML = ""; box2.appendChild(cv); setHasDrawn(true); }
-          return;
-        }
-        const pdfjsLib = w.pdfjsLib;
-        const buf = freshBuf();
-        if (cancelled) return;
-        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        const page = await pdf.getPage(pageIndex + 1);
-        // Vector = scale-independent: render at scale 1, the browser sharpens it at ANY zoom.
-        const viewport = page.getViewport({ scale: 1 });
-        const opList = await page.getOperatorList();
-        if (cancelled) return;
-        const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
-        const svg: any = await svgGfx.getSVG(opList, viewport);
-        if (cancelled) return;
-        // Make the SVG fluid: it fills the page width, height follows aspect ratio.
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "auto");
-        svg.style.display = "block";
-        svg.style.borderRadius = "6px";
-        svg.style.border = "1px solid #F3F4F6";
-        svg.style.background = "white";
-        const box = drawRef.current;
-        if (!box) return;
-        box.innerHTML = "";
-        box.appendChild(svg);
-        setHasDrawn(true);
+        // FALLBACK: no SVGGraphics in pdf.js v5 -> canvas at exact display size, never a blank page.
+        const pdf2 = await getDocument({ data: freshBuf() }).promise;
+        const pg = await pdf2.getPage(pageIndex + 1);
+        const base = pg.getViewport({ scale: 1 });
+        const dpr = Math.min(3, window.devicePixelRatio || 1);
+        const vp = pg.getViewport({ scale: Math.max(0.4, Math.min(4, (580 * zoomFactor * dpr) / base.width)) });
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+        cv.style.width = "100%"; cv.style.height = "auto"; cv.style.display = "block";
+        const cx = cv.getContext("2d"); if (cx) { await pg.render({ canvas: cv, canvasContext: cx, viewport: vp }).promise; }
+        const box2 = drawRef.current; if (box2 && !cancelled) { box2.innerHTML = ""; box2.appendChild(cv); setHasDrawn(true); }
+        return;
       } catch (e) { /* keep previous frame — never blank the page */ }
     };
     const id = setTimeout(draw, 60);
@@ -189,7 +105,7 @@ export default function App() {
   const [docZoom, setDocZoom] = useState(30); // WORKSPACE ONLY - EDIT 1: first appearance = 30% (small), user zooms in if they want
   const [autoFit, setAutoFit] = useState(1); // desktop 1, phone/tablet <1 — scales page visually, never reflows text
   const [docLive, setDocLive] = useState(true);
-  const [docPage, setDocPage] = useState(1);
+  const [, setDocPage] = useState(1);
   const [goToPageInput, setGoToPageInput] = useState<string | null>(null);
   const [hiddenPages, setHiddenPages] = useState<number[]>([]);
   const [lockedPages, setLockedPages] = useState<number[]>([]); // WORKSPACE ONLY - EDIT 2: go-to-page input value (empty = show current page)
@@ -205,7 +121,7 @@ export default function App() {
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   };
-  const [docRotate, setDocRotate] = useState(0);
+  const [docRotate] = useState(0);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [docText, setDocText] = useState("");
   const [selectedPara, setSelectedPara] = useState<number | null>(null);
@@ -218,10 +134,7 @@ export default function App() {
   const [queueMenuOpen, setQueueMenuOpen] = useState<any>(null);
   const [wsNarrow, setWsNarrow] = useState(false); // workspace only: <900px => one panel at a time, document 100%
   const [wsMobileTab, setWsMobileTab] = useState<'doc' | 'lexi' | 'queue'>('doc'); // phone only: which panel is visible
-  const [manualEditText, setManualEditText] = useState("");
   const [panMode, setPanMode] = useState(false);
-  const [manualFind, setManualFind] = useState("");
-  const [manualReplace, setManualReplace] = useState("");
   const [overlays, setOverlays] = useState<{ id: number, page: number, text: string, bold: boolean, italic: boolean, underline: boolean, size: number, color: string, x: number, y: number, font: string, align: string, highlight: string }[]>([]);
   const [overlayText, setOverlayText] = useState("");
   const [overlayBold, setOverlayBold] = useState(false);
@@ -248,17 +161,7 @@ export default function App() {
     setPdfLoading(true); setPdfError("");
     const renderPdf = async () => {
       try {
-        const w: any = window as any;
-        if (!w.pdfjsLib) {
-          await new Promise<void>((resolve, reject) => {
-            const s = document.createElement("script");
-            s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-            s.onload = () => resolve(); s.onerror = () => reject(new Error("pdf.js failed to load"));
-            document.head.appendChild(s);
-          });
-        }
-        const pdfjsLib = (window as any).pdfjsLib;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        const pdfjsLib = { getDocument, GlobalWorkerOptions };
         const buf = await pdfFile.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
         // FIX-MOBILE-ONLY: phones NEVER use these JPEGs — they display SharpPdfCanvas (vector) instead.
@@ -282,7 +185,7 @@ export default function App() {
           canvas.width = viewport.width; canvas.height = viewport.height;
           const ctx = canvas.getContext("2d");
           if (!ctx) return "";
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          await page.render({ canvas, canvasContext: ctx, viewport }).promise;
           const url = canvas.toDataURL("image/jpeg", 0.85);
           canvas.width = 0; canvas.height = 0; // free canvas memory at once
           return url;
@@ -319,7 +222,6 @@ export default function App() {
     renderPdf();
     return () => { cancelled = true; };
   }, [pdfFile]);
-  const [docSearch, setDocSearch] = useState("");
   const docScrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = docScrollRef.current;
@@ -351,7 +253,7 @@ export default function App() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
   const [showAllPdfs, setShowAllPdfs] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // GUEST BY DEFAULT - Sign In + Get Started show. Auth system will set this to true after real login.
+  const [isLoggedIn] = useState(false); // GUEST BY DEFAULT - Sign In + Get Started show. Auth system will set this to true after real login.
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [plansView, setPlansView] = useState<'personal' | 'business'>('personal');
   const [teamsTokens, setTeamsTokens] = useState<number>(2500);
@@ -1130,7 +1032,7 @@ export default function App() {
                   <button onClick={() => { setOverlayDraft(null); setTextSelected(false); }} style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: "999px", padding: "6px 10px", fontSize: "11px", cursor: "pointer" }}>✕</button>
                 </div>
               )}
-              <div ref={docScrollRef} style={{ flex: 1, minHeight: 0, overflow: "auto", touchAction: (wsNarrow && panMode) ? "none" as any : (wsNarrow ? "pan-x pan-y" as any : "auto" as any), WebkitOverflowScrolling: "touch" as any, background: "#EDEEF2", padding: wsNarrow ? "12px 8px 20px" as any : "24px 16px 20px", boxSizing: "border-box", display: "block", textAlign: "center" as any, minWidth: 0, cursor: (panMode || docZoom > 100) ? "grab" : "default" }} onMouseDown={e => { if (!(panMode || docZoom > 100) || !docScrollRef.current) return; const el = docScrollRef.current; const sx = e.clientX, sy = e.clientY, sl = el.scrollLeft, st = el.scrollTop; const move = (ev: any) => { el.scrollLeft = sl - (ev.clientX - sx); el.scrollTop = st - (ev.clientY - sy); }; const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); }; document.addEventListener("mousemove", move); document.addEventListener("mouseup", up); }} onTouchStart={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; const tt = e.touches[0]; (el as any)._panX = tt.clientX; (el as any)._panY = tt.clientY; (el as any)._panL = el.scrollLeft; (el as any)._panT = el.scrollTop; }} onTouchMove={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; if (!(panMode || docZoom > 30)) return; const tt = e.touches[0]; if ((el as any)._panX === undefined) return; el.scrollLeft = (el as any)._panL - (tt.clientX - (el as any)._panX); el.scrollTop = (el as any)._panT - (tt.clientY - (el as any)._panY); }} onTouchEnd={e => { const el = docScrollRef.current; if (el) { (el as any)._panX = undefined; (el as any)._panY = undefined; } }}>
+              <div ref={docScrollRef} style={{ flex: 1, minHeight: 0, overflow: "auto", touchAction: (wsNarrow && panMode) ? "none" as any : (wsNarrow ? "pan-x pan-y" as any : "auto" as any), WebkitOverflowScrolling: "touch" as any, background: "#EDEEF2", padding: wsNarrow ? "12px 8px 20px" as any : "24px 16px 20px", boxSizing: "border-box", display: "block", textAlign: "center" as any, minWidth: 0, cursor: (panMode || docZoom > 100) ? "grab" : "default" }} onMouseDown={e => { if (!(panMode || docZoom > 100) || !docScrollRef.current) return; const el = docScrollRef.current; const sx = e.clientX, sy = e.clientY, sl = el.scrollLeft, st = el.scrollTop; const move = (ev: any) => { el.scrollLeft = sl - (ev.clientX - sx); el.scrollTop = st - (ev.clientY - sy); }; const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); }; document.addEventListener("mousemove", move); document.addEventListener("mouseup", up); }} onTouchStart={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; const tt = e.touches[0]; (el as any)._panX = tt.clientX; (el as any)._panY = tt.clientY; (el as any)._panL = el.scrollLeft; (el as any)._panT = el.scrollTop; }} onTouchMove={e => { if (!wsNarrow) return; const el = docScrollRef.current; if (!el) return; if (!(panMode || docZoom > 30)) return; const tt = e.touches[0]; if ((el as any)._panX === undefined) return; el.scrollLeft = (el as any)._panL - (tt.clientX - (el as any)._panX); el.scrollTop = (el as any)._panT - (tt.clientY - (el as any)._panY); }} onTouchEnd={() => { const el = docScrollRef.current; if (el) { (el as any)._panX = undefined; (el as any)._panY = undefined; } }}>
                 {/* Stacked pages — Canva style: all pages visible, scroll page after page. Click a page to select it and edit it manually if you want. Lexi in the left chat does the main edit. */}
                 {pdfLoading && (<div style={{ width: wsNarrow ? "100%" : "580px", minWidth: wsNarrow ? 0 as any : "580px", maxWidth: wsNarrow ? "580px" as any : "none" as any, flexShrink: 0, margin: "0 auto 44px", background: "white", display: "block", boxSizing: "border-box" as any, borderRadius: "10px", padding: "32px", textAlign: "center", fontSize: "13px", color: "#6B7280" }}>⏳ Rendering your real PDF — reading all pages…</div>)}
                 {pdfError && (<div style={{ width: wsNarrow ? "100%" : "580px", minWidth: wsNarrow ? 0 as any : "580px", maxWidth: wsNarrow ? "580px" as any : "none" as any, flexShrink: 0, margin: "0 auto", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: "10px", padding: "16px", textAlign: "center", fontSize: "12px", color: "#991B1B" }}>{pdfError}</div>)}
