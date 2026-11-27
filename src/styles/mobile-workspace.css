@@ -1,0 +1,12 @@
+          /* Workspace only — phones / tablets. Desktop unchanged. */
+          @media (max-width: 900px) {
+            .ws-main-row { flex-direction: column !important; overflow-y: auto !important; height: auto !important; min-height: 0 !important; }
+            .ws-left { width: 100% !important; height: auto !important; max-height: 42vh !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; order: 2; }
+            .ws-right-wrap { width: 100% !important; height: auto !important; flex-direction: column !important; padding: 10px !important; order: 1; overflow: visible !important; }
+            .ws-middle { width: 100% !important; min-height: 62vh !important; flex: none !important; }
+            .ws-queue { width: 100% !important; flex-shrink: 0 !important; order: 3; }
+          }
+          @media (max-width: 600px) {
+            .ws-left { max-height: 38vh !important; }
+            .ws-middle { min-height: 58vh !important; }
+          }
