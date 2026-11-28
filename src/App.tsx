@@ -7,6 +7,7 @@ import { HomePage } from "./features/home/HomePage";
 import { RightBar } from "./features/shell/RightBar";
 import { chatPlaceholders, getFileInfo } from "./data/showcase";
 import { createRouter } from "./app/router";
+import { isMergeTool, runMergeFromPicker } from "./features/home/mergeTool";
 import { getPalette } from "./ui/theme";
 
 // CODE-SPLIT: pdf.js (~1 MB worker) is only needed inside the workspace, so it
@@ -106,6 +107,7 @@ export default function App() {
   const handleToolClick = (tool: any) => {
     setActiveTool(tool.en); setMobileMenuOpen(false);
     if (tool.id >= 21) { alert(`${tool.en}\n\nThis is a PRO feature. Upgrade to Pro to unlock it.`); return; }
+    if (isMergeTool(tool)) { void runMergeFromPicker(); return; }
     goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, `I want to ${tool.en}`);
   };
   const handleUserClick = () => { setUserMenuOpen(!userMenuOpen); setShowSettingsPopup(false); setShowHelpPopup(false); };
