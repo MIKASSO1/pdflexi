@@ -23,7 +23,7 @@ export function WorkspaceQueuePanel({ ws }: { ws: WorkspaceState }) {
   } = ws;
 
   return (
-            <div className="ws-queue" style={{ width: wsNarrow ? "100%" : "210px", flexShrink: 0, flex: wsNarrow ? "1" as any : "none" as any, display: wsNarrow && wsMobileTab !== "queue" ? "none" as any : "flex" as any, height: wsNarrow ? "auto" as any : "auto" as any, borderRadius: wsNarrow ? "0px" as any : "14px", background: "#0F0F14", border: "1px solid rgba(255,255,255,0.08)", flexDirection: "column", overflow: "hidden", color: "white" }}>
+            <div className="ws-queue" style={{ width: wsNarrow ? "100%" : "210px", flex: wsNarrow ? "1" as any : "none" as any, display: wsNarrow && wsMobileTab !== "queue" ? "none" as any : "flex" as any, height: wsNarrow ? "auto" as any : "auto" as any, borderRadius: wsNarrow ? "0px" as any : "14px", background: "#0F0F14", border: "1px solid rgba(255,255,255,0.08)", flexDirection: "column", overflow: "hidden", color: "white" }}>
               <div style={{ padding: "12px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                 <div style={{ fontSize: "12px", fontWeight: 700 }}>📂 Add files • Queue</div>
                 <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", marginTop: "4px", lineHeight: 1.5 }}>Files wait here for their turn. Click one to move it to the editing area.</div>
