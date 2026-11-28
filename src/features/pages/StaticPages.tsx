@@ -1,6 +1,22 @@
 import React, { useState } from "react";
-import { GUTTER_CSS } from "../data/tools";
-import "../styles/mobile-workspace.css";
+import { GUTTER_CSS } from "../../data/tools";
+import "../../styles/mobile-workspace.css";
+
+// Single source of truth for prices. The plan cards and the FAQ both read it,
+// so adding or repricing a tier updates every mention at once.
+export const PRICING = {
+  pro: { monthly: 12, yearlyMonthly: 9 },
+  teams: { tiers: { 1000: 20, 2500: 45, 5000: 80, 10000: 150 } as Record<number, number> },
+  enterprise: { tiers: { 20000: 280, 50000: 600, 100000: 1000 } as Record<number, number> },
+  yearlyDiscount: 0.2,
+};
+
+const usd = (amount: number) => `$${amount.toLocaleString("en-US")}`;
+const perYear = (monthly: number) => Math.round(monthly * (1 - PRICING.yearlyDiscount));
+const tierExamples = (tiers: Record<number, number>) =>
+  Object.entries(tiers)
+    .map(([credits, monthly]) => `${Number(credits).toLocaleString("en-US")} credits is ${usd(monthly)} / month, or ${usd(perYear(monthly))} / month billed ${usd(perYear(monthly) * 12)} / year`)
+    .join("; ");
 
 export interface StaticPageProps {
   view: 'homepage' | 'workspace' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private';
@@ -218,20 +234,20 @@ export function PlansPage(props: StaticPageProps) {
   const [enterpriseTokens, setEnterpriseTokens] = useState<number>(20000);
   const [plansFaqOpen, setPlansFaqOpen] = useState<number | null>(0);
   const { outerBg, sideBg, header, sidebarContent, rightBar, userMenu, leftSidebarStyle, mobileMenuOpen, setMobileMenuOpen, navTo, setRightActive, setShowHelpPopup } = props;
-    const teamsMonthly = teamsTokens === 1000 ? 20 : teamsTokens === 2500 ? 45 : teamsTokens === 5000 ? 80 : 150;
+    const teamsMonthly = PRICING.teams.tiers[teamsTokens] ?? 0;
     const teamsYearlyMonthly = Math.round(teamsMonthly * 0.8);
     const teamsPrice = billingPeriod === 'monthly' ? teamsMonthly : teamsYearlyMonthly;
     const teamsYearlyTotal = teamsYearlyMonthly * 12;
     const teamsYearlySaving = teamsMonthly * 12 - teamsYearlyTotal;
-    const enterpriseMonthly = enterpriseTokens === 20000 ? 280 : enterpriseTokens === 50000 ? 600 : enterpriseTokens === 100000 ? 1000 : 0;
-    const enterpriseYearlyMonthly = Math.round(enterpriseMonthly * 0.8);
+    const enterpriseMonthly = PRICING.enterprise.tiers[enterpriseTokens] ?? 0;
+    const enterpriseYearlyMonthly = Math.round(enterpriseMonthly * (1 - PRICING.yearlyDiscount));
     const enterprisePrice = billingPeriod === 'monthly' ? enterpriseMonthly : enterpriseYearlyMonthly;
     const enterpriseYearlyTotal = enterpriseYearlyMonthly * 12;
     const enterpriseYearlySaving = enterpriseMonthly * 12 - enterpriseYearlyTotal;
     const plansFaqs = [
       { q: "How do credits work?", a: "Free tools (Merge, Split, Compress) cost 0 credits and have no daily limit. Advanced AI tools cost credits: most cost 1 credit per use, heavy tools like Detect Forgery and Compare Contracts cost 2. Free gives you +3 credits per day for advanced tools. Pro gives you +500 credits per month. Teams and Enterprise let you choose how many tokens to buy for the month in the dropdown. Your balance is always visible. When credits run out, you wait until the next cycle or upgrade — we never charge you silently." },
       { q: "What is the difference between Free and Pro?", a: "Free: 20 free tools without daily limits, +3 credits per day for advanced tools, 10 MB upload, 100% private — local. Pro: everything in Free, +500 credits per month, 10 advanced AI tools (Chat with PDF, Summarize, Translate, Detect Forgery, Compare Contracts), choose your work environment — Local (default) or Cloud with your explicit consent — 100 MB upload, no ads, priority support." },
-      { q: "What is the difference between monthly and yearly billing for Pro?", a: "Pro: Monthly is $12 per month. Yearly is $9 per month, billed $108 once per year — you save $36 per year (25%). Teams and Enterprise: Yearly is 20% off the monthly price, billed once per year. Example: Teams 2,500 credits is $45 / month monthly, or $36 / month billed $432 / year — you save $108. Enterprise 20,000 credits is $280 / month monthly, or $224 / month billed $2,688 / year — you save $672. You get the same credits in both, and you can cancel at any time." },
+      { q: "What is the difference between monthly and yearly billing for Pro?", a: `Pro: Monthly is ${usd(PRICING.pro.monthly)} per month. Yearly is ${usd(PRICING.pro.yearlyMonthly)} per month, billed ${usd(PRICING.pro.yearlyMonthly * 12)} once per year — you save ${usd(PRICING.pro.monthly * 12 - PRICING.pro.yearlyMonthly * 12)} per year. Teams and Enterprise: yearly billing is ${Math.round(PRICING.yearlyDiscount * 100)}% off the monthly price. Examples: Teams — ${tierExamples(PRICING.teams.tiers)}. Enterprise — ${tierExamples(PRICING.enterprise.tiers)}. You get the same credits in both, and you can cancel at any time.` },
       { q: "Can I change my plan later?", a: "Yes. You can upgrade from Free to Pro, change your token pack in Teams or Enterprise every month, switch between monthly and yearly for Pro, or downgrade back. Your files stay on your device, nothing is lost when you change plans." },
       { q: "Can I cancel?", a: "Yes, cancel anytime. You keep your paid plan until the end of your cycle, then you go back to Free (for Pro) or to Pro / Free (for Teams). No hidden fees, no lock-in. Pro has a 7-day money-back guarantee." },
       { q: "Do my files stay private on paid plans?", a: "Yes. Local is the default for all plans. Your files stay on your device. Cloud — a specialized external service — is only used if you give explicit prior consent for that task. Silence is not consent. If you refuse, no upload happens." },
@@ -290,7 +306,7 @@ export function PlansPage(props: StaticPageProps) {
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg,#7C3AED,#2563EB,#EC4899)" }} />
                   <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "120px", height: "120px", background: "radial-gradient(circle, rgba(124,58,237,0.18), transparent 70%)", pointerEvents: "none" }} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}><div style={{ display: "flex", alignItems: "center", gap: "10px" }}><span style={{ width: "36px", height: "36px", borderRadius: "999px", background: "linear-gradient(135deg,#7C3AED,#2563EB)", display: "grid", placeItems: "center", fontSize: "18px", color: "white" }}>⚡</span><span style={{ fontWeight: 700, fontSize: "16px", color: "#111" }}>Pro</span></div><span style={{ fontSize: "10px", fontWeight: 800, color: "white", background: "#7C3AED", padding: "4px 10px", borderRadius: "999px" }}>★ MOST POPULAR</span></div>
-                  <div style={{ marginTop: "14px", position: "relative" }}><span style={{ fontSize: "34px", fontWeight: 800, color: "#111" }}>{billingPeriod === 'monthly' ? "$12" : "$9"}</span><span style={{ fontSize: "12px", color: "#6B7280" }}> / month</span></div>
+                  <div style={{ marginTop: "14px", position: "relative" }}><span style={{ fontSize: "34px", fontWeight: 800, color: "#111" }}>{billingPeriod === 'monthly' ? usd(PRICING.pro.monthly) : usd(PRICING.pro.yearlyMonthly)}</span><span style={{ fontSize: "12px", color: "#6B7280" }}> / month</span></div>
                   <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "4px", position: "relative" }}>{billingPeriod === 'monthly' ? "Billed monthly • Cancel anytime" : "Billed yearly • $108 / year • Save $36 / year • Cancel anytime"}</div>
                   <div style={{ fontSize: "12px", color: "#374151", marginTop: "12px", lineHeight: 1.6, position: "relative" }}>For daily work. Everything free, without limits, plus advanced AI.</div>
                   <div style={{ marginTop: "14px", display: "inline-flex", alignItems: "center", gap: "6px", background: "linear-gradient(90deg,#7C3AED,#2563EB)", borderRadius: "999px", padding: "7px 12px", fontSize: "11px", fontWeight: 800, color: "white", alignSelf: "flex-start" }}>🪙 +500 credits / month</div>

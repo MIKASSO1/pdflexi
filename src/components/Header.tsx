@@ -26,7 +26,7 @@ interface HeaderProps {
 }
 
 export default function Header({ isSun, setTheme, headerBg, headerBorder, sideBg, sideBorder, sideText, sideMuted, isLoggedIn, view, handleUserClick, navTo, setUserMenuOpen, setMobileMenuOpen, circleOpen, setCircleOpen, rightActive, setRightActive, rightHover, setRightHover, setShowHelpPopup, setShowSettingsPopup }: HeaderProps) {
-  const headerText = isSun ? '#FFFFFF' : '#2563EB';
+  const headerText = isSun ? '#1D4ED8' : '#93C5FD';
   const headerSubText = isSun ? 'rgba(255,255,255,0.7)' : '#3B82F6';
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState<{ id: number; title: string; time: string; read: boolean }[]>([]);

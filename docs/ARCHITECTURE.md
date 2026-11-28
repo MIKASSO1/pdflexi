@@ -35,3 +35,35 @@ The UI marks an exported snapshot separately from an in-tab draft. Export failur
 Files, messages and edits remain in the current tab. Object URLs are revoked on removal/unmount; temporary export URLs expire. Locale preferences may be stored locally. No ads, analytics, AI requests, account credentials or payments exist in this frontend. The self-contained review artifact embeds its worker/assets; production uses the stricter header baseline.
 
 Labels, keyboard focus, native dialogs and reduced motion are included. Undo/Redo shortcuts operate on the focused editing surface, not while typing in a text field. The eraser is not a redaction tool. PDF text is rendered as canvas in this implementation; screen-reader/text-selection improvements, complex form/signature fidelity, very large documents and broader real-device testing remain release work.
+
+## Core contracts: order, ticket, execution
+
+Added as the first structural step, before any engine is wired to the UI.
+
+- `src/core/capabilities/contract.mjs` is the single place that knows what a capability is allowed to do: `buildMenu(registry)` binds every registry entry to exactly one engine operation, a parameter contract, an output kind, a tier and whether it needs AI. A capability without a binding is reported, never silently executable.
+- An `Order` is `capabilityId` + validated `params` + `provenance` (the user sentence that asked for it). Parameters are strict: unknown keys are rejected, so the planner cannot smuggle in operations the user did not request.
+- A `Ticket` is `{ schemaVersion, goal, steps }`; each step is an order with an `id` and `dependsOn`. Dependencies must reference earlier steps, so a plan is only accepted when it can actually run in order.
+- `runTicket` executes steps sequentially through injected engines: it stops at the first failure, treats a result without `verified: true` as a failure, reports `unavailable` when no engine is installed, and never reaches an engine with an invalid ticket. It also honours an `AbortSignal`.
+- Engines are registered in `src/core/engines/registry.ts` and receive only `{ capability, order, signal }`; they return `{ ok, verified, outputs, warnings }`. The `verified` flag is the honest-completion rule from the product brief.
+- Secrets (`protect`, `unlock` passwords) are marked `secret` in the contract and `redactOrder` masks them before an order is ever displayed or logged.
+- `src/core/providers/types.ts` defines `AuthProvider`, `StorageProvider`, `AiProvider` and `BillingProvider`/`BillingPartner`. No provider is implemented or called yet; subscriptions are expected through partner agreements, so billing is a partner reference plus a normalised event, not a hard-coded vendor.
+- The contract lives in `.mjs` with a `.d.mts` declaration, matching `src/lib/files.mjs`, so the same code is exercised by Node tests and bundled for the browser without a second source of truth.
+
+UI, engines and agents are still unconnected: the menu reports every capability as executable in contract terms, but no engine is registered yet, so any execution attempt ends as `unavailable` rather than pretending to succeed.
+
+## Folder boundaries
+
+The app is split so that growth happens inside one folder instead of across the tree:
+
+```
+src/
+  app/        routing and, later, route guards
+  core/       capabilities contract, engine registry, provider interfaces (no React)
+  features/   one folder per product area (pages, workspace, and later auth, agents)
+  components/ shared UI that several features use (header, sidebar, dialogs)
+  lib/        shared helpers and document math
+  ui/         palette and design primitives
+  data/       static content: capabilities, copy, showcase
+```
+
+Moved so far: `features/pages/StaticPages.tsx`, `features/workspace/Workspace.tsx` and its canvas, and the colour palette now lives in `ui/theme.ts` so light/dark is not recomputed inside `App.tsx`. Each remaining component moves when its feature is touched, so the build stays green after every step.

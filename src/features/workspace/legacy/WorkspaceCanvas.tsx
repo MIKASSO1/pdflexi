@@ -25,23 +25,23 @@ import {
   X,
 } from "lucide-react";
 import type { KeyboardEvent } from "react";
-import type { Attachment } from "../lib/types";
-import type { Copy } from "../data/copy";
-import type { Locale } from "../data/languages";
-import { studioCopy } from "../data/studio";
-import { editorCopy } from "../data/editor";
+import type { Attachment } from "../../../lib/types";
+import type { Copy } from "../../../data/copy";
+import type { Locale } from "../../../data/languages";
+import { studioCopy } from "../../../data/studio";
+import { editorCopy } from "../../../data/editor";
 import {
   annotationBounds,
   defaultMarkStyle,
   exportAnnotatedPdf,
   moveAnnotation,
-} from "../lib/annotations";
+} from "./annotations";
 import type {
   Annotation,
   EditController,
   EditTool,
   MarkStyle,
-} from "../lib/annotations";
+} from "./annotations";
 import { PdfViewport } from "./PdfViewport";
 import type { ZoomValue } from "./PdfViewport";
 const emptyEditor: EditController = {

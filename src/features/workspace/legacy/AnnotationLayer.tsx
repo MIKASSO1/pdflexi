@@ -5,14 +5,14 @@ import {
   drawAnnotation,
   hitAnnotation,
   moveAnnotation,
-} from "../lib/annotations";
+} from "./annotations";
 import type {
   Annotation,
   EditController,
   EditTool,
   MarkStyle,
   Point,
-} from "../lib/annotations";
+} from "./annotations";
 export type EditingProps = {
   editor: EditController;
   tool: EditTool;

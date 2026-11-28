@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import type { PDFPageProxy } from "pdfjs-dist";
-import { openPdf } from "../lib/pdfRuntime";
+import { openPdf } from "./pdfRuntime";
 export default function PdfThumbnail({
   file,
   label,

@@ -9,11 +9,11 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import type { Attachment } from "../lib/types";
-import type { Locale } from "../data/languages";
-import type { Copy } from "../data/copy";
-import { startCopy } from "../data/editor";
-import { formatBytes } from "../lib/files.mjs";
+import type { Attachment } from "../../../lib/types";
+import type { Locale } from "../../../data/languages";
+import type { Copy } from "../../../data/copy";
+import { startCopy } from "../../../data/editor";
+import { formatBytes } from "../../../lib/files.mjs";
 
 const PdfThumbnail = lazy(() => import("./PdfThumbnail"));
 

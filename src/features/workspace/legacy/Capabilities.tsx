@@ -6,11 +6,11 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import registry from "../data/capabilities.json";
-import type { Locale } from "../data/languages";
-import type { Copy } from "../data/copy";
-import type { Capability } from "../lib/types";
-import { CapabilityIcon } from "./Icon";
+import registry from "../../../data/capabilities.json";
+import type { Locale } from "../../../data/languages";
+import type { Copy } from "../../../data/copy";
+import type { Capability } from "../../../lib/types";
+import { CapabilityIcon } from "../../../components/Icon";
 export function Capabilities({
   locale,
   t,

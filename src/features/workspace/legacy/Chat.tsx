@@ -1,5 +1,5 @@
-import { studioCopy } from "../data/studio";
-import type { Locale } from "../data/languages";
+import { studioCopy } from "../../../data/studio";
+import type { Locale } from "../../../data/languages";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   ArrowUp,
@@ -12,8 +12,8 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import type { Copy } from "../data/copy";
-import type { Attachment, Message } from "../lib/types";
+import type { Copy } from "../../../data/copy";
+import type { Attachment, Message } from "../../../lib/types";
 
 type Props = {
   t: Copy;

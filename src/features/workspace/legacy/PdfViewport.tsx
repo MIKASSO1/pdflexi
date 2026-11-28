@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
-import { openPdf } from "../lib/pdfRuntime";
+import { openPdf } from "./pdfRuntime";
 import { AnnotationLayer } from "./AnnotationLayer";
 import type { EditingProps } from "./AnnotationLayer";
 export type ZoomValue = "page" | "width" | number;

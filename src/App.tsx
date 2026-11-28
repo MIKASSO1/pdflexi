@@ -1,12 +1,17 @@
 import "./styles/mobile-homepage.css";
-import React, { useState, useRef, useEffect } from "react";
-import Workspace from "./components/Workspace";
+import React, { useState, useRef, useEffect, Suspense, lazy } from "react";
 import Header, { UserMenu } from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import CarouselArrows from "./components/CarouselArrows";
-import { WhyPrivatePage, LegalPage, HowPage, PlansPage } from "./components/StaticPages";
+import { WhyPrivatePage, LegalPage, HowPage, PlansPage } from "./features/pages/StaticPages";
 import { GUTTER_CSS } from "./data/tools";
 import { pdfs, quickPills, chatPlaceholders, faqs, getFileInfo } from "./data/showcase";
+import { createRouter } from "./app/router";
+import { getPalette } from "./ui/theme";
+
+// CODE-SPLIT: pdf.js (~1 MB worker) is only needed inside the workspace, so it
+// is fetched on first navigation there instead of at first paint.
+const Workspace = lazy(() => import("./features/workspace/Workspace"));
 
 
 // FIX-V12-SHARP: mobile-only VECTOR page. The blur was NEVER about pixels:
@@ -15,10 +20,16 @@ import { pdfs, quickPills, chatPlaceholders, faqs, getFileInfo } from "./data/sh
 // the letters fresh at the exact display size, so at 50% with the WHOLE page visible,
 // the lines stay sharp and comfortable for the eye, never blurry.
 export default function App() {
-  const [view, setView] = useState<'homepage' | 'workspace' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private'>('homepage');
+  // ROUTER: the view lives in the URL (#/how, #/workspace, ...), so back/forward
+  // and deep links work. `setView` below is now a thin alias over the router.
+  const routerRef = useRef<ReturnType<typeof createRouter> | null>(null);
+  if (routerRef.current === null) routerRef.current = createRouter();
+  const router = routerRef.current;
+  const [view, setView] = useState<'homepage' | 'workspace' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private'>(() => (router.allowed(router.current()) ? router.current() : 'homepage'));
+  useEffect(() => router.subscribe((next) => setView(next)), [router]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [chat, setChat] = useState("");
-  const wsRef = useRef<import("./components/Workspace").WorkspaceHandle>(null);
+  const wsRef = useRef<import("./features/workspace/Workspace").WorkspaceHandle>(null);
   const [pendingFile, setPendingFile] = useState<any | null>(null);
   const [pendingMsg, setPendingMsg] = useState<string | undefined>(undefined);
   const [fileName, setFileName] = useState("No file selected yet");
@@ -53,23 +64,10 @@ export default function App() {
   const chatFileRef = useRef<HTMLInputElement>(null);
 
   const isLight = theme === 'light';
-  const isSun = !isLight;
-  const headerBg = isLight ? '#FFFFFF' : '#0F0F14';
-  const outerBg = headerBg;
-  const headerBorder = isLight ? '#E5E7EB' : 'rgba(255,255,255,0.06)';
-  const sideBg = isSun ? '#FFFFFF' : '#0B0B12';
-  const sideBorder = isSun ? '#E5E7EB' : 'rgba(255,255,255,0.06)';
-  const sideText = isSun ? '#111111' : 'white';
-  const sideMuted = isSun ? '#374151' : 'rgba(255,255,255,0.55)';
-  const sideFaint = isSun ? '#4B5563' : 'rgba(255,255,255,0.25)';
-  const sideCard = isSun ? '#F3F4F6' : '#1A1A24';
-  const sideCardBorder = isSun ? '#E5E7EB' : 'rgba(255,255,255,0.06)';
-  const middleBg = isSun ? '#FFFFFF' : '#0F0F14';
-  const middleText = isSun ? '#111111' : 'white';
-  const middleMuted = isSun ? '#374151' : 'rgba(255,255,255,0.6)';
-  const middleCard = isSun ? '#E9EBEE' : '#18181E';
-  const middleCardBorder = isSun ? '#E5E7EB' : 'rgba(255,255,255,0.06)';
-  const middleFaint = isSun ? '#4B5563' : 'rgba(255,255,255,0.25)';
+  const {
+    isSun, headerBg, outerBg, headerBorder, sideBg, sideBorder, sideText, sideMuted, sideFaint,
+    sideCard, sideCardBorder, middleBg, middleText, middleMuted, middleCard, middleCardBorder, middleFaint,
+  } = getPalette(theme === 'light' ? 'light' : 'dark');
   const hasFiles = fileName !== "No file selected yet";
   const fileInfo = getFileInfo(fileName);
 
@@ -86,7 +84,7 @@ export default function App() {
   const goWorkspace = (name: string, msg?: string) => {
     setFileName(name);
     setPendingMsg(msg);
-    setView('workspace'); setMobileMenuOpen(false);
+    router.navigate('workspace'); setMobileMenuOpen(false);
   };
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) { if (f.name.toLowerCase().match(/\.(pdf|txt|rtf|md|json|csv)$/)) { loadFileForEdit(f); } else { alert("Unsupported file type. Try PDF, TXT, RTF, MD, JSON or CSV."); } } };
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => { setHomePickerLoading(false); const f = e.target.files?.[0]; if (f) { if (f.name.toLowerCase().match(/\.(pdf|txt|rtf|md|json|csv)$/)) { loadFileForEdit(f); } else { alert("Unsupported file type. Try PDF, TXT, RTF, MD, JSON or CSV."); } } };
@@ -111,7 +109,7 @@ export default function App() {
     goWorkspace(fileName === "No file selected yet" ? "My PDF.pdf" : fileName, `I want to ${tool.en}`);
   };
   const handleUserClick = () => { setUserMenuOpen(!userMenuOpen); setShowSettingsPopup(false); setShowHelpPopup(false); };
-  const navTo = (v: 'homepage' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private') => { setView(v); setMobileMenuOpen(false); setUserMenuOpen(false); setShowSettingsPopup(false); setShowHelpPopup(false); window.scrollTo(0,0); };
+  const navTo = (v: 'homepage' | 'how' | 'plans' | 'privacy' | 'terms' | 'why-private') => { router.navigate(v); setMobileMenuOpen(false); setUserMenuOpen(false); setShowSettingsPopup(false); setShowHelpPopup(false); window.scrollTo(0,0); };
 
   useEffect(() => {
     const current = chatPlaceholders[loopNum % chatPlaceholders.length];
@@ -172,10 +170,10 @@ export default function App() {
     <aside className="rightBar" style={rightSidebarStyle}>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center", paddingTop: "8px" }}>
         <div style={rightItemWrap} onMouseEnter={() => setRightHover(isSun ? 'moon' : 'sun')} onMouseLeave={() => setRightHover(null)}>
-          <button onClick={() => { if (isSun) { setTheme('light'); setRightActive('moon'); } else { setTheme('dark'); setRightActive('sun'); } }} title={isSun ? "Moon mode" : "Sun mode"} style={rightIconStyle(isSun ? 'moon' : 'sun', isSun ? "#6366F1" : "#F59E0B", true)}>
+          <button onClick={() => { if (isSun) { setTheme('light'); setRightActive('moon'); } else { setTheme('dark'); setRightActive('sun'); } }} title={isSun ? "Moon mode" : "Sun mode"} style={rightIconStyle(isSun ? 'moon' : 'sun', isSun ? "#4F46E5" : "#F59E0B", true)}>
             {isSun ? (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>) : (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>)}
           </button>
-          <span style={rightLabelStyle(isSun ? 'moon' : 'sun', isSun ? "#6366F1" : "#F59E0B", true)}>{isSun ? "Moon" : "Sun"}</span>
+          <span style={rightLabelStyle(isSun ? 'moon' : 'sun', isSun ? "#4F46E5" : "#F59E0B", true)}>{isSun ? "Moon" : "Sun"}</span>
         </div>
         <div style={{ width: "20px", height: "1px", background: "#BFDBFE", margin: "4px 0" }} />
         <div style={rightItemWrap} onMouseEnter={() => setRightHover('private')} onMouseLeave={() => setRightHover(null)}>
@@ -285,7 +283,9 @@ export default function App() {
 
   if (view === 'workspace') {
     return (
-      <Workspace ref={wsRef} activeTool={activeTool} fileName={fileName} setFileName={setFileName} setView={setView as (v: string) => void} initialFile={pendingFile} initialMsg={pendingMsg} onConsumed={() => setPendingMsg(undefined)} />
+      <Suspense fallback={null}>
+        <Workspace ref={wsRef} activeTool={activeTool} fileName={fileName} setFileName={setFileName} setView={setView as (v: string) => void} initialFile={pendingFile} initialMsg={pendingMsg} onConsumed={() => setPendingMsg(undefined)} />
+      </Suspense>
     );
   }
 
@@ -323,14 +323,14 @@ export default function App() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "20px", fontSize: "11px", color: middleMuted }}><span style={{ width: "6px", height: "6px", borderRadius: "999px", background: "#22C55E" }} />Lexi is online - Try an example below</div>
                   <div style={{ position: "relative", marginTop: "16px" }}>
-                    <div className="pillRowWrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>{quickPills.map(p => <button key={p} onClick={() => setChat(p)} style={{ fontSize: "11px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", border: `1px solid ${middleCardBorder}`, borderRadius: "999px", padding: "7px 14px", color: isSun ? "#374151" : "rgba(255,255,255,0.5)", cursor: "pointer", whiteSpace: "nowrap" }}>{p}</button>)}</div>
+                    <div className="pillRowWrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>{quickPills.map(p => <button key={p} onClick={() => setChat(p)} style={{ fontSize: "11px", background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", border: `1px solid ${middleCardBorder}`, borderRadius: "999px", padding: "7px 14px", color: isSun ? "#374151" : "rgba(255,255,255,0.75)", cursor: "pointer", whiteSpace: "normal", textAlign: "left" }}>{p}</button>)}</div>
                     <div className="pillFade" style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "28px", pointerEvents: "none", background: `linear-gradient(to left, ${middleBg}, transparent)` }} />
                   </div>
                 </div>
                 <div style={{ background: middleCard, border: `1px ${dragOver ? 'dashed' : 'solid'} ${dragOver ? '#7C3AED' : middleCardBorder}`, borderRadius: "16px", padding: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer" }} onClick={openHomePicker} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
                   <div style={{ width: "100%", maxWidth: "170px", aspectRatio: "3 / 4", background: "white", borderRadius: "10px 0 10px 10px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", padding: "12px", border: "1.5px solid #CBD5E1", boxShadow: isLight ? "0 8px 24px rgba(0,0,0,0.10)" : "0 12px 30px rgba(0,0,0,0.4)" }}>
                     <div style={{ position: "absolute", top: 0, right: 0, width: "32px", height: "32px", background: `linear-gradient(225deg, ${middleCard} 0%, ${middleCard} 50%, #FFFFFF 50%, #FFFFFF 100%)`, borderBottomLeftRadius: "6px", boxShadow: "-1px 1px 2px rgba(0,0,0,0.08)", zIndex: 2, pointerEvents: "none" }} />
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "34px" }}><span style={{ fontSize: "8px", fontWeight: 800, background: fileInfo.color, color: "white", padding: "3px 6px", borderRadius: "4px" }}>{fileInfo.label}</span><span style={{ fontSize: "8px", color: "#E5E7EB", fontWeight: 600 }}>{fileInfo.meta}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "34px" }}><span style={{ fontSize: "8px", fontWeight: 800, background: fileInfo.color, color: "white", padding: "3px 6px", borderRadius: "4px" }}>{fileInfo.label}</span><span style={{ fontSize: "9px", color: "#4B5563", fontWeight: 700 }}>{fileInfo.meta}</span></div>
                     {hasFiles ? (
                       <div style={{ marginTop: "10px", flex: 1 }}>
                         <div style={{ fontSize: "11px", fontWeight: 700, color: "#111", lineHeight: 1.3, wordBreak: "break-word" }}>{fileName}</div>
@@ -346,7 +346,7 @@ export default function App() {
                       </div>
                     ) : (
                       <div style={{ marginTop: "10px", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-                        {homePickerLoading ? (<div style={{ width: "52px", height: "52px", borderRadius: "999px", background: "#F5F3FF", display: "grid", placeItems: "center" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" /><path d="M12 2a10 10 0 0 1 10 10" stroke="#7C3AED" strokeWidth="3" strokeLinecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg></div>) : (<div style={{ width: "52px", height: "52px", borderRadius: "999px", background: "#F3F4F6", display: "grid", placeItems: "center", fontSize: "22px" }}>📄</div>)}
+                        {homePickerLoading ? (<div style={{ width: "52px", height: "52px", borderRadius: "999px", background: "#F5F3FF", display: "grid", placeItems: "center" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" /><path d="M12 2a10 10 0 0 1 10 10" stroke="#7C3AED" strokeWidth="3" strokeLinecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg></div>) : (<div style={{ width: "52px", height: "52px", borderRadius: "999px", background: "#F3F4F6", display: "grid", placeItems: "center", fontSize: "22px", color: "#4B5563" }}>📄</div>)}
                         <div style={{ fontSize: "12px", fontWeight: 700, color: "#111", marginTop: "10px" }}>{homePickerLoading ? "Opening..." : "Drop a file or"}</div>
                         <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "4px", lineHeight: 1.4 }}>{homePickerLoading ? "File picker is opening..." : (<>Click + to choose<br />PDF, Word, Excel</>)}</div>
                         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px", alignItems: "center", width: "100%" }}><div style={{ height: "6px", background: "#CBD5E1", borderRadius: "999px", width: "70%" }} /><div style={{ height: "6px", background: "#CBD5E1", borderRadius: "999px", width: "70%" }} /><div style={{ height: "6px", background: "#CBD5E1", borderRadius: "999px", width: "50%" }} /></div>
@@ -364,10 +364,10 @@ export default function App() {
             </div>
 
             <div style={{ marginTop: "48px", padding: "64px 24px 0", borderTop: `1px solid ${middleCardBorder}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: "10px", letterSpacing: "0.1em", color: middleFaint }}>MY FILES</div><div style={{ display: "flex", gap: "12px", alignItems: "center" }}><div style={{ fontSize: "10px", color: "#22C55E" }}>{hasFiles ? "● 3 ACTIVE • 12 TOTAL" : "● NO FILES YET"}</div><button onClick={() => setShowAllPdfs(!showAllPdfs)} style={{ fontSize: "11px", background: "transparent", border: "none", color: "#A78BFA", cursor: "pointer", fontWeight: 600 }}>{showAllPdfs ? "Show less ←" : "View all →"}</button></div></div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: "10px", letterSpacing: "0.1em", color: middleFaint }}>MY FILES</div><div style={{ display: "flex", gap: "12px", alignItems: "center" }}><div style={{ fontSize: "10px", color: isSun ? "#15803D" : "#4ADE80" }}>{hasFiles ? "● 3 ACTIVE • 12 TOTAL" : "● NO FILES YET"}</div><button onClick={() => setShowAllPdfs(!showAllPdfs)} style={{ fontSize: "11px", background: "transparent", border: "none", color: "#7C3AED", cursor: "pointer", fontWeight: 600 }}>{showAllPdfs ? "Show less ←" : "View all →"}</button></div></div>
               {!hasFiles ? (
                 <div style={{ marginTop: "16px", background: middleCard, border: isSun ? "1px dashed #E5E7EB" : "1px dashed rgba(255,255,255,0.12)", borderRadius: "16px", padding: "24px", textAlign: "center" }}>
-                  <div style={{ fontSize: "28px" }}>📄</div>
+                  <div style={{ fontSize: "28px", color: middleMuted }}>📄</div>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: middleText, marginTop: "10px" }}>No files yet</div>
                   <div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px" }}>Drop a file above to start, or try an example file.</div>
                   <button onClick={() => goWorkspace("Contract-Tangier-2024.pdf")} style={{ marginTop: "14px", background: isSun ? "#111" : "white", color: isSun ? "white" : "black", borderRadius: "999px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer" }}>Try an example file →</button>
@@ -405,7 +405,7 @@ export default function App() {
             </div>
 
             <div style={{ marginTop: "48px", padding: "64px 24px 0", borderTop: `1px solid ${middleCardBorder}` }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#A78BFA" }}>SECTION 2 • TRY IN ONE CLICK</div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#7C3AED" }}>SECTION 2 • TRY IN ONE CLICK</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>What can Lexi do for you?</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>Click a tool, Lexi opens it for you. No menus, no Acrobat.</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>
@@ -422,16 +422,16 @@ export default function App() {
                   { id: 28, en: "Translate PDF - Keep Design", icon: "🌍", desc: "Translate and keep the original layout.", tag: "PRO" },
                 ].map(t => (
                   <div key={t.id} onClick={() => handleToolClick(t)} style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "16px", cursor: "pointer" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px", color: (t.id === 2 || t.id === 3) ? "#334155" : undefined, filter: isSun && (t.id === 2 || t.id === 3) ? "brightness(0.25) saturate(1.4)" : "none" }}>{t.icon}</span><span style={{ fontSize: "9px", background: t.tag === "PRO" ? "#7C3AED" : "rgba(34,197,94,0.15)", color: t.tag === "PRO" ? "white" : "#22C55E", padding: "3px 8px", borderRadius: "999px", fontWeight: 700 }}>{t.tag}</span></div>
-                    <div style={{ fontSize: "13px", fontWeight: 600, color: middleText, marginTop: "12px" }}>{t.en}</div>
-                    <div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px", lineHeight: 1.5 }}>{t.desc}</div>
-                    <div style={{ fontSize: "11px", color: "#A78BFA", marginTop: "10px", fontWeight: 600 }}>Try with Lexi →</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>{t.icon}</span><span style={{ fontSize: "9px", color: t.tag === "PRO" ? "white" : isSun ? "#15803D" : "#4ADE80", padding: "3px 8px", borderRadius: "999px", fontWeight: 700, background: t.tag === "PRO" ? "#7C3AED" : isSun ? "#DCFCE7" : "rgba(34,197,94,0.15)" }}>{t.tag}</span></div>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: middleText, marginTop: "12px", overflowWrap: "anywhere" }}>{t.en}</div>
+                    <div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px", lineHeight: 1.5, overflowWrap: "anywhere" }}>{t.desc}</div>
+                    <div style={{ fontSize: "11px", color: "#7C3AED", marginTop: "10px", fontWeight: 600 }}>Try with Lexi →</div>
                   </div>
                 ))}
                 {mobileAdCard}
               </div>
-              <div style={{ marginTop: "16px", background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                <div><div style={{ fontSize: "13px", fontWeight: 600, color: middleText }}>Multi-file mode</div><div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px" }}>Drop 2+ PDFs, Lexi will auto-detect: merge, compare, or extract.</div></div>
+                  <div style={{ marginTop: "16px", background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", minWidth: 0 }}>
+                <div style={{ minWidth: 0 }}><div style={{ fontSize: "13px", fontWeight: 600, color: middleText }}>Multi-file mode</div><div style={{ fontSize: "11px", color: middleMuted, marginTop: "4px", overflowWrap: "anywhere" }}>Drop 2+ PDFs, Lexi will auto-detect: merge, compare, or extract.</div></div>
                 <div style={{ display: "flex", gap: "8px" }}><div style={{ background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 18px", fontSize: "11px", color: middleMuted }}>PDF A</div><div style={{ background: isSun ? "#FFFFFF" : "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "10px 18px", fontSize: "11px", color: middleMuted }}>PDF B</div></div>
               </div>
             </div>
@@ -449,22 +449,22 @@ export default function App() {
             </div>
             
             <div style={{ marginTop: "48px", padding: "64px 24px 0", borderTop: `1px solid ${middleCardBorder}` }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#60A5FA" }}>SECTION 3 • HOW IT WORKS</div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#2563EB" }}>SECTION 3 • HOW IT WORKS</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>Your PDF workflow, simplified</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>Three simple steps. No complicated software or menus.</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "16px", marginTop: "20px" }} className="pdfGrid">
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>📁</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#A78BFA" }}>01</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>📁</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}>01</span></div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: middleText, marginTop: "12px" }}>Add your files</div>
                   <div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Choose a PDF from your device or drop it into the workspace.</div>
                 </div>
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>💬</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#A78BFA" }}>02</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>💬</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}>02</span></div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: middleText, marginTop: "12px" }}>Tell Lexi what you need</div>
                   <div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Describe the task in everyday language, or choose one of the available tools.</div>
                 </div>
                 <div style={{ background: middleCard, border: `1px solid ${middleCardBorder}`, boxShadow: isSun ? "0 1px 3px rgba(0,0,0,0.06)" : "none", borderRadius: "16px", padding: "20px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>✨</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#A78BFA" }}>03</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: "22px" }}>✨</span><span style={{ fontSize: "11px", fontWeight: 700, color: "#7C3AED" }}>03</span></div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: middleText, marginTop: "12px" }}>Review your result</div>
                   <div style={{ fontSize: "12px", color: middleMuted, marginTop: "6px", lineHeight: 1.6 }}>Check the result and download your processed document.</div>
                 </div>
@@ -473,7 +473,7 @@ export default function App() {
             </div>
 
             <div style={{ marginTop: "48px", padding: "64px 24px 0", borderTop: `1px solid ${middleCardBorder}` }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#F59E0B" }}>SECTION 4 • USE CASES</div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#B45309" }}>SECTION 4 • USE CASES</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>Made for the documents you work with every day</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>From everyday PDF tasks to more demanding document workflows.</div>
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}><CarouselArrows id="useCasesCarousel" middleCardBorder={middleCardBorder} middleCard={middleCard} middleText={middleText} /></div>
@@ -488,7 +488,7 @@ export default function App() {
             </div>
 
             <div style={{ marginTop: "48px", padding: "64px 24px 0", borderTop: `1px solid ${middleCardBorder}` }}>
-              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#F59E0B" }}>SECTION 5 • WATCH LEXI IN ACTION</div>
+              <div style={{ fontSize: "10px", letterSpacing: "0.12em", color: "#B45309" }}>SECTION 5 • WATCH LEXI IN ACTION</div>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: middleText, marginTop: "8px" }}>See how Lexi changes the way you work with PDFs</h2>
               <div style={{ fontSize: "13px", color: middleMuted, marginTop: "6px" }}>First, hear a real experience. Then, see how simple it is to use.</div>
               <div style={{ marginTop: "20px", borderRadius: "20px", overflow: "hidden", border: `1px solid ${middleCardBorder}`, background: "linear-gradient(135deg,#1E1B4B,#7C3AED,#EC4899)", position: "relative", cursor: "pointer" }}>

@@ -1,9 +1,9 @@
-import type { EditController } from "../lib/annotations";
+import type { EditController } from "./annotations";
 import { lazy, Suspense } from "react";
 const WorkspaceCanvas = lazy(() =>
   import("./WorkspaceCanvas").then((m) => ({ default: m.WorkspaceCanvas })),
 );
-import type { Locale } from "../data/languages";
+import type { Locale } from "../../../data/languages";
 import { useState } from "react";
 import {
   ArrowUpRight,
@@ -18,9 +18,9 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import type { Attachment } from "../lib/types";
-import type { Copy } from "../data/copy";
-import { formatBytes } from "../lib/files.mjs";
+import type { Attachment } from "../../../lib/types";
+import type { Copy } from "../../../data/copy";
+import { formatBytes } from "../../../lib/files.mjs";
 export function DocumentCanvas({
   t,
   files,

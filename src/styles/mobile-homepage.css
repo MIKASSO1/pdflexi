@@ -5,13 +5,13 @@
         @media (max-width: 600px) {
           .hscroll { display: flex !important; flex-direction: row !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; grid-template-columns: none !important; }
           .hscroll::-webkit-scrollbar { display: none; }
-          .hscroll > div { flex: 0 0 85%; scroll-snap-align: start; }
+          .hscroll > div { flex: 0 0 100%; max-width: 100%; scroll-snap-align: start; min-width: 0; overflow-wrap: anywhere; padding: 16px; }
           .carouselArrows { display: flex; }
           .mobileOnlyAd { display: flex; }
           [data-dup-ad] { display: none !important; }
-          .pillRowWrap { flex-wrap: nowrap !important; overflow-x: auto; justify-content: flex-start !important; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+          .pillRowWrap { flex-wrap: wrap !important; overflow-x: visible; justify-content: center !important; }
           .pillRowWrap::-webkit-scrollbar { display: none; }
-          .pillRowWrap > button { flex-shrink: 0; }
+          .pillRowWrap > button { max-width: 100%; white-space: normal !important; height: auto; min-height: 34px; }
           .pillFade { display: block; }
           /* HOTFIX: chat section must fit the phone screen */
           .heroGrid { display: block !important; }
@@ -20,7 +20,7 @@
           .heroGrid textarea { height: 120px !important; padding: 12px 56px 12px 56px !important; }
           .pagePad, main.mainResponsive { max-width: 100vw !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; overflow-x: hidden !important; }
           .pillRowWrap { max-width: 100% !important; }
-          .pillRowWrap > button { max-width: 78vw; overflow: hidden; text-overflow: ellipsis; }
+          .pillRowWrap > button { max-width: 78vw; }
           main, header, aside { max-width: 100vw; overflow-x: hidden; }
           /* WIDE-PAGE HOTFIX: fill the phone screen like the reference shot */
           main.mainResponsive { padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important; padding-top: 57px !important; }
@@ -32,4 +32,7 @@
           .pillRowWrap { margin-left: 0 !important; margin-right: 0 !important; padding-left: 16px !important; padding-right: 16px !important; }
           .mainResponsive .heroPad { padding: 20px 16px !important; }
           .mainResponsive .heroGrid { margin-left: 0 !important; margin-right: 0 !important; }
+          .hscroll > div { padding: 16px !important; }
+          .hscroll > div > div { min-width: 0; }
+          .hscroll [style*="grid-template-columns: repeat(3,1fr)"] { display: flex !important; flex-direction: row !important; overflow-x: auto; }
         }
