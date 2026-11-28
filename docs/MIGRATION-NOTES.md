@@ -50,3 +50,40 @@ git revert HEAD
 ```
 
 That restores the 11 files and the pre-fix layout of the page strip.
+
+Phase 3 — split the three large files
+
+What changed
+
+- `src/features/pages/StaticPages.tsx` (430 lines) is now a 7-line barrel. Each page lives in
+  `WhyPrivatePage.tsx`, `LegalPage.tsx`, `HowPage.tsx`, `PlansPage.tsx`, and the shared price
+  source (`PRICING`, `usd`, `perYear`, `tierExamples`, `StaticPageProps`) lives in `shared.ts`.
+- `src/App.tsx` went from 556 to 237 lines. The homepage markup moved verbatim into
+  `src/features/home/HomePage.tsx` (typed props), and the right rail with its settings and help
+  popups moved verbatim into `src/features/shell/RightBar.tsx` (typed props).
+- `src/features/workspace/Workspace.tsx` went from 554 to 112 lines of layout only. State, effects
+  and handlers moved into `useWorkspace.ts` (returns a typed `WorkspaceState`), and the three
+  regions became `WorkspaceChatPanel`, `WorkspaceDocumentPanel` and `WorkspaceQueuePanel`, each
+  reading its state from `ws`. `WorkspaceHandle` and `WorkspaceProps` live in `workspaceTypes.ts`.
+
+Rule this establishes
+
+- A page is a file plus one line in the barrel. A panel is a file that takes `ws`; its state is
+  declared once in `useWorkspace`. Adding a capability means adding a file, not growing a 500-line
+  component.
+
+Verification for this phase
+
+- `npx tsc -b` — clean.
+- `npm test` — 17/17 passing.
+- `npm run build` — succeeds.
+- Browser check at 390 and 1280 for `#/`, `#/plans`, `#/workspace`: no page errors, no failed
+  requests, no horizontal overflow, no clipped text. Clicking `+ Add page` still produces `Page 4`.
+- The two known checker artifacts below (paragraph over the mobile zoom bar, new page label beside
+  its icon) are unchanged and predate this phase.
+
+Rollback for this phase
+
+```
+git revert HEAD
+```
